@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class CompanySettingsController extends Controller
+{
+    public function edit()
+    {
+        $company = auth()->user()->company;
+
+        abort_unless($company, 404, 'Firma kaydı bulunamadı.');
+
+        return view('company-settings.edit', compact('company'));
+    }
+
+    public function update(Request $request)
+    {
+        $company = auth()->user()->company;
+
+        abort_unless($company, 404, 'Firma kaydı bulunamadı.');
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255', 'unique:companies,slug,' . $company->id],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'tax_no' => ['nullable', 'string', 'max:100'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'address' => ['nullable', 'string'],
+        ]);
+
+        $company->update([
+            'name' => $validated['name'],
+            'slug' => $validated['slug'] ?: $company->slug,
+            'phone' => $validated['phone'] ?? null,
+            'email' => $validated['email'] ?? null,
+            'tax_no' => $validated['tax_no'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        return redirect()->route('company-settings.edit')->with('success', 'Firma ayarları güncellendi.');
+    }
+}

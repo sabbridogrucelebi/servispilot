@@ -1,0 +1,126 @@
+@extends('layouts.app')
+
+@section('content')
+    <h1 class="text-2xl font-bold mb-6">Yeni Belge Ekle</h1>
+
+    <form action="{{ route('documents.store') }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded shadow">
+        @csrf
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block mb-1">Belge Sahibi Türü</label>
+                <select name="owner_type" class="w-full border rounded px-3 py-2">
+                    <option value="">Seçiniz</option>
+                    <option value="vehicle" {{ old('owner_type') == 'vehicle' ? 'selected' : '' }}>Araç</option>
+                    <option value="driver" {{ old('owner_type') == 'driver' ? 'selected' : '' }}>Şoför</option>
+                </select>
+                @error('owner_type')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block mb-1">Belge Sahibi</label>
+                <select name="owner_id" class="w-full border rounded px-3 py-2">
+                    <optgroup label="Araçlar">
+                        @foreach($vehicles as $vehicle)
+                            <option value="{{ $vehicle->id }}" {{ old('owner_id') == $vehicle->id ? 'selected' : '' }}>
+                                {{ $vehicle->plate }} - {{ $vehicle->brand }} {{ $vehicle->model }}
+                            </option>
+                        @endforeach
+                    </optgroup>
+
+                    <optgroup label="Şoförler">
+                        @foreach($drivers as $driver)
+                            <option value="{{ $driver->id }}" {{ old('owner_id') == $driver->id ? 'selected' : '' }}>
+                                {{ $driver->full_name }}
+                            </option>
+                        @endforeach
+                    </optgroup>
+                </select>
+                @error('owner_id')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block mb-1">Belge Türü</label>
+                <input
+                    type="text"
+                    name="document_type"
+                    value="{{ old('document_type') }}"
+                    class="w-full border rounded px-3 py-2"
+                    placeholder="Ruhsat, Sigorta, SRC, Ehliyet">
+                @error('document_type')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block mb-1">Belge Adı</label>
+                <input
+                    type="text"
+                    name="document_name"
+                    value="{{ old('document_name') }}"
+                    class="w-full border rounded px-3 py-2">
+                @error('document_name')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block mb-1">Başlangıç Tarihi</label>
+                <input
+                    type="date"
+                    name="start_date"
+                    value="{{ old('start_date') }}"
+                    class="w-full border rounded px-3 py-2">
+                @error('start_date')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block mb-1">Bitiş Tarihi</label>
+                <input
+                    type="date"
+                    name="end_date"
+                    value="{{ old('end_date') }}"
+                    class="w-full border rounded px-3 py-2">
+                @error('end_date')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="col-span-2">
+                <label class="block mb-1">Dosya (PDF / JPG / PNG)</label>
+                <input
+                    type="file"
+                    name="file"
+                    class="w-full border rounded px-3 py-2">
+                @error('file')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="flex items-center mt-2">
+                <input type="checkbox" name="is_active" checked class="mr-2">
+                <label>Aktif</label>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <label class="block mb-1">Notlar</label>
+            <textarea name="notes" rows="4" class="w-full border rounded px-3 py-2">{{ old('notes') }}</textarea>
+            @error('notes')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="mt-6">
+            <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded">
+                Kaydet
+            </button>
+        </div>
+    </form>
+@endsection
