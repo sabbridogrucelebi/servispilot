@@ -52,7 +52,6 @@
             border-radius: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .stat-card::before { content: ''; position: absolute; left: 0; top: 0; width: 4px; height: 100%; background: #2563eb; }
         .stat-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
@@ -66,19 +65,25 @@
         .route-lbl { font-size: 13px; font-weight: 800; color: #2563eb; }
         .trip-count { font-size: 14px; font-weight: 900; color: #0f172a; font-family: 'Outfit'; }
 
+        /* Ink-Saving Eco Financial Section */
         .bottom-section { display: flex; gap: 30px; align-items: stretch; }
         .notes-column { flex: 1.3; }
-        .total-card-pro { 
+        .total-card-eco { 
             flex: 1; 
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
-            color: white; 
+            background: #ffffff; 
+            border: 2px solid #0f172a;
             padding: 25px; 
             border-radius: 32px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        .net-val-pro { font-family: 'Outfit', sans-serif; font-size: 34px; font-weight: 900; line-height: 1; display: block; margin-top: 5px; }
+        .summary-row-eco { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: #64748b; font-weight: 600; }
+        .total-brut-eco { display: flex; justify-content: space-between; font-size: 12px; margin: 8px 0; padding: 8px 0; border-top: 1px dashed #e2e8f0; border-bottom: 1px dashed #e2e8f0; font-weight: 900; color: #0f172a; }
+        .net-total-eco { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .net-label-eco { font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 900; color: #2563eb; letter-spacing: 1px; }
+        .net-amount-eco { font-family: 'Outfit', sans-serif; font-size: 36px; font-weight: 900; color: #0f172a; }
 
-        /* Clean & Large Signatures */
         .signature-grid { margin-top: 100px; display: flex; gap: 80px; }
         .signature-item { flex: 1; text-align: center; }
         .signature-line { border-top: 2px solid #0f172a; margin-bottom: 15px; padding-top: 10px; }
@@ -159,31 +164,38 @@
             <div class="notes-column">
                 <div style="font-size: 10px; font-weight: 900; color: #0f172a; margin-bottom: 10px;">EKSTRA ÖDEME & KESİNTİ ANALİZİ</div>
                 @if($extraBonus > 0)
-                    <div style="margin-bottom: 5px; font-weight: 700; color: #059669;">+ EKSTRA: {{ number_format($extraBonus, 2, ',', '.') }} ₺ ({{ $extraNotes ?: 'Bonus' }})</div>
+                    <div style="margin-bottom: 5px; font-weight: 700; color: #059669;">+ EKSTRA PRİM: {{ number_format($extraBonus, 2, ',', '.') }} ₺ ({{ $extraNotes ?: 'Bonus' }})</div>
                 @endif
                 @if($deduction > 0)
-                    <div style="font-weight: 700; color: #dc2626;">- KESİNTİ: {{ number_format($deduction, 2, ',', '.') }} ₺ ({{ $deductionNotes ?: 'Yasal' }})</div>
+                    <div style="margin-bottom: 5px; font-weight: 700; color: #dc2626;">- KESİNTİ / İCRA: {{ number_format($deduction, 2, ',', '.') }} ₺ ({{ $deductionNotes ?: 'Yasal' }})</div>
+                @endif
+                @if($penalty > 0)
+                    <div style="margin-bottom: 5px; font-weight: 700; color: #dc2626;">- TRAFİK CEZASI: {{ number_format($penalty, 2, ',', '.') }} ₺</div>
                 @endif
             </div>
 
-            <div class="total-card-pro">
-                <div class="summary-row-pro" style="color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; margin-bottom: 8px;">
-                    <span>Hakediş (Maaş+Sefer):</span>
-                    <span style="color: white;">+{{ number_format($report['base_salary'] + $report['extra_earnings'], 2, ',', '.') }} ₺</span>
+            <div class="total-card-eco">
+                <div class="summary-row-eco">
+                    <span>Maaş + Seferler:</span>
+                    <span>+{{ number_format($report['base_salary'] + $report['extra_earnings'], 2, ',', '.') }} ₺</span>
                 </div>
-                <div class="summary-row-pro" style="color: #10b981; font-weight: 800; margin-bottom: 12px;">
-                    <span>EKSTRA (+):</span>
+                <div class="summary-row-eco" style="color: #059669;">
+                    <span>Ekstra (+):</span>
                     <span>+{{ number_format($extraBonus, 2, ',', '.') }} ₺</span>
                 </div>
+                <div class="total-brut-eco">
+                    <span>TOPLAM BRÜT:</span>
+                    <span>{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span>
+                </div>
                 
-                <div class="summary-row-pro"><span>Banka Ödemesi:</span><span>-{{ number_format($bank, 2, ',', '.') }} ₺</span></div>
-                <div class="summary-row-pro"><span>Trafik Cezası:</span><span>-{{ number_format($penalty, 2, ',', '.') }} ₺</span></div>
-                <div class="summary-row-pro"><span>Avans / Ödeme:</span><span>-{{ number_format($advance, 2, ',', '.') }} ₺</span></div>
-                <div class="summary-row-pro"><span>Kesinti / İcra:</span><span>-{{ number_format($deduction, 2, ',', '.') }} ₺</span></div>
+                <div class="summary-row-eco"><span>Banka Ödemesi:</span><span>-{{ number_format($bank, 2, ',', '.') }} ₺</span></div>
+                <div class="summary-row-eco"><span>Trafik Cezası:</span><span>-{{ number_format($penalty, 2, ',', '.') }} ₺</span></div>
+                <div class="summary-row-eco"><span>Avans / Ödeme:</span><span>-{{ number_format($advance, 2, ',', '.') }} ₺</span></div>
+                <div class="summary-row-eco"><span>Kesinti / İcra:</span><span>-{{ number_format($deduction, 2, ',', '.') }} ₺</span></div>
 
-                <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 15px; padding-top: 15px;">
-                    <span style="font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800; color: #60a5fa; letter-spacing: 1px;">NET ÖDENECEK TUTAR</span>
-                    <span class="net-val-pro">{{ number_format($finalNet, 2, ',', '.') }} ₺</span>
+                <div class="net-total-eco">
+                    <span class="net-label-eco">NET ÖDENECEK</span>
+                    <span class="net-amount-eco">{{ number_format($finalNet, 2, ',', '.') }} ₺</span>
                 </div>
             </div>
         </div>
