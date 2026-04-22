@@ -227,6 +227,30 @@
                                 </button>
                             </form>
                         </div>
+                    <style>
+        [x-cloak] { display: none !important; }
+        
+        /* GLOBAL YAZDIRMA AYARLARI - SADECE BELGE KALSIN */
+        @media print {
+            aside, header, nav, footer, .no-print, button, .sidebar-wrapper, .top-nav {
+                display: none !important;
+            }
+            main, .content-wrapper, #app {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                display: block !important;
+            }
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .mx-auto {
+                max-width: 100% !important;
+            }
+        }
+    </style>
                     </div>
                 </div>
 
