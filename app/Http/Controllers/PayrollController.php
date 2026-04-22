@@ -79,6 +79,43 @@ class PayrollController extends Controller
         return redirect()->back()->with('success', "$period dönemi maaş ve finansal kayıtları başarıyla güncellendi.");
     }
 
+    public function updateSingle(Request $request)
+    {
+        try {
+            $driverId = $request->input('driver_id');
+            $period = $request->input('period');
+            $data = $request->input('data');
+
+            $net = (float)($data['base_salary'] + $data['extra_earnings'] + ($data['extra_bonus'] ?? 0)) 
+                 - (float)(($data['bank_payment'] ?? 0) + ($data['traffic_penalty'] ?? 0) + ($data['advance_payment'] ?? 0) + ($data['deduction'] ?? 0));
+
+            Payroll::updateOrCreate(
+                [
+                    'company_id' => auth()->user()->company_id,
+                    'driver_id' => $driverId,
+                    'period_month' => $period,
+                ],
+                [
+                    'base_salary' => $data['base_salary'],
+                    'extra_payment' => $data['extra_earnings'],
+                    'bank_payment' => $data['bank_payment'] ?? 0,
+                    'traffic_penalty' => $data['traffic_penalty'] ?? 0,
+                    'advance_payment' => $data['advance_payment'] ?? 0,
+                    'deduction' => $data['deduction'] ?? 0,
+                    'deduction_notes' => $data['deduction_notes'] ?? null,
+                    'extra_bonus' => $data['extra_bonus'] ?? 0,
+                    'extra_notes' => $data['extra_notes'] ?? null,
+                    'net_salary' => $net,
+                    'is_active' => true,
+                ]
+            );
+
+            return response()->json(['success' => true, 'net' => $net]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function showReport($driverId, $period)
     {
         $driver = Driver::findOrFail($driverId);
