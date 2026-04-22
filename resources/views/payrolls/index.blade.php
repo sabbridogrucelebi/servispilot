@@ -93,7 +93,7 @@
                                 <input type="hidden" id="base_{{ $id }}" name="payrolls[{{ $id }}][base_salary]" value="{{ $calc['base_salary'] }}">
                                 <input type="hidden" id="trips_{{ $id }}" name="payrolls[{{ $id }}][extra_earnings]" value="{{ $calc['extra_earnings'] }}">
 
-                                <td class="px-4 py-4 text-right font-bold text-slate-600">
+                                <td class="px-4 py-4 text-right font-black text-slate-900 text-sm">
                                     {{ number_format($calc['base_salary'], 2, ',', '.') }} ₺
                                 </td>
 
@@ -101,11 +101,11 @@
                                 <td class="px-2 py-4 bg-blue-50/30">
                                     <input type="number" step="0.01" id="bank_{{ $id }}" name="payrolls[{{ $id }}][bank_payment]" value="{{ $bank }}"
                                            @input="calculateNet({{ $id }})"
-                                           class="w-full rounded-xl border-blue-100 bg-white py-2 px-3 text-right font-black text-blue-700 focus:ring-2 focus:ring-blue-500">
+                                           class="w-full rounded-xl border-blue-100 bg-white py-2 px-3 text-right font-black text-blue-700 text-sm focus:ring-2 focus:ring-blue-500">
                                 </td>
 
                                 <!-- Ek Hakediş (Otomatik) -->
-                                <td class="px-4 py-4 text-right font-bold text-emerald-600">
+                                <td class="px-4 py-4 text-right font-black text-emerald-600 text-sm">
                                     +{{ number_format($calc['extra_earnings'], 2, ',', '.') }} ₺
                                 </td>
 
@@ -113,14 +113,14 @@
                                 <td class="px-2 py-4 bg-rose-50/30">
                                     <input type="number" step="0.01" id="penalty_{{ $id }}" name="payrolls[{{ $id }}][traffic_penalty]" value="{{ $penalty }}"
                                            @input="calculateNet({{ $id }})"
-                                           class="w-full rounded-xl border-rose-100 bg-white py-2 px-3 text-right font-black text-rose-700 focus:ring-2 focus:ring-rose-500">
+                                           class="w-full rounded-xl border-rose-100 bg-white py-2 px-3 text-right font-black text-rose-700 text-sm focus:ring-2 focus:ring-rose-500">
                                 </td>
 
                                 <!-- Avans -->
                                 <td class="px-2 py-4">
                                     <input type="number" step="0.01" id="advance_{{ $id }}" name="payrolls[{{ $id }}][advance_payment]" value="{{ $advance }}"
                                            @input="calculateNet({{ $id }})"
-                                           class="w-full rounded-xl border-orange-100 bg-white py-2 px-3 text-right font-black text-orange-700 focus:ring-2 focus:ring-orange-500">
+                                           class="w-full rounded-xl border-orange-100 bg-white py-2 px-3 text-right font-black text-orange-700 text-sm focus:ring-2 focus:ring-orange-500">
                                 </td>
 
                                 <!-- Kesinti -->
@@ -128,7 +128,7 @@
                                     <div class="space-y-2">
                                         <input type="number" step="0.01" id="deduction_{{ $id }}" name="payrolls[{{ $id }}][deduction]" value="{{ $deduction }}"
                                                @input="calculateNet({{ $id }}); showDeductionNote = ($event.target.value > 0)"
-                                               class="w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-right font-black text-slate-700 focus:ring-2 focus:ring-slate-500">
+                                               class="w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-right font-black text-slate-700 text-sm focus:ring-2 focus:ring-slate-500">
                                         
                                         <div x-show="showDeductionNote" x-transition>
                                             <input type="text" name="payrolls[{{ $id }}][deduction_notes]" value="{{ $ex->deduction_notes ?? '' }}"
@@ -143,7 +143,7 @@
                                     <div class="space-y-2">
                                         <input type="number" step="0.01" id="extra_{{ $id }}" name="payrolls[{{ $id }}][extra_bonus]" value="{{ $extraBonus }}"
                                                @input="calculateNet({{ $id }}); showExtraNote = ($event.target.value > 0)"
-                                               class="w-full rounded-xl border-amber-200 bg-white py-2 px-3 text-right font-black text-amber-700 focus:ring-2 focus:ring-amber-500">
+                                               class="w-full rounded-xl border-amber-200 bg-white py-2 px-3 text-right font-black text-amber-700 text-sm focus:ring-2 focus:ring-amber-500">
                                         
                                         <div x-show="showExtraNote" x-transition>
                                             <input type="text" name="payrolls[{{ $id }}][extra_notes]" value="{{ $ex->extra_notes ?? '' }}"
