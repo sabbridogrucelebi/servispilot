@@ -4,6 +4,13 @@
 @section('subtitle', 'Personel bilgileri, belgeler, maaşlar ve resimler')
 
 @section('content')
+    <!-- Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
     @php
         $documentBadge = match($documentStatus) {
             'expired' => ['label' => 'Süresi Geçmiş', 'class' => 'bg-rose-100 text-rose-700'],
@@ -36,8 +43,19 @@
     @endphp
 
     <div class="space-y-6">
-        <div class="grid gap-4 xl:grid-cols-12">
-            <div class="xl:col-span-9 space-y-5">
+        @if (session('success'))
+            <div class="rounded-[24px] bg-emerald-100 p-4 text-sm font-bold text-emerald-700 no-print">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="rounded-[24px] bg-rose-100 p-4 text-sm font-bold text-rose-700 no-print">
+                {{ session('error') }}
+            </div>
+        @endif
+        <div class="grid gap-4 xl:grid-cols-1">
+            <div class="xl:col-span-1 space-y-5">
                 <div class="rounded-[30px] border border-slate-200/60 bg-white/90 shadow-xl overflow-hidden">
                     <div class="flex flex-col gap-5 border-b border-slate-100 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
                         <div class="flex items-center gap-4">
@@ -63,20 +81,6 @@
                                 {{ $driver->is_active ? 'Aktif Personel' : 'Pasif Personel' }}
                             </span>
 
-                            @if($driver->phone)
-                                <a href="tel:{{ $driver->phone }}"
-                                   class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100">
-                                    Ara
-                                </a>
-                            @endif
-
-                            @if($phoneForLink)
-                                <a href="https://wa.me/{{ $phoneForLink }}"
-                                   target="_blank"
-                                   class="rounded-2xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-700 transition hover:bg-green-100">
-                                    WhatsApp
-                                </a>
-                            @endif
 
                             <a href="{{ route('drivers.edit', $driver) }}"
                                class="rounded-2xl bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100">
@@ -415,6 +419,15 @@
 
                                     <form action="{{ route('drivers.documents.store', $driver) }}" method="POST" enctype="multipart/form-data" class="space-y-4 p-6" id="driverDocumentForm">
                                         @csrf
+                                        @if ($errors->any())
+                                            <div class="rounded-2xl bg-rose-50 p-4 text-xs font-bold text-rose-700">
+                                                <ul class="list-disc pl-4 space-y-1">
+                                                    @foreach ($errors->all() as $error)
+                                                        <li>{{ $error }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
                                         <input type="hidden" name="redirect_tab" value="documents">
                                         <input type="hidden" id="driverBirthDate" value="{{ optional($driver->birth_date)->format('Y-m-d') }}">
 
@@ -555,10 +568,20 @@
                                         <div class="grid gap-5 p-6 md:grid-cols-2 xl:grid-cols-3">
                                             @foreach($imageDocuments as $image)
                                                 <div class="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
-                                                    <div class="aspect-[4/3] bg-slate-100">
-                                                        <img src="{{ asset('storage/' . $image->file_path) }}"
-                                                             alt="{{ $image->document_name }}"
-                                                             class="h-full w-full object-cover">
+                                                    <div class="aspect-[4/3] bg-slate-100 flex items-center justify-center overflow-hidden">
+                                                        @php
+                                                            $extension = strtolower(pathinfo((string) $image->file_path, PATHINFO_EXTENSION));
+                                                        @endphp
+                                                        @if($extension === 'pdf')
+                                                            <div class="flex flex-col items-center gap-2">
+                                                                <svg class="w-12 h-12 text-rose-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
+                                                                <span class="text-[10px] font-bold text-slate-400 uppercase">PDF Belgesi</span>
+                                                            </div>
+                                                        @else
+                                                            <img src="/storage/{{ $image->file_path }}"
+                                                                 alt="{{ $image->document_name }}"
+                                                                 class="h-full w-full object-cover">
+                                                        @endif
                                                     </div>
 
                                                     <div class="p-4">
@@ -566,11 +589,17 @@
                                                         <div class="mt-1 text-xs text-slate-500">{{ $image->document_type ?: '-' }}</div>
 
                                                         <div class="mt-3 flex flex-wrap items-center gap-2">
-                                                            <a href="{{ asset('storage/' . $image->file_path) }}"
+                                                            <a href="/storage/{{ $image->file_path }}"
                                                                target="_blank"
                                                                class="rounded-xl bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
                                                                 Görüntüle
                                                             </a>
+
+                                                            <button type="button"
+                                                                    onclick="openCropModal('/storage/{{ $image->file_path }}')"
+                                                                    class="rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100">
+                                                                Kırp ve Profil Yap
+                                                            </button>
 
                                                             <form action="{{ route('drivers.documents.destroy', [$driver, $image]) }}" method="POST" onsubmit="return confirm('Bu resmi silmek istediğine emin misin?')">
                                                                 @csrf
@@ -598,15 +627,24 @@
 
                                     <form action="{{ route('drivers.documents.store', $driver) }}" method="POST" enctype="multipart/form-data" class="space-y-4 p-6">
                                         @csrf
+                                        @if ($errors->any())
+                                            <div class="rounded-2xl bg-rose-50 p-4 text-xs font-bold text-rose-700">
+                                                <ul class="list-disc pl-4 space-y-1">
+                                                    @foreach ($errors->all() as $error)
+                                                        <li>{{ $error }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
                                         <input type="hidden" name="redirect_tab" value="images">
 
                                         <div>
                                             <label class="mb-2 block text-sm font-semibold text-slate-700">Belge Türü</label>
                                             <select name="document_type" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm">
-                                                <option value="Kimlik">Personel Resmi</option>
-                                                <option value="Kimlik">Vesikalık</option>
-                                                <option value="Kimlik">Profil Fotoğrafı</option>
-                                                <option value="Kimlik">Diğer Resim</option>
+                                                <option value="Kimlik ve Ehliyet">Personel Resmi</option>
+                                                <option value="Kimlik ve Ehliyet">Vesikalık</option>
+                                                <option value="Kimlik ve Ehliyet">Profil Fotoğrafı</option>
+                                                <option value="Kimlik ve Ehliyet">Diğer Resim</option>
                                             </select>
                                         </div>
 
@@ -634,7 +672,7 @@
                 </div>
             </div>
 
-            <div class="xl:col-span-3"></div>
+            </div>
         </div>
     </div>
 
@@ -699,12 +737,175 @@
         </div>
     </div>
 
+    <!-- Crop Modal -->
+    <div id="cropModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/60 p-4">
+        <div class="w-full max-w-2xl rounded-[30px] bg-white shadow-2xl overflow-hidden">
+            <div class="border-b border-slate-100 px-6 py-5 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-extrabold text-slate-900">Resmi Kırp</h3>
+                    <p class="mt-1 text-sm text-slate-500">Personel profil resmini seçin (1:1 oranında)</p>
+                </div>
+                <button type="button" onclick="closeCropModal()" class="text-slate-400 hover:text-slate-600">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="max-h-[50vh] overflow-hidden rounded-2xl bg-slate-100 flex items-center justify-center">
+                    <img id="cropImage" src="" alt="Kırpılacak Resim" class="max-w-full">
+                </div>
+            </div>
+            <div class="border-t border-slate-100 px-6 py-4 bg-slate-50 flex justify-end gap-3">
+                <button type="button" onclick="closeCropModal()" class="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">Vazgeç</button>
+                <button type="button" onclick="saveCroppedImage()" id="saveCropBtn" class="rounded-2xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-700 transition flex items-center gap-2">
+                    <span id="saveCropBtnText">Kırp ve Profil Resmi Yap</span>
+                    <div id="saveCropSpinner" class="hidden h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openLeaveModal() { document.getElementById('leaveModal').classList.replace('hidden', 'flex'); }
         function closeLeaveModal() { document.getElementById('leaveModal').classList.replace('flex', 'hidden'); }
         
         function openChangeVehicleModal() { document.getElementById('changeVehicleModal').classList.replace('hidden', 'flex'); }
         function closeChangeVehicleModal() { document.getElementById('changeVehicleModal').classList.replace('flex', 'hidden'); }
+
+        let cropper = null;
+        const cropModal = document.getElementById('cropModal');
+        const cropImage = document.getElementById('cropImage');
+        const saveCropBtn = document.getElementById('saveCropBtn');
+        const saveCropBtnText = document.getElementById('saveCropBtnText');
+        const saveCropSpinner = document.getElementById('saveCropSpinner');
+
+        function openCropModal(fileUrl) {
+            const extension = fileUrl.split('.').pop().toLowerCase();
+            
+            cropModal.classList.remove('hidden');
+            cropModal.classList.add('flex');
+            
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+
+            if (extension === 'pdf') {
+                // PDF İşleme
+                saveCropBtn.disabled = true;
+                saveCropBtnText.innerText = 'PDF Hazırlanıyor...';
+                saveCropSpinner.classList.remove('hidden');
+                cropImage.style.display = 'none';
+
+                const loadingTask = pdfjsLib.getDocument(fileUrl);
+                loadingTask.promise.then(pdf => {
+                    pdf.getPage(1).then(page => {
+                        const viewport = page.getViewport({ scale: 2.0 }); // Daha net görüntü için 2x scale
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        const renderTask = page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        });
+
+                        renderTask.promise.then(() => {
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                            initCropper(dataUrl);
+                            
+                            saveCropBtn.disabled = false;
+                            saveCropBtnText.innerText = 'Kırp ve Profil Resmi Yap';
+                            saveCropSpinner.classList.add('hidden');
+                            cropImage.style.display = 'block';
+                        });
+                    });
+                }).catch(err => {
+                    console.error('PDF Render Hatası:', err);
+                    alert('PDF dosyası açılamadı.');
+                    closeCropModal();
+                });
+            } else {
+                initCropper(fileUrl);
+            }
+        }
+
+        function initCropper(imageSrc) {
+            cropImage.src = imageSrc;
+            
+            if (cropper) {
+                cropper.destroy();
+            }
+
+            setTimeout(() => {
+                cropper = new Cropper(cropImage, {
+                    aspectRatio: null,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.8,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            }, 100);
+        }
+
+        function closeCropModal() {
+            cropModal.classList.add('hidden');
+            cropModal.classList.remove('flex');
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        }
+
+        function saveCroppedImage() {
+            if (!cropper) return;
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 400,
+                height: 400,
+            });
+
+            const base64Image = canvas.toDataURL('image/jpeg', 0.9);
+
+            saveCropBtn.disabled = true;
+            saveCropBtnText.innerText = 'İşleniyor...';
+            saveCropSpinner.classList.remove('hidden');
+
+            fetch("{{ route('drivers.crop-photo', $driver) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    image: base64Image
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect || window.location.href;
+                } else {
+                    alert(data.message || 'Bir hata oluştu.');
+                    saveCropBtn.disabled = false;
+                    saveCropBtnText.innerText = 'Kırp ve Profil Resmi Yap';
+                    saveCropSpinner.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Sistem hatası oluştu.');
+                saveCropBtn.disabled = false;
+                saveCropBtnText.innerText = 'Kırp ve Profil Resmi Yap';
+                saveCropSpinner.classList.add('hidden');
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', function () {
             // ... mevcut script içeriği ...

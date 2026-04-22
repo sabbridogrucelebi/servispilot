@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Models\Concerns\LogsActivity;
+
 class Customer extends Model
 {
-    use BelongsToCompany;
+    use BelongsToCompany, LogsActivity;
 
     protected $fillable = [
         'company_id',

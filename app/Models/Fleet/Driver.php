@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Models\Concerns\LogsActivity;
+
 class Driver extends Model
 {
-    use BelongsToCompany;
+    use BelongsToCompany, LogsActivity;
 
     protected $fillable = [
         'company_id',
@@ -28,6 +30,7 @@ class Driver extends Model
         'start_date',
         'leave_date',
         'leave_shift',
+        'start_shift',
         'base_salary',
         'is_active',
         'address',

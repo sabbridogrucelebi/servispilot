@@ -16,11 +16,29 @@ class PayrollController extends Controller
         [$year, $month] = explode('-', $period);
 
         $payrollService = new PayrollService();
+        $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
+        $endOfMonth = Carbon::create($year, $month, 1)->endOfMonth();
+
         $drivers = Driver::query()
             ->with(['vehicle'])
-            ->where('drivers.is_active', true)
+            ->where(function($query) use ($startOfMonth, $endOfMonth) {
+                $query->where('drivers.is_active', true)
+                      ->orWhere(function($q) use ($startOfMonth, $endOfMonth) {
+                          $q->where('drivers.is_active', false)
+                            ->where(function($sq) use ($startOfMonth, $endOfMonth) {
+                                // Ay içinde en az bir gün çalışmış olması lazım
+                                $sq->whereNull('leave_date')
+                                   ->orWhere('leave_date', '>=', $startOfMonth);
+                            })
+                            ->where(function($sq) use ($startOfMonth, $endOfMonth) {
+                                $sq->whereNull('start_date')
+                                   ->orWhere('start_date', '<=', $endOfMonth);
+                            });
+                      });
+            })
             ->leftJoin('vehicles', 'drivers.vehicle_id', '=', 'vehicles.id')
             ->orderBy('vehicles.plate', 'asc')
+            ->orderBy('drivers.full_name', 'asc')
             ->select('drivers.*')
             ->get();
         

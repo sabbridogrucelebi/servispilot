@@ -50,11 +50,32 @@
             <div class="rounded-2xl border border-slate-200 p-4 bg-slate-50/50">
                 <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">PERSONEL BİLGİLERİ</div>
                 <div class="text-lg font-black text-slate-900 uppercase">{{ $driver->full_name }}</div>
-                <div class="text-xs font-bold text-slate-500">TC: {{ $driver->tc_no ?? '-----------' }}</div>
+                <div class="flex flex-col gap-0.5">
+                    <div class="text-[10px] font-bold text-slate-500">TC: {{ $driver->tc_no ?? '-----------' }}</div>
+                    @php
+                        $start = $driver->start_date ? \Carbon\Carbon::parse($driver->start_date) : null;
+                        $leave = $driver->leave_date ? \Carbon\Carbon::parse($driver->leave_date) : null;
+                    @endphp
+                    @if($start && $start->format('Y-m') === $period)
+                        <div class="text-[10px] font-black text-emerald-600 uppercase">
+                            • GİRİŞ: {{ $start->format('d.m.Y') }} ({{ $driver->start_shift === 'morning' ? 'SABAH' : 'AKŞAM' }})
+                        </div>
+                    @endif
+                    @if($leave && $leave->format('Y-m') === $period)
+                        <div class="text-[10px] font-black text-rose-600 uppercase">
+                            • AYRILIŞ: {{ $leave->format('d.m.Y') }} ({{ $driver->leave_shift === 'morning' ? 'SABAH' : 'AKŞAM' }})
+                        </div>
+                    @endif
+                </div>
             </div>
             <div class="rounded-2xl border border-slate-200 p-4 bg-slate-50/50 text-right">
-                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">AYLIK ANA MAAŞ</div>
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">AYLIK BAZ MAAŞ</div>
                 <div class="text-2xl font-black text-slate-900">{{ number_format($report['base_salary'], 2, ',', '.') }} ₺</div>
+                @if($report['work_days'] < \Carbon\Carbon::parse($period)->daysInMonth)
+                    <div class="text-[9px] font-black text-orange-600 uppercase mt-1">
+                        {{ $report['work_days'] }} GÜNLÜK KIST MAAŞ HESAPLANDI
+                    </div>
+                @endif
             </div>
         </div>
 

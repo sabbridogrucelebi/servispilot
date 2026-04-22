@@ -234,11 +234,40 @@
                             <td class="px-4 py-4 text-center font-bold text-slate-400">{{ $index + 1 }}</td>
                             <td class="px-4 py-4">
                                 <div class="text-base font-black text-slate-900 whitespace-nowrap">{{ $driver->full_name }}</div>
-                                <div class="text-[12px] text-slate-500 font-bold uppercase tracking-wide">{{ $driver->vehicle?->plate ?? 'ARAÇSIZ' }}</div>
+                                <div class="flex flex-wrap gap-1 mt-0.5">
+                                    <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wide px-1.5 py-0.5 bg-slate-100 rounded-md">{{ $driver->vehicle?->plate ?? 'ARAÇSIZ' }}</div>
+                                    
+                                    @php
+                                        $currentMonth = \Carbon\Carbon::parse($period);
+                                        $start = $driver->start_date ? \Carbon\Carbon::parse($driver->start_date) : null;
+                                        $leave = $driver->leave_date ? \Carbon\Carbon::parse($driver->leave_date) : null;
+                                    @endphp
+
+                                    @if($start && $start->format('Y-m') === $period)
+                                        <div class="text-[9px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-md uppercase tracking-tighter">
+                                            GİRİŞ: {{ $start->format('d.m.Y') }} ({{ $driver->start_shift === 'morning' ? 'SABAH' : 'AKŞAM' }})
+                                        </div>
+                                    @endif
+
+                                    @if($leave && $leave->format('Y-m') === $period)
+                                        <div class="text-[9px] font-black bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-md uppercase tracking-tighter">
+                                            AYRILIŞ: {{ $leave->format('d.m.Y') }} ({{ $driver->leave_shift === 'morning' ? 'SABAH' : 'AKŞAM' }})
+                                        </div>
+                                    @endif
+                                </div>
                             </td>
                             <input type="hidden" id="base_{{ $id }}" class="val-base" value="{{ $calc['base_salary'] }}">
                             <input type="hidden" id="trips_{{ $id }}" class="val-trips" value="{{ $calc['extra_earnings'] }}">
-                            <td class="px-4 py-4 text-right font-black text-slate-900 text-sm">{{ number_format($calc['base_salary'], 2, ',', '.') }} ₺</td>
+                            <td class="px-4 py-4 text-right whitespace-nowrap">
+                                <div class="flex flex-col items-end">
+                                    <span class="font-black text-slate-900 text-sm">{{ number_format($calc['base_salary'], 2, ',', '.') }} ₺</span>
+                                    @if($calc['work_days'] < \Carbon\Carbon::parse($period)->daysInMonth)
+                                        <span class="text-[9px] font-black bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full uppercase tracking-tighter mt-0.5">
+                                            {{ $calc['work_days'] }} GÜN ÇALIŞMA
+                                        </span>
+                                    @endif
+                                </div>
+                            </td>
                             <td class="px-2 py-4 bg-blue-50/30">
                                 <input type="number" step="0.01" id="bank_{{ $id }}" value="{{ $bank }}" 
                                        :readonly="isLocked"

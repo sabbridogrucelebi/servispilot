@@ -4,6 +4,10 @@ use App\Models\Trip;
 use App\Models\Fuel;
 use App\Models\Document;
 use App\Models\Payroll;
+use App\Models\ActivityLog;
+use App\Models\Customer;
+use App\Models\TrafficPenalty;
+use App\Models\VehicleMaintenance;
 use App\Models\Fleet\Driver;
 use App\Models\Fleet\Vehicle;
 use Illuminate\Support\Facades\Route;
@@ -51,12 +55,24 @@ Route::get('/dashboard', function () {
 
     $vehicleCount = Vehicle::count();
     $driverCount = Driver::count();
+    $customerCount = Customer::count();
 
     $todayTrips = Trip::whereDate('trip_date', now()->toDateString())->count();
 
     $monthlyIncome = Trip::whereMonth('trip_date', now()->month)
         ->whereYear('trip_date', now()->year)
         ->sum('trip_price');
+
+    $monthlyFuel = Fuel::whereMonth('date', now()->month)
+        ->whereYear('date', now()->year)
+        ->sum('total_cost');
+
+    $monthlyPenalty = TrafficPenalty::whereMonth('penalty_date', now()->month)
+        ->whereYear('penalty_date', now()->year)
+        ->sum('penalty_amount');
+
+    $activeMaintenances = VehicleMaintenance::where('status', 'in_progress')->count();
+    $waitingMaintenances = VehicleMaintenance::where('status', 'waiting')->count();
 
     $today = now()->startOfDay();
     $sevenDaysLater = now()->copy()->addDays(7)->startOfDay();
@@ -87,18 +103,36 @@ Route::get('/dashboard', function () {
     $totalSalary = Payroll::sum('net_salary');
     $netProfit = $monthlyIncome - ($totalFuel + $totalSalary);
 
+    $recentTrips = Trip::with(['vehicle', 'driver'])
+        ->orderBy('trip_date', 'desc')
+        ->orderBy('id', 'desc')
+        ->take(5)
+        ->get();
+
+    $recentActivity = ActivityLog::with('user')
+        ->orderBy('created_at', 'desc')
+        ->take(6)
+        ->get();
+
     return view('dashboard', compact(
         'vehicleCount',
         'driverCount',
+        'customerCount',
         'todayTrips',
         'monthlyIncome',
+        'monthlyFuel',
+        'monthlyPenalty',
+        'activeMaintenances',
+        'waitingMaintenances',
         'expiredDocumentsCount',
         'documentsExpiringIn7DaysCount',
         'documentsExpiringIn30DaysCount',
         'upcomingDocuments',
         'totalFuel',
         'totalSalary',
-        'netProfit'
+        'netProfit',
+        'recentTrips',
+        'recentActivity'
     ));
 
 })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
@@ -165,6 +199,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/drivers/{driver}/documents', [DriverController::class, 'uploadDocument'])
         ->middleware('permission:drivers.view')
         ->name('drivers.documents.store');
+
+    Route::post('/drivers/{driver}/crop-photo', [DriverController::class, 'cropPhoto'])
+        ->middleware('permission:drivers.view')
+        ->name('drivers.crop-photo');
 
     Route::delete('/drivers/{driver}/documents/{document}', [DriverController::class, 'deleteDocument'])
         ->middleware('permission:drivers.view')
@@ -276,6 +314,10 @@ Route::middleware('auth')->group(function () {
     | RESOURCES
     |--------------------------------------------------------------------------
     */
+    Route::post('/vehicles/ai-assistant', [VehicleController::class, 'aiAssistant'])
+        ->middleware('permission:vehicles.view')
+        ->name('vehicles.ai.assistant');
+
     Route::resource('vehicles', VehicleController::class)
         ->middleware('permission:vehicles.view');
 
@@ -352,6 +394,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/payrolls/bulk-store', [PayrollController::class, 'bulkStore'])->name('payrolls.bulk-store');
     Route::post('/payrolls/update-single', [PayrollController::class, 'updateSingle'])->name('payrolls.update-single');
 
+    Route::get('/vehicles/export/excel', [VehicleController::class, 'exportExcel'])->name('vehicles.export.excel');
+    Route::post('/vehicles/ai-assistant', [VehicleController::class, 'aiAssistant'])->name('vehicles.ai.assistant');
+
     Route::resource('payrolls', PayrollController::class)
         ->middleware('permission:payrolls.view');
 
@@ -407,8 +452,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+    Route::get('/support', function () {
+        return view('support');
+    })->name('support');
 });
 
 require __DIR__ . '/auth.php';

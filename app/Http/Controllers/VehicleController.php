@@ -24,7 +24,9 @@ class VehicleController extends Controller
 {
     public function index()
     {
-        $vehicles = Vehicle::latest()->get();
+        $vehicles = Vehicle::with(['fuels' => function($q) {
+            $q->latest('date')->latest('id');
+        }])->latest()->get();
 
         return view('vehicles.index', compact('vehicles'));
     }
@@ -32,6 +34,19 @@ class VehicleController extends Controller
     public function exportExcel()
     {
         $fileName = 'Araclar_' . now()->format('d-m-Y_H-i') . '.xlsx';
+
+        // Aktivite Kaydı
+        \App\Models\ActivityLog::create([
+            'company_id'   => auth()->user()->company_id,
+            'user_id'      => auth()->id(),
+            'module'       => 'vehicles',
+            'action'       => 'exported',
+            'subject_type' => Vehicle::class,
+            'title'        => 'Araç Listesi Dışa Aktarıldı',
+            'description'  => 'Tüm araç listesi Excel formatında indirildi.',
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
+        ]);
 
         return Excel::download(new VehiclesExport(), $fileName);
     }
@@ -225,6 +240,8 @@ class VehicleController extends Controller
             'kasko_end_date' => 'nullable|date',
             'notes' => 'nullable|string',
             'is_active' => 'nullable|boolean',
+            'current_km' => 'nullable|integer|min:0',
+            'status' => 'nullable|string|max:50',
         ]);
 
         if (($data['color'] ?? null) !== 'Diğer') {
@@ -273,6 +290,8 @@ class VehicleController extends Controller
             'kasko_end_date' => 'nullable|date',
             'notes' => 'nullable|string',
             'is_active' => 'nullable|boolean',
+            'current_km' => 'nullable|integer|min:0',
+            'status' => 'nullable|string|max:50',
         ]);
 
         if (($data['color'] ?? null) !== 'Diğer') {
@@ -341,7 +360,7 @@ class VehicleController extends Controller
 
         $data = $request->validate([
             'image_type' => 'required|string|in:front,right_side,left_side,rear,interior_1,interior_2,dashboard,other',
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:8192',
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:20480',
         ]);
 
         $path = $request->file('image')->store('vehicle-images', 'public');
@@ -426,7 +445,7 @@ class VehicleController extends Controller
             'issuer_name' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
-            'file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx,xls,xlsx|max:8192',
+            'file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx,xls,xlsx|max:20480',
             'notes' => 'nullable|string',
         ]);
 
@@ -550,5 +569,60 @@ class VehicleController extends Controller
     protected function resolveImageTypeLabel(?string $type): string
     {
         return $this->imageTypeOptions()[$type] ?? 'Araç Görseli';
+    }
+
+    public function aiAssistant(Request $request)
+    {
+        $question = mb_strtolower($request->get('question', ''), 'UTF-8');
+        $companyId = auth()->user()->company_id;
+        
+        $vehicles = Vehicle::where('company_id', $companyId)->get();
+        $totalCount = $vehicles->count();
+        
+        $answer = "Sistemi taradım. İşte bulduğum sonuçlar:\n\n";
+
+        if (str_contains($question, 'bakım') || str_contains($question, 'servis')) {
+            $nearMaintenance = [];
+            foreach ($vehicles as $v) {
+                $status = $v->maintenance_status;
+                if ($status['has_setting'] && ($status['oil_remaining'] < 2000 || $status['lube_remaining'] < 1000)) {
+                    $nearMaintenance[] = $v->plate . " (" . number_format($status['oil_remaining'], 0, ',', '.') . " KM kaldı)";
+                }
+            }
+            
+            if (count($nearMaintenance) > 0) {
+                $answer .= "Şu an bakımı yaklaşan " . count($nearMaintenance) . " aracınız var: " . implode(', ', $nearMaintenance) . ". En kısa sürede randevu almanızı öneririm.";
+            } else {
+                $answer .= "Tüm araçlarınızın bakım durumu şu an iyi görünüyor. Kritik bir seviyeye ulaşan aracınız yok.";
+            }
+        } elseif (str_contains($question, 'kaç') || str_contains($question, 'sayı') || str_contains($question, 'toplam')) {
+            $types = $vehicles->groupBy('vehicle_type')->map->count();
+            $answer .= "Toplam {$totalCount} aracınız bulunuyor.\n";
+            foreach ($types as $type => $count) {
+                $answer .= "- {$count} adet {$type}\n";
+            }
+        } elseif (str_contains($question, 'aktif') || str_contains($question, 'pasif')) {
+            $active = $vehicles->where('is_active', true)->count();
+            $passive = $vehicles->where('is_active', false)->count();
+            $answer .= "Filonuzda şu an {$active} aktif, {$passive} pasif araç bulunuyor.";
+        } elseif (str_contains($question, 'en çok') && (str_contains($question, 'sefer') || str_contains($question, 'yol'))) {
+            $topVehicle = $vehicles->sortByDesc('current_km')->first();
+            if ($topVehicle) {
+                $answer .= "En çok yol kat eden aracınız {$topVehicle->plate} plakalı araçtır (Toplam: " . number_format($topVehicle->current_km, 0, ',', '.') . " KM).";
+            }
+        } elseif (preg_match('/[0-9]{2}\s?[a-z]{1,3}\s?[0-9]{2,4}/i', $question, $matches)) {
+            $plate = strtoupper(str_replace(' ', '', $matches[0]));
+            $v = Vehicle::where('company_id', $companyId)->where('plate', 'like', "%$plate%")->first();
+            if ($v) {
+                $status = $v->is_active ? 'Aktif' : 'Pasif';
+                $answer .= "{$v->plate} plakalı aracı buldum. {$v->brand} {$v->model} model, {$v->vehicle_type} tipinde bir araç. Şu an durumu: {$status}. Güncel kilometresi: " . number_format($v->current_km, 0, ',', '.') . " KM.";
+            } else {
+                $answer .= "Maalesef {$plate} plakalı bir araç sistemde kayıtlı görünmüyor.";
+            }
+        } else {
+            $answer = "Filonuzla ilgili verileri analiz ettim ancak bu soruya özel bir veri bulamadım. Bakım durumları, araç sayıları veya aktiflik durumları hakkında sorular sorabilirsiniz.";
+        }
+
+        return response()->json(['answer' => $answer]);
     }
 }

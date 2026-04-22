@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Models\Concerns\LogsActivity;
+
 class VehicleMaintenance extends Model
 {
-    use BelongsToCompany;
+    use BelongsToCompany, LogsActivity;
 
     protected $table = 'vehicle_maintenances';
 

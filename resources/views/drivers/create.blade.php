@@ -4,7 +4,16 @@
 @section('subtitle', 'Yeni personel kaydı oluşturun')
 
 @section('content')
-    <form action="{{ route('drivers.store') }}" method="POST" class="space-y-6">
+    <form action="{{ route('drivers.store') }}" method="POST" class="space-y-6" x-data="{ 
+        showShiftModal: false,
+        tempStartDate: '{{ old('start_date') }}',
+        startShift: '{{ old('start_shift', 'morning') }}',
+        handleDateChange(val) {
+            if(val) {
+                this.showShiftModal = true;
+            }
+        }
+    }">
         @csrf
 
         <div class="grid gap-6 xl:grid-cols-3">
@@ -73,7 +82,8 @@
                             <label class="mb-2 block text-sm font-semibold text-slate-700">İşe Giriş Tarihi</label>
                             <input type="date"
                                    name="start_date"
-                                   value="{{ old('start_date') }}"
+                                   x-model="tempStartDate"
+                                   @change="handleDateChange($event.target.value)"
                                    class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
                             @error('start_date')
                                 <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
@@ -86,56 +96,97 @@
                     <h3 class="text-lg font-bold text-slate-900">İş Bilgileri</h3>
                     <p class="mt-1 text-sm text-slate-500">Araç atama, sürücü sınıfı ve maaş bilgisi</p>
 
-                    <div class="mt-6 grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label class="mb-2 block text-sm font-semibold text-slate-700">Bağlı Araç</label>
-                            <select name="vehicle_id"
-                                    class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
-                                <option value="">Araç seçiniz</option>
-                                @foreach($vehicles as $vehicle)
-                                    <option value="{{ $vehicle->id }}" @selected(old('vehicle_id') == $vehicle->id)>
-                                        {{ $vehicle->plate }} - {{ $vehicle->brand }} {{ $vehicle->model }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('vehicle_id')
-                                <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
-                            @enderror
+                    <div>
+                        <div class="mt-6 grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-slate-700">Bağlı Araç</label>
+                                <select name="vehicle_id"
+                                        class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                    <option value="">Araç seçiniz</option>
+                                    @foreach($vehicles as $vehicle)
+                                        <option value="{{ $vehicle->id }}" @selected(old('vehicle_id') == $vehicle->id)>
+                                            {{ $vehicle->plate }} - {{ $vehicle->brand }} {{ $vehicle->model }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('vehicle_id')
+                                    <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-slate-700">Ana Maaş (30 Günlük)</label>
+                                <input type="number"
+                                       step="0.01"
+                                       min="0"
+                                       name="base_salary"
+                                       value="{{ old('base_salary') }}"
+                                       class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                @error('base_salary')
+                                    <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-slate-700">Ehliyet Sınıfı</label>
+                                <input type="text"
+                                       name="license_class"
+                                       value="{{ old('license_class') }}"
+                                       class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                @error('license_class')
+                                    <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-slate-700">SRC Türü</label>
+                                <input type="text"
+                                       name="src_type"
+                                       value="{{ old('src_type') }}"
+                                       class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                @error('src_type')
+                                    <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
-                        <div>
-                            <label class="mb-2 block text-sm font-semibold text-slate-700">Ana Maaş</label>
-                            <input type="number"
-                                   step="0.01"
-                                   min="0"
-                                   name="base_salary"
-                                   value="{{ old('base_salary') }}"
-                                   class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
-                            @error('base_salary')
-                                <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        <!-- Başlangıç Vardiyası Modalı -->
+                        <div x-show="showShiftModal" 
+                             class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+                             x-cloak x-transition>
+                            <div class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl" @click.away="showShiftModal = false">
+                                <div class="text-center mb-6">
+                                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                    <h3 class="text-xl font-black text-slate-900">Çalışma Başlangıç Saati</h3>
+                                    <p class="text-sm font-bold text-slate-500 mt-1">İşe giriş günü hangi vardiyada başladı?</p>
+                                </div>
 
-                        <div>
-                            <label class="mb-2 block text-sm font-semibold text-slate-700">Ehliyet Sınıfı</label>
-                            <input type="text"
-                                   name="license_class"
-                                   value="{{ old('license_class') }}"
-                                   class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
-                            @error('license_class')
-                                <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
-                            @enderror
-                        </div>
+                                <input type="hidden" name="start_shift" :value="startShift">
 
-                        <div>
-                            <label class="mb-2 block text-sm font-semibold text-slate-700">SRC Türü</label>
-                            <input type="text"
-                                   name="src_type"
-                                   value="{{ old('src_type') }}"
-                                   class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
-                            @error('src_type')
-                                <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
-                            @enderror
+                                <div class="grid grid-cols-2 gap-4">
+                                    <button type="button" 
+                                            @click="startShift = 'morning'; showShiftModal = false"
+                                            :class="startShift === 'morning' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'"
+                                            class="flex flex-col items-center justify-center p-6 rounded-3xl border-2 transition-all hover:border-blue-300">
+                                        <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.243l.707.707M7.757 7.757l.707-.707"/></svg>
+                                        <span class="font-black text-xs uppercase">Sabah Başladı</span>
+                                        <span class="text-[10px] font-bold opacity-60 mt-1">(Tam Yevmiye)</span>
+                                    </button>
+
+                                    <button type="button" 
+                                            @click="startShift = 'evening'; showShiftModal = false"
+                                            :class="startShift === 'evening' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600'"
+                                            class="flex flex-col items-center justify-center p-6 rounded-3xl border-2 transition-all hover:border-indigo-300">
+                                        <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                                        <span class="font-black text-xs uppercase">Akşam Başladı</span>
+                                        <span class="text-[10px] font-bold opacity-60 mt-1">(Yarım Yevmiye)</span>
+                                    </button>
+                                </div>
+
+                                <button type="button" @click="showShiftModal = false" class="w-full mt-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">Vazgeç</button>
+                            </div>
                         </div>
                     </div>
 

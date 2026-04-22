@@ -31,16 +31,22 @@ class CompanySettingsController extends Controller
             'address' => ['nullable', 'string'],
         ]);
 
-        $company->update([
+        $updateData = [
             'name' => $validated['name'],
-            'slug' => $validated['slug'] ?: $company->slug,
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
             'tax_no' => $validated['tax_no'] ?? null,
             'city' => $validated['city'] ?? null,
             'address' => $validated['address'] ?? null,
             'is_active' => $request->has('is_active'),
-        ]);
+        ];
+
+        // Sadece Süper Admin slug değiştirebilir
+        if (auth()->user()->isSuperAdmin() && !empty($validated['slug'])) {
+            $updateData['slug'] = $validated['slug'];
+        }
+
+        $company->update($updateData);
 
         return redirect()->route('company-settings.edit')->with('success', 'Firma ayarları güncellendi.');
     }

@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Concerns\BelongsToCompany;
 
+use App\Models\Concerns\LogsActivity;
+
 class Document extends Model
 {
-    use BelongsToCompany;
+    use BelongsToCompany, LogsActivity;
 
     protected $fillable = [
         'company_id',

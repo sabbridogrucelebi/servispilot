@@ -8,12 +8,12 @@ use App\Models\Fleet\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class DriverController extends Controller
 {
     protected array $driverDocumentTypes = [
-        'Ehliyet',
-        'Kimlik',
+        'Kimlik ve Ehliyet',
         'Adli Sicil Kaydı',
         'SRC 1 Belgesi',
         'SRC 2 Belgesi',
@@ -122,6 +122,7 @@ class DriverController extends Controller
             'src_type' => 'nullable|string|max:50',
             'birth_date' => 'nullable|date',
             'start_date' => 'nullable|date',
+            'start_shift' => 'nullable|string|in:morning,evening',
             'base_salary' => 'nullable|numeric|min:0',
             'address' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -184,7 +185,8 @@ class DriverController extends Controller
         };
 
         $imageDocuments = $documents->filter(function ($document) use ($isImageDocument) {
-            return $isImageDocument($document);
+            $extension = strtolower(pathinfo((string) $document->file_path, PATHINFO_EXTENSION));
+            return $isImageDocument($document) || ($extension === 'pdf' && $document->document_type === 'Kimlik ve Ehliyet');
         })->values();
 
         $documentDocuments = $documents->filter(function ($document) use ($isImageDocument) {
@@ -233,11 +235,11 @@ class DriverController extends Controller
     public function uploadDocument(Request $request, Driver $driver)
     {
         $validated = $request->validate([
-            'document_type' => 'required|string|in:' . implode(',', $this->driverDocumentTypes),
+            'document_type' => ['required', 'string', Rule::in($this->driverDocumentTypes)],
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
             'notes' => 'nullable|string',
-            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx,xls,xlsx|max:8192',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx,xls,xlsx|max:20480',
             'redirect_tab' => 'nullable|string|in:documents,images',
         ]);
 
@@ -279,6 +281,49 @@ class DriverController extends Controller
             ->with('success', 'Belge başarıyla yüklendi.');
     }
 
+    public function cropPhoto(Request $request, Driver $driver)
+    {
+        $request->validate([
+            'image' => 'required|string',
+        ]);
+
+        $imageData = $request->image;
+        if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
+            $imageData = substr($imageData, strpos($imageData, ',') + 1);
+            $type = strtolower($type[1]); // jpg, png, etc
+
+            if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png', 'webp'])) {
+                return response()->json(['success' => false, 'message' => 'Geçersiz resim formatı.'], 422);
+            }
+
+            $imageData = base64_decode($imageData);
+
+            if ($imageData === false) {
+                return response()->json(['success' => false, 'message' => 'Resim verisi çözülemedi.'], 422);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Geçersiz resim verisi.'], 422);
+        }
+
+        $fileName = 'cropped_' . time() . '.' . $type;
+        $filePath = 'driver-documents/' . $fileName;
+
+        Storage::disk('public')->put($filePath, $imageData);
+
+        $driver->documents()->create([
+            'document_type' => 'Kimlik ve Ehliyet',
+            'document_name' => 'Profil Fotoğrafı (Kırpılmış)',
+            'file_path' => $filePath,
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil fotoğrafı başarıyla oluşturuldu.',
+            'redirect' => route('drivers.show', ['driver' => $driver->id, 'tab' => 'general'])
+        ]);
+    }
+
     public function deleteDocument(Driver $driver, Document $document)
     {
         if (
@@ -318,6 +363,7 @@ class DriverController extends Controller
             'src_type' => 'nullable|string|max:50',
             'birth_date' => 'nullable|date',
             'start_date' => 'nullable|date',
+            'start_shift' => 'nullable|string|in:morning,evening',
             'base_salary' => 'nullable|numeric|min:0',
             'address' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -352,7 +398,7 @@ class DriverController extends Controller
             'is_active' => false,
             'leave_date' => $validated['leave_date'],
             'leave_shift' => $validated['leave_shift'],
-            'vehicle_id' => null, // İşten ayrılınca aracı boşa çıkar
+            // 'vehicle_id' => null, // Artık aracı boşa çıkarmıyoruz ki geçmiş maaş hesaplanabilsin
         ]);
 
         return redirect()->back()->with('success', 'Personel işten ayrılma kaydı başarıyla yapıldı.');

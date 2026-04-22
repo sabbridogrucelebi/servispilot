@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Concerns\BelongsToCompany;
 use Carbon\Carbon;
 
+use App\Models\Concerns\LogsActivity;
+
 class TrafficPenalty extends Model
 {
-    use HasFactory, BelongsToCompany;
+    use HasFactory, BelongsToCompany, LogsActivity;
 
     protected $fillable = [
         'company_id',

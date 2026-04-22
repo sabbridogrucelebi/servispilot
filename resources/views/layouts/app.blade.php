@@ -103,49 +103,33 @@
                     </div>
                 </div>
 
-                <div class="sidebar-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-32">
-                    <div class="space-y-10">
+                <div class="sidebar-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-12">
+                    <div class="space-y-6">
 
                         @if($user && $user->isSuperAdmin())
-                        <div>
-                            <div class="px-4 mb-4 text-[10px] font-extrabold uppercase tracking-[0.25em] text-rose-500 opacity-80">Platform Yönetimi</div>
-                            <div class="space-y-1.5">
+                        <div class="pt-2">
+                            <div class="px-4 mb-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-rose-500 opacity-80">Platform Yönetimi</div>
+                            <div class="space-y-1">
                                 <a href="{{ route('super-admin.dashboard') }}"
-                                   class="group flex items-center gap-4 rounded-2xl px-4 py-3.5 transition-all duration-300 {{ request()->routeIs('super-admin.*') ? 'bg-rose-500/10 text-rose-400' : 'hover:bg-white/5 hover:text-slate-200' }}">
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ request()->routeIs('super-admin.*') ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800/50 text-slate-500' }} group-hover:scale-110 transition-all shadow-inner">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04a11.357 11.357 0 00-1.018 4.772c0 4.113 2.193 7.713 5.5 9.69a11.354 11.354 0 0011.001 0c3.307-1.977 5.5-5.577 5.5-9.69a11.357 11.357 0 00-1.018-4.772z"></path></svg>
+                                   class="group flex items-center gap-4 rounded-2xl px-4 py-3 transition-all duration-300 {{ request()->routeIs('super-admin.*') ? 'bg-rose-500/10 text-rose-400' : 'hover:bg-white/5 hover:text-slate-200' }}">
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-xl {{ request()->routeIs('super-admin.*') ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800/50 text-slate-500' }} group-hover:scale-110 transition-all shadow-inner">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04a11.357 11.357 0 00-1.018 4.772c0 4.113 2.193 7.713 5.5 9.69a11.354 11.354 0 0011.001 0c3.307-1.977 5.5-5.577 5.5-9.69a11.357 11.357 0 00-1.018-4.772z"></path></svg>
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="text-sm font-bold tracking-tight">Süper Admin</span>
-                                        <span class="text-[10px] font-medium opacity-40">Sistem Yetkilisi</span>
+                                        <span class="text-[9px] font-medium opacity-40">Sistem Yetkilisi</span>
                                     </div>
                                 </a>
                             </div>
                         </div>
                         @endif
 
-                        <div>
-                            <div class="px-4 mb-4 text-[10px] font-extrabold uppercase tracking-[0.25em] text-slate-600">Ana Menü</div>
-                            <div class="space-y-1.5">
+                        <div class="pt-2">
+                            <div class="px-4 mb-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-slate-600">Ana Menü</div>
+                            <div class="space-y-1">
 
                                 @php
-                                    $navItems = [
-                                        ['route' => 'dashboard', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'label' => 'Ana Sayfa', 'sub' => 'Genel Bakış', 'module' => null],
-                                        ['route' => 'vehicles.index', 'icon' => 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0', 'label' => 'Araçlar', 'sub' => 'Filo Yönetimi', 'module' => 'vehicles'],
-                                        ['route' => 'vehicle-tracking.index', 'icon' => 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z', 'label' => 'Araç Takip', 'sub' => 'Canlı İzleme', 'module' => 'vehicles'],
-                                        ['route' => 'drivers.index', 'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', 'label' => 'Personeller', 'sub' => 'Personel Yönetimi', 'module' => 'drivers'],
-                                        ['route' => 'maintenances.index', 'icon' => 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z', 'label' => 'Bakım / Tamir', 'sub' => 'Servis ve Bakım', 'module' => 'maintenances'],
-                                        ['route' => 'fuels.index', 'icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'label' => 'Yakıt', 'sub' => 'Yakıt Takibi', 'module' => 'fuels'],
-                                        ['route' => 'traffic-penalties.index', 'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', 'label' => 'Trafik Cezaları', 'sub' => 'Yasal ve Uyumluluk', 'module' => 'traffic_penalties'],
-                                        ['route' => 'trips.index', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'label' => 'Puantaj / Sefer', 'sub' => 'Operasyon Kayıtları', 'module' => 'trips'],
-                                        ['route' => 'payrolls.index', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Maaşlar', 'sub' => 'Finansal Kayıtlar', 'module' => 'payrolls'],
-                                        ['route' => 'customers.index', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'label' => 'Müşteriler', 'sub' => 'Müşteri Yönetimi', 'module' => 'customers'],
-                                        ['route' => 'service-routes.index', 'icon' => 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7', 'label' => 'Servis Hatları', 'sub' => 'Rota Planlama', 'module' => 'service_routes'],
-                                        ['route' => 'route-stops.index', 'icon' => 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z', 'label' => 'Duraklar', 'sub' => 'Konum İşaretleri', 'module' => 'route_stops'],
-                                        ['route' => 'reports.index', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'label' => 'Raporlar', 'sub' => 'Analiz Merkezi', 'module' => 'reports'],
-                                        ['route' => 'company-users.index', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'label' => 'Kullanıcılar', 'sub' => 'Erişim Kontrolü', 'module' => null],
-                                        ['route' => 'company-settings.edit', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', 'label' => 'Ayarlar', 'sub' => 'Sistem Yapılandırması', 'module' => null],
-                                    ];
+                                    $user = auth()->user();
                                 @endphp
 
                                 @foreach($navItems as $item)
@@ -156,16 +140,16 @@
 
                                     @if($canAccess)
                                         <a href="{{ route($item['route']) }}"
-                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-3 transition-all duration-500
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
                                            {{ $isActive
                                               ? 'nav-item-active text-white'
                                               : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
-                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ $isActive ? 'bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300' }} group-hover:scale-110">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"></path></svg>
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ $isActive ? 'bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300' }} group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"></path></svg>
                                             </div>
                                             <div class="flex flex-col min-w-0">
-                                                <span class="text-[13.5px] font-bold tracking-tight truncate">{{ $item['label'] }}</span>
-                                                <span class="text-[9.5px] font-bold {{ $isActive ? 'text-indigo-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">{{ $item['sub'] }}</span>
+                                                <span class="text-[13px] font-bold tracking-tight truncate">{{ $item['label'] }}</span>
+                                                <span class="text-[9px] font-bold {{ $isActive ? 'text-indigo-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">{{ $item['sub'] }}</span>
                                             </div>
                                             @if($isActive)
                                                 <div class="ml-auto flex items-center">
@@ -182,52 +166,7 @@
                     </div>
                 </div>
 
-                <!-- Footer User Area -->
-                <div class="shrink-0 p-6 bg-slate-900/50 backdrop-blur-2xl border-t border-white/5 space-y-4">
-                    <!-- Developer Signature -->
-                    <div class="flex items-center justify-between px-2 mb-2">
-                        <div class="flex flex-col">
-                            <span class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 leading-tight">Yazılım Mimarı</span>
-                            <a href="https://wa.me/905305283669" target="_blank" class="group flex items-center gap-1.5 transition-all">
-                                <span class="text-xs font-bold text-indigo-300 group-hover:text-indigo-200">Sabri DOĞRU</span>
-                                <div class="h-1 w-1 rounded-full bg-emerald-500"></div>
-                            </a>
-                        </div>
-                        <a href="https://wa.me/905305283669" target="_blank" class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-lg shadow-emerald-500/10">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        </a>
-                    </div>
-
-                    <div class="relative group p-4 rounded-3xl bg-white/[0.04] border border-white/10 shadow-2xl transition-all duration-500 hover:bg-white/[0.06]">
-                        <div class="flex items-center gap-4">
-                            <div class="relative">
-                                <div class="absolute -inset-1 rounded-2xl bg-indigo-500 opacity-20 blur group-hover:opacity-40 transition duration-500"></div>
-                                <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 text-md font-black text-indigo-400">
-                                    {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
-                                </div>
-                                <div class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-slate-900 shadow-lg"></div>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="truncate text-[13px] font-black text-white leading-tight">{{ $user->name ?? 'Operator' }}</div>
-                                <div class="truncate text-[10px] font-bold text-slate-500 uppercase tracking-tighter mt-0.5">{{ $user->email ?? '' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 grid grid-cols-2 gap-2">
-                            <a href="{{ route('profile.edit') }}"
-                               class="flex items-center justify-center gap-2 rounded-xl bg-indigo-600/10 py-2.5 text-[11px] font-black text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-inner">
-                                Profili Düzenle
-                            </a>
-
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit"
-                                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-500/10 py-2.5 text-[11px] font-black text-rose-400 hover:bg-rose-600 hover:text-white transition-all">
-                                    Oturumu Kapat
-                                </button>
-                            </form>
-                        </div>
-                    <style>
+                <style>
         [x-cloak] { display: none !important; }
         
         /* GLOBAL YAZDIRMA AYARLARI - SADECE BELGE KALSIN */
@@ -251,25 +190,25 @@
             }
         }
     </style>
-                    </div>
                 </div>
-
-            </div>
         </aside>
 
-        <!-- MAIN -->
-        <div class="ml-72 flex-1 min-w-0">
-            <main class="min-h-screen p-8 lg:p-10">
-                <div class="rounded-[40px] border border-white bg-white/40 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] backdrop-blur-xl overflow-hidden transition-all duration-500">
-                    <div class="glass-header border-b border-slate-200/40 px-10 py-8">
+        <!-- MAIN CONTENT AREA -->
+        <div class="ml-72 flex-1 min-w-0 min-h-screen flex flex-col bg-slate-50">
+            <main class="flex-1 p-6 lg:p-8">
+                <div class="h-full rounded-[40px] border border-white bg-white/60 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] backdrop-blur-xl overflow-hidden flex flex-col">
+                    
+                    <!-- GLASS HEADER -->
+                    <div class="glass-header border-b border-slate-200/40 px-8 py-6 shrink-0">
                         <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                            <!-- Left: Title & Subtitle -->
                             <div class="flex items-center gap-6">
-                                <div class="hidden h-14 w-1.5 shadow-lg rounded-full bg-gradient-to-b from-indigo-500 to-purple-600 md:block"></div>
+                                <div class="hidden h-12 w-1.5 shadow-lg rounded-full bg-gradient-to-b from-indigo-500 to-purple-600 md:block"></div>
                                 <div>
-                                    <h1 class="text-4xl font-black tracking-tight text-slate-900">
+                                    <h1 class="text-3xl font-black tracking-tight text-slate-900">
                                         @yield('title', 'Sistem Paneli')
                                     </h1>
-                                    <p class="mt-2 text-[13px] font-bold text-slate-400 flex items-center gap-2 uppercase tracking-widest">
+                                    <p class="mt-1 text-[11px] font-bold text-slate-400 flex items-center gap-2 uppercase tracking-widest">
                                         <span class="relative flex h-2 w-2">
                                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -279,25 +218,85 @@
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-8">
-                                <div class="hidden flex-col items-end md:flex">
-                                    <div class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">Güncel Sistem Saati</div>
-                                    <div class="text-md font-black text-indigo-600 bg-indigo-50 px-5 py-2 rounded-2xl border border-indigo-100 shadow-sm transition-all hover:scale-105" id="global-live-clock">
-                                        {{ now()->format('d.m.Y H:i:s') }}
+                            <!-- Right: Actions & Profile -->
+                            <div class="flex items-center gap-4 sm:gap-6">
+                                <!-- Destek Butonu -->
+                                <a href="{{ route('support') }}" 
+                                   class="group relative hidden lg:flex items-center gap-3 overflow-hidden rounded-2xl bg-slate-900 px-5 py-2.5 transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-200 border border-white/10">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 opacity-0 transition-opacity group-hover:opacity-10"></div>
+                                    <div class="relative flex flex-col items-start leading-none">
+                                        <span class="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-emerald-400 transition-colors">Yazılım Mimarı</span>
+                                        <span class="text-[10px] font-black text-white mt-1">DESTEK AL</span>
                                     </div>
+                                    <div class="relative flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                    </div>
+                                </a>
+
+                                <!-- Canlı Sistem Saati & Çıkış -->
+                                <div class="hidden items-center gap-4 md:flex">
+                                    <div class="flex flex-col items-end">
+                                        <div class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 leading-none">Canlı Sistem Saati</div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100/50 shadow-sm group hover:scale-105 transition-all">
+                                                <span class="text-[11px] font-black text-indigo-600" id="clock-date">{{ now()->format('d.m.Y') }}</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 shadow-lg group hover:scale-105 transition-all">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                <span class="text-[11px] font-black text-white tracking-wider" id="clock-time">{{ now()->format('H:i:s') }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hızlı Çıkış -->
+                                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                                        @csrf
+                                        <button type="submit" class="group relative flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white transition-all shadow-sm hover:shadow-rose-200 active:scale-90" title="Güvenli Çıkış">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
                                 </div>
 
-                                <div class="relative group">
-                                    <div class="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 opacity-20 blur group-hover:opacity-100 transition duration-500"></div>
-                                    <div class="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-md font-black text-indigo-600 shadow-xl border border-white">
-                                        {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
+                                <div class="relative group" x-data="{ open: false }">
+                                    <button @click="open = !open" class="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-md font-black text-indigo-600 shadow-lg border border-white hover:scale-105 transition-all active:scale-95">
+                                        <div class="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 opacity-20 blur group-hover:opacity-100 transition duration-500"></div>
+                                        <span class="relative text-sm">{{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}</span>
+                                        <div class="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-lg"></div>
+                                    </button>
+
+                                    <!-- User Dropdown -->
+                                    <div x-show="open" @click.away="open = false" 
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 translate-y-4"
+                                         x-transition:enter-end="opacity-100 translate-y-0"
+                                         class="absolute right-0 mt-4 w-64 origin-top-right rounded-[32px] bg-white p-4 shadow-2xl ring-1 ring-black/5 z-50" x-cloak>
+                                        <div class="px-4 py-3 border-b border-slate-50">
+                                            <div class="text-sm font-black text-slate-900 leading-tight">{{ $user->name }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{{ $user->email }}</div>
+                                        </div>
+                                        <div class="p-2 space-y-1">
+                                            <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-2xl transition-all">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                                Profilim
+                                            </a>
+                                            <form method="POST" action="{{ route('logout') }}">
+                                                @csrf
+                                                <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-2xl transition-all text-left">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                                    Güvenli Çıkış
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-slate-100/80 p-6 lg:p-7">
+                    <!-- MAIN SCROLLABLE CONTENT -->
+                    <div class="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-50/50">
                         @yield('content')
                     </div>
                 </div>
@@ -439,11 +438,11 @@
     document.addEventListener('DOMContentLoaded', function () {
         function updateGlobalClock() {
             const now = new Date();
-            const clockEl = document.getElementById('global-live-clock');
-            if (clockEl) {
-                const dateString = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                clockEl.innerText = dateString + ' ' + timeString;
+            const dateEl = document.getElementById('clock-date');
+            const timeEl = document.getElementById('clock-time');
+            if (dateEl && timeEl) {
+                dateEl.innerText = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                timeEl.innerText = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             }
         }
         setInterval(updateGlobalClock, 1000);

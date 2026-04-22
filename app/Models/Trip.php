@@ -9,9 +9,11 @@ use App\Models\CustomerServiceRoute;
 use App\Models\Fleet\Vehicle;
 use App\Models\Fleet\Driver;
 
+use App\Models\Concerns\LogsActivity;
+
 class Trip extends Model
 {
-    use HasFactory, BelongsToCompany;
+    use HasFactory, BelongsToCompany, LogsActivity;
 
     protected $fillable = [
         'company_id',

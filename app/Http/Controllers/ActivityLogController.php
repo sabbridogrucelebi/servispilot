@@ -16,10 +16,27 @@ class ActivityLogController extends Controller
             ->when($request->filled('action'), function ($query) use ($request) {
                 $query->where('action', $request->action);
             })
+            ->when($request->filled('user_id'), function ($query) use ($request) {
+                $query->where('user_id', $request->user_id);
+            })
             ->latest()
-            ->paginate(30)
+            ->paginate(50)
             ->withQueryString();
 
-        return view('activity-logs.index', compact('logs'));
+        $modules = [
+            'vehicles'     => 'Araçlar',
+            'drivers'      => 'Personeller',
+            'trips'        => 'Seferler',
+            'fuels'        => 'Yakıtlar',
+            'documents'    => 'Belgeler',
+            'customers'    => 'Müşteriler',
+            'maintenances' => 'Bakımlar',
+            'penalties'    => 'Cezalar',
+            'users'        => 'Kullanıcılar',
+        ];
+
+        $users = \App\Models\User::orderBy('name')->get();
+
+        return view('activity-logs.index', compact('logs', 'modules', 'users'));
     }
 }

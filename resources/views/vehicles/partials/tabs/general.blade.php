@@ -1,225 +1,213 @@
-<div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-    <div class="xl:col-span-8 space-y-6">
-        <div class="rounded-[30px] border border-slate-200/70 bg-white/95 backdrop-blur shadow-[0_18px_45px_rgba(15,23,42,0.07)] overflow-hidden">
-            <div class="border-b border-slate-100 px-6 py-5 bg-gradient-to-r from-blue-50 via-white to-slate-50">
-                <h3 class="text-lg font-bold text-slate-800">Genel Araç Bilgileri</h3>
-                <p class="mt-1 text-sm text-slate-500">Aracın kimlik, sınıf ve kullanım bilgileri</p>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+    <div class="xl:col-span-8 space-y-8">
+        {{-- Identity Card --}}
+        <div class="group relative overflow-hidden rounded-[40px] bg-white shadow-2xl transition-all duration-500 hover:shadow-indigo-500/10">
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-white to-blue-50/50 opacity-100"></div>
+            
+            <div class="relative z-10 border-b border-slate-100/50 px-8 py-6 bg-white/50 backdrop-blur-sm flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Genel Araç Kimliği</h3>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Temel Sınıflandırma ve Model Detayları</p>
+                </div>
+                <div class="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl shadow-xl shadow-indigo-200">🆔</div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-6">
-                <div class="rounded-2xl border border-blue-100 bg-blue-50/40 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Plaka</div>
-                    <div class="mt-2 text-base font-bold text-slate-900">{{ $vehicle->plate ?: '-' }}</div>
+            <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6 p-8">
+                <div class="rounded-3xl bg-indigo-600 p-6 text-white shadow-xl shadow-indigo-200 transition-transform group-hover:scale-[1.02]">
+                    <div class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-200">Plaka</div>
+                    <div class="mt-2 text-2xl font-black">{{ $vehicle->plate ?: '-' }}</div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Marka</div>
-                    <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->brand ?: '-' }}</div>
+                <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+                    <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Marka</div>
+                    <div class="mt-2 text-xl font-black text-slate-800">{{ $vehicle->brand ?: '-' }}</div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Model</div>
-                    <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->model ?: '-' }}</div>
+                <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+                    <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Model</div>
+                    <div class="mt-2 text-xl font-black text-slate-800">{{ $vehicle->model ?: '-' }}</div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Araç Tipi</div>
-                    <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->vehicle_type ?: '-' }}</div>
+                <div class="rounded-3xl border border-slate-100 bg-slate-50/50 p-6">
+                    <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Araç Tipi</div>
+                    <div class="mt-2 text-lg font-bold text-slate-700">{{ $vehicle->vehicle_type ?: '-' }}</div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Araç Paketi</div>
-                    <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->vehicle_package ?: '-' }}</div>
+                <div class="rounded-3xl border border-slate-100 bg-slate-50/50 p-6">
+                    <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Model Yılı</div>
+                    <div class="mt-2 text-lg font-bold text-slate-700">{{ $vehicle->model_year ?: '-' }}</div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Model Yılı</div>
-                    <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->model_year ?: '-' }}</div>
-                </div>
-
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Tescil Tarihi</div>
-                    <div class="mt-2 text-base font-semibold text-slate-800">{{ optional($vehicle->registration_date)->format('d.m.Y') ?: '-' }}</div>
-                </div>
-
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Koltuk Sayısı</div>
-                    <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->seat_count ?: '-' }}</div>
-                </div>
-
-                <div class="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Toplam Sefer</div>
-                    <div class="mt-2 text-base font-semibold text-slate-800">{{ $tripCount ?? 0 }}</div>
+                <div class="rounded-3xl bg-blue-50 p-6 border border-blue-100">
+                    <div class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Koltuk Kapasitesi</div>
+                    <div class="mt-2 text-xl font-black text-blue-600">{{ $vehicle->seat_count ?: '-' }} Kişi</div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="rounded-[30px] border border-slate-200/70 bg-white/95 backdrop-blur shadow-[0_18px_45px_rgba(15,23,42,0.07)] overflow-hidden">
-                <div class="border-b border-slate-100 px-6 py-5 bg-gradient-to-r from-violet-50 via-white to-slate-50">
-                    <h3 class="text-lg font-bold text-slate-800">Ruhsat ve Sahip Bilgileri</h3>
-                    <p class="mt-1 text-sm text-slate-500">Ruhsat ve sahiplik alanları</p>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {{-- License Info --}}
+            <div class="group relative overflow-hidden rounded-[40px] bg-white shadow-2xl transition-all duration-500 hover:shadow-purple-500/10">
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-white to-violet-50/50 opacity-100"></div>
+                
+                <div class="relative z-10 border-b border-slate-100/50 px-8 py-6 bg-white/50 backdrop-blur-sm flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 tracking-tight">Ruhsat & Sahiplik</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Yasal Kayıt Detayları</p>
+                    </div>
+                    <div class="h-10 w-10 rounded-xl bg-purple-500 text-white flex items-center justify-center text-xl shadow-lg shadow-purple-100">📄</div>
                 </div>
 
-                <div class="space-y-4 p-6">
-                    <div class="rounded-2xl border border-violet-100 bg-violet-50/40 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Ruhsat Belge Seri No</div>
-                        <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->license_serial_no ?: '-' }}</div>
+                <div class="relative z-10 space-y-4 p-8">
+                    <div class="rounded-2xl bg-purple-50 p-5 border border-purple-100">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">Seri Numarası</div>
+                        <div class="mt-1 text-base font-black text-purple-700">{{ $vehicle->license_serial_no ?: '-' }}</div>
                     </div>
-
-                    <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Ruhsat Sahibi</div>
-                        <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->license_owner ?: '-' }}</div>
+                    <div class="rounded-2xl border border-slate-100 bg-white p-5">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Ruhsat Sahibi</div>
+                        <div class="mt-1 text-base font-bold text-slate-800">{{ $vehicle->license_owner ?: '-' }}</div>
                     </div>
-
-                    <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Ruhsat Sahibi Vergi / T.C. No</div>
-                        <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->owner_tax_or_tc_no ?: '-' }}</div>
+                    <div class="rounded-2xl border border-slate-100 bg-white p-5">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Vergi / T.C. No</div>
+                        <div class="mt-1 text-base font-bold text-slate-800">{{ $vehicle->owner_tax_or_tc_no ?: '-' }}</div>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-[30px] border border-slate-200/70 bg-white/95 backdrop-blur shadow-[0_18px_45px_rgba(15,23,42,0.07)] overflow-hidden">
-                <div class="border-b border-slate-100 px-6 py-5 bg-gradient-to-r from-cyan-50 via-white to-slate-50">
-                    <h3 class="text-lg font-bold text-slate-800">Teknik Bilgiler</h3>
-                    <p class="mt-1 text-sm text-slate-500">Motor, şasi ve donanım bilgileri</p>
+            {{-- Technical Info --}}
+            <div class="group relative overflow-hidden rounded-[40px] bg-white shadow-2xl transition-all duration-500 hover:shadow-cyan-500/10">
+                <div class="absolute inset-0 bg-gradient-to-br from-cyan-50/50 via-white to-sky-50/50 opacity-100"></div>
+                
+                <div class="relative z-10 border-b border-slate-100/50 px-8 py-6 bg-white/50 backdrop-blur-sm flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 tracking-tight">Teknik Donanım</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Motor ve Mekanik Veriler</p>
+                    </div>
+                    <div class="h-10 w-10 rounded-xl bg-cyan-500 text-white flex items-center justify-center text-xl shadow-lg shadow-cyan-100">⚙️</div>
                 </div>
 
-                <div class="space-y-4 p-6">
-                    <div class="rounded-2xl border border-cyan-100 bg-cyan-50/40 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Vites Türü</div>
-                        <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->gear_type ?: '-' }}</div>
+                <div class="relative z-10 space-y-4 p-8">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="rounded-2xl bg-cyan-50 p-5 border border-cyan-100">
+                            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Vites</div>
+                            <div class="mt-1 text-base font-black text-cyan-700">{{ $vehicle->gear_type ?: '-' }}</div>
+                        </div>
+                        <div class="rounded-2xl bg-sky-50 p-5 border border-sky-100">
+                            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-sky-400">Yakıt</div>
+                            <div class="mt-1 text-base font-black text-sky-700">{{ $vehicle->fuel_type ?: '-' }}</div>
+                        </div>
                     </div>
-
-                    <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Yakıt Tipi</div>
-                        <div class="mt-2 text-base font-semibold text-slate-800">{{ $vehicle->fuel_type ?: '-' }}</div>
+                    <div class="rounded-2xl border border-slate-100 bg-white p-5">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Şasi Numarası</div>
+                        <div class="mt-1 text-xs font-bold text-slate-800 break-all">{{ $vehicle->chassis_no ?: '-' }}</div>
                     </div>
-
-                    <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Renk</div>
-                        <div class="mt-2 text-base font-semibold text-slate-800">{{ $displayColor }}</div>
-                    </div>
-
-                    <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Motor No</div>
-                        <div class="mt-2 text-base font-semibold text-slate-800 break-all">{{ $vehicle->engine_no ?: '-' }}</div>
-                    </div>
-
-                    <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Şasi No</div>
-                        <div class="mt-2 text-base font-semibold text-slate-800 break-all">{{ $vehicle->chassis_no ?: '-' }}</div>
+                    <div class="rounded-2xl border border-slate-100 bg-white p-5">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Dış Renk</div>
+                        <div class="mt-1 text-base font-bold text-slate-800">{{ $displayColor }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="rounded-[30px] border border-slate-200/70 bg-white/95 backdrop-blur shadow-[0_18px_45px_rgba(15,23,42,0.07)] overflow-hidden">
-            <div class="border-b border-slate-100 px-6 py-5 bg-gradient-to-r from-slate-100 via-white to-slate-50">
-                <h3 class="text-lg font-bold text-slate-800">Notlar</h3>
-                <p class="mt-1 text-sm text-slate-500">Araçla ilgili ek açıklamalar</p>
+        <div class="rounded-[40px] overflow-hidden bg-white shadow-2xl border border-slate-100 group transition-all duration-500 hover:shadow-slate-200">
+            <div class="border-b border-slate-100 px-8 py-6 bg-slate-50 flex items-center justify-between">
+                <h3 class="text-lg font-black text-slate-800 uppercase tracking-widest">Özel Notlar</h3>
+                <span class="text-xl">📝</span>
             </div>
 
-            <div class="p-6">
+            <div class="p-8">
                 @if($vehicle->notes)
-                    <div class="rounded-[22px] border border-slate-200 bg-slate-50/90 p-5 text-sm leading-7 text-slate-700">
-                        {{ $vehicle->notes }}
+                    <div class="rounded-[30px] bg-slate-50 border border-slate-100 p-6 text-sm font-medium leading-loose text-slate-600 italic">
+                        "{{ $vehicle->notes }}"
                     </div>
                 @else
-                    <div class="rounded-[22px] border border-dashed border-slate-300 bg-slate-50/90 p-6 text-sm text-slate-500">
-                        Bu araç için not girilmemiş.
+                    <div class="rounded-[30px] border-2 border-dashed border-slate-200 p-10 text-center">
+                        <div class="text-4xl mb-4 opacity-30">🏜️</div>
+                        <p class="text-sm font-bold text-slate-400">Bu araç için henüz bir not girilmemiş.</p>
                     </div>
                 @endif
             </div>
         </div>
     </div>
 
-    <div class="xl:col-span-4 space-y-6">
-        <div class="rounded-[30px] border border-slate-200/70 bg-white/95 backdrop-blur shadow-[0_18px_45px_rgba(15,23,42,0.07)] overflow-hidden">
-            <div class="border-b border-slate-100 px-6 py-5 bg-gradient-to-r from-amber-50 via-white to-slate-50">
-                <h3 class="text-lg font-bold text-slate-800">Belge ve Tarih Durumu</h3>
-                <p class="mt-1 text-sm text-slate-500">Takip edilmesi gereken kritik tarihler</p>
+    <div class="xl:col-span-4 space-y-8">
+        {{-- Dates Status Card --}}
+        <div class="rounded-[40px] bg-white shadow-2xl overflow-hidden border border-slate-100">
+            <div class="bg-slate-900 p-8 text-white">
+                <h3 class="text-xl font-black tracking-tight">Kritik Takvim</h3>
+                <p class="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] mt-2">Yasal Geçerlilik Süreleri</p>
             </div>
 
-            <div class="space-y-4 p-6">
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/90 p-4">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-sm font-semibold text-slate-800">Muayene Tarihi</div>
-                            <div class="mt-1 text-xs text-slate-500">{{ $inspectionInfo['text'] }}</div>
-                        </div>
-                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $inspectionInfo['class'] }}">{{ $inspectionInfo['status'] }}</span>
-                    </div>
-                </div>
+            <div class="p-8 space-y-4">
+                @php
+                    $dates = [
+                        ['label' => 'TÜVTÜRK Muayene', 'info' => $inspectionInfo, 'icon' => '🔍'],
+                        ['label' => 'Egzoz Emisyon', 'info' => $exhaustInfo, 'icon' => '💨'],
+                        ['label' => 'Trafik Sigortası', 'info' => $insuranceInfo, 'icon' => '📄'],
+                        ['label' => 'Kasko Poliçesi', 'info' => $kaskoInfo, 'icon' => '🛡️'],
+                    ];
+                @endphp
 
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/90 p-4">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-sm font-semibold text-slate-800">Egzoz Tarihi</div>
-                            <div class="mt-1 text-xs text-slate-500">{{ $exhaustInfo['text'] }}</div>
+                @foreach($dates as $date)
+                    <div class="group flex items-center justify-between p-5 rounded-3xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl transition-all duration-500">
+                        <div class="flex items-center gap-4">
+                            <div class="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-lg group-hover:scale-110 transition-transform">{{ $date['icon'] }}</div>
+                            <div>
+                                <div class="text-sm font-black text-slate-800">{{ $date['label'] }}</div>
+                                <div class="text-[10px] font-bold text-slate-400 mt-0.5">{{ $date['info']['text'] }}</div>
+                            </div>
                         </div>
-                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $exhaustInfo['class'] }}">{{ $exhaustInfo['status'] }}</span>
+                        <span class="rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest {{ $date['info']['class'] }} shadow-sm">
+                            {{ $date['info']['status'] }}
+                        </span>
                     </div>
-                </div>
-
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/90 p-4">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-sm font-semibold text-slate-800">Sigorta Bitiş Tarihi</div>
-                            <div class="mt-1 text-xs text-slate-500">{{ $insuranceInfo['text'] }}</div>
-                        </div>
-                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $insuranceInfo['class'] }}">{{ $insuranceInfo['status'] }}</span>
-                    </div>
-                </div>
-
-                <div class="rounded-2xl border border-slate-100 bg-slate-50/90 p-4">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-sm font-semibold text-slate-800">Kasko Bitiş Tarihi</div>
-                            <div class="mt-1 text-xs text-slate-500">{{ $kaskoInfo['text'] }}</div>
-                        </div>
-                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $kaskoInfo['class'] }}">{{ $kaskoInfo['status'] }}</span>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
 
-        <div class="rounded-[30px] border border-slate-200/70 bg-white/95 backdrop-blur shadow-[0_18px_45px_rgba(15,23,42,0.07)] overflow-hidden">
-            <div class="border-b border-slate-100 px-6 py-5 bg-gradient-to-r from-emerald-50 via-white to-slate-50">
-                <h3 class="text-lg font-bold text-slate-800">Hızlı Özet</h3>
-                <p class="mt-1 text-sm text-slate-500">Önemli araç bilgileri</p>
+        {{-- Maintenance Health --}}
+        <div class="rounded-[40px] bg-white shadow-2xl overflow-hidden border border-slate-100">
+             <div class="bg-indigo-600 p-8 text-white relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-8xl opacity-10 rotate-12">🛠️</div>
+                <h3 class="text-xl font-black tracking-tight relative z-10">Bakım Sağlığı</h3>
+                <p class="text-[10px] font-black text-white/70 uppercase tracking-[0.3em] mt-2 relative z-10">KM Bazlı Tahminleme</p>
             </div>
 
-            <div class="space-y-3 p-6">
-                <div class="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3">
-                    <span class="text-sm text-slate-500">Plaka</span>
-                    <span class="font-semibold text-slate-800">{{ $vehicle->plate ?: '-' }}</span>
-                </div>
+            <div class="p-8 space-y-8">
+                @php $mStatus = $vehicle->maintenance_status; @endphp
 
-                <div class="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3">
-                    <span class="text-sm text-slate-500">Araç Tipi</span>
-                    <span class="font-semibold text-slate-800">{{ $vehicle->vehicle_type ?: '-' }}</span>
-                </div>
+                @if($mStatus['has_setting'])
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Yağ Değişimi</span>
+                            <span class="text-sm font-black text-indigo-600">{{ number_format($mStatus['oil_remaining'], 0, ',', '.') }} KM KALDI</span>
+                        </div>
+                        <div class="h-4 w-full rounded-full bg-slate-100 shadow-inner overflow-hidden p-1">
+                            <div class="h-full rounded-full transition-all duration-1000 {{ $mStatus['oil_remaining'] < 1000 ? 'bg-gradient-to-r from-rose-500 to-pink-500' : 'bg-gradient-to-r from-indigo-500 to-blue-500' }}" 
+                                 style="width: {{ $mStatus['oil_percent'] }}%"></div>
+                        </div>
+                    </div>
 
-                <div class="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3">
-                    <span class="text-sm text-slate-500">Yakıt Tipi</span>
-                    <span class="font-semibold text-slate-800">{{ $vehicle->fuel_type ?: '-' }}</span>
-                </div>
-
-                <div class="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3">
-                    <span class="text-sm text-slate-500">Vites Türü</span>
-                    <span class="font-semibold text-slate-800">{{ $vehicle->gear_type ?: '-' }}</span>
-                </div>
-
-                <div class="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3">
-                    <span class="text-sm text-slate-500">Toplam Sefer</span>
-                    <span class="font-semibold text-slate-800">{{ $tripCount ?? 0 }}</span>
-                </div>
-
-                <div class="flex items-center justify-between rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
-                    <span class="text-sm text-slate-600">Net Karlılık</span>
-                    <span class="font-bold {{ $profitTextClass }}">{{ number_format($profit, 2, ',', '.') }} ₺</span>
-                </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Alt Yağlama</span>
+                            <span class="text-sm font-black text-emerald-600">{{ number_format($mStatus['lube_remaining'], 0, ',', '.') }} KM KALDI</span>
+                        </div>
+                        <div class="h-4 w-full rounded-full bg-slate-100 shadow-inner overflow-hidden p-1">
+                            <div class="h-full rounded-full transition-all duration-1000 {{ $mStatus['lube_remaining'] < 500 ? 'bg-gradient-to-r from-orange-500 to-rose-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500' }}" 
+                                 style="width: {{ $mStatus['lube_percent'] }}%"></div>
+                        </div>
+                    </div>
+                @else
+                    <div class="py-10 text-center">
+                        <div class="text-5xl mb-6">⚙️</div>
+                        <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest">Takip Aktif Değil</h4>
+                        <p class="mt-2 text-xs font-medium text-slate-400">Bu araç için bakım periyotları henüz tanımlanmamış.</p>
+                        <a href="{{ route('vehicles.show', $vehicle) }}?tab=maintenances" class="mt-8 inline-flex rounded-2xl bg-slate-900 px-8 py-4 text-[10px] font-black text-white hover:bg-indigo-600 transition-all uppercase tracking-widest">
+                            YAPILANDIR →
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

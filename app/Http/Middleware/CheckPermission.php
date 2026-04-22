@@ -20,6 +20,11 @@ class CheckPermission
             abort(403, 'Bu sayfayı görüntüleme yetkin bulunmuyor.');
         }
 
+        // Gözlemci (Viewer) kontrolü: Sadece GET (görüntüleme) isteklerine izin ver
+        if ($user->role === 'viewer' && !$request->isMethod('get')) {
+            abort(403, 'Gözlemci yetkisiyle bu işlemi yapamazsınız. Sadece görüntüleme yetkiniz var.');
+        }
+
         return $next($request);
     }
 }

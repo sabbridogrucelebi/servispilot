@@ -24,7 +24,13 @@ class CompanyUserController extends Controller
     {
         abort_unless(auth()->user()->isCompanyAdmin(), 403);
 
-        $permissions = Permission::orderBy('label')->get();
+        // Sidebar'daki öğelerin permission'larını al
+        $navItems = config('navigation.items', []);
+        $activePermissionKeys = collect($navItems)->pluck('permission')->filter()->unique()->toArray();
+
+        $permissions = Permission::whereIn('key', $activePermissionKeys)
+            ->orderBy('label')
+            ->get();
 
         return view('company-users.create', compact('permissions'));
     }
@@ -82,7 +88,14 @@ class CompanyUserController extends Controller
         abort_unless(auth()->user()->isCompanyAdmin(), 403);
         abort_unless($companyUser->company_id === auth()->user()->company_id, 403);
 
-        $permissions = Permission::orderBy('label')->get();
+        // Sidebar'daki öğelerin permission'larını al
+        $navItems = config('navigation.items', []);
+        $activePermissionKeys = collect($navItems)->pluck('permission')->filter()->unique()->toArray();
+
+        $permissions = Permission::whereIn('key', $activePermissionKeys)
+            ->orderBy('label')
+            ->get();
+            
         $selectedPermissions = $companyUser->permissions()->pluck('permissions.id')->toArray();
 
         return view('company-users.edit', compact('companyUser', 'permissions', 'selectedPermissions'));

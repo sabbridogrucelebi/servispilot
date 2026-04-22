@@ -112,18 +112,21 @@
     };
 @endphp
 
-<div class="space-y-6">
-
+<div class="space-y-10 pb-24">
     @if(session('success'))
-        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm">
+        <div class="rounded-[24px] border border-emerald-200 bg-emerald-50/80 backdrop-blur-sm px-6 py-4 text-sm font-bold text-emerald-800 shadow-xl shadow-emerald-500/10 flex items-center gap-3">
+            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white text-[10px]">✓</span>
             {{ session('success') }}
         </div>
     @endif
 
     @if ($errors->any())
-        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
-            <div class="mb-2 font-semibold">Lütfen aşağıdaki hataları düzeltin:</div>
-            <ul class="list-disc space-y-1 pl-5">
+        <div class="rounded-[24px] border border-rose-200 bg-rose-50/80 backdrop-blur-sm px-6 py-4 text-sm font-bold text-rose-800 shadow-xl shadow-rose-500/10">
+            <div class="mb-3 flex items-center gap-2">
+                <span class="text-xl">⚠️</span>
+                <span>Lütfen aşağıdaki hataları düzeltin:</span>
+            </div>
+            <ul class="list-disc space-y-1 pl-10 opacity-80">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -131,11 +134,18 @@
         </div>
     @endif
 
-    @include('vehicles.partials.header')
+    {{-- Colorful Header Section --}}
+    <div class="relative">
+        @include('vehicles.partials.header')
+    </div>
 
-    {{-- Sekmeler + sağda vitrin görseli + aktif tab içeriği artık tabs partial içinde yönetiliyor --}}
-    @include('vehicles.partials.tabs')
+    {{-- Vibrant Tabs Section --}}
+    <div class="relative">
+        @include('vehicles.partials.tabs')
+    </div>
 
+    {{-- AI Assistant Partial --}}
+    @include('vehicles.partials.ai_assistant')
 </div>
 
 @include('vehicles.partials.scripts')

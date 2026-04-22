@@ -138,11 +138,28 @@
                 <div class="stat-card">
                     <div class="stat-label">PERSONEL KAYITLARI</div>
                     <div class="stat-value">{{ $driver->full_name }}</div>
-                    <div style="font-size: 10px; color: #64748b; font-weight: 700; margin-top: 4px;">TC: {{ $driver->tc_no ?? '-----------' }}</div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700; margin-top: 4px; display: flex; gap: 10px;">
+                        <span>TC: {{ $driver->tc_no ?? '-----------' }}</span>
+                        @php
+                            $start = $driver->start_date ? \Carbon\Carbon::parse($driver->start_date) : null;
+                            $leave = $driver->leave_date ? \Carbon\Carbon::parse($driver->leave_date) : null;
+                        @endphp
+                        @if($start && $start->format('Y-m') === $period)
+                            <span style="color: #059669;">• GİRİŞ: {{ $start->format('d.m.Y') }} ({{ $driver->start_shift === 'morning' ? 'SABAH' : 'AKŞAM' }})</span>
+                        @endif
+                        @if($leave && $leave->format('Y-m') === $period)
+                            <span style="color: #dc2626;">• AYRILIŞ: {{ $leave->format('d.m.Y') }} ({{ $driver->leave_shift === 'morning' ? 'SABAH' : 'AKŞAM' }})</span>
+                        @endif
+                    </div>
                 </div>
                 <div class="stat-card" style="text-align: right;">
                     <div class="stat-label">AYLIK BAZ MAAŞ</div>
                     <div class="stat-value" style="font-size: 26px;">{{ number_format($report['base_salary'], 2, ',', '.') }} ₺</div>
+                    @if($report['work_days'] < \Carbon\Carbon::parse($period)->daysInMonth)
+                        <div style="font-size: 9px; font-weight: 800; color: #ea580c; margin-top: 4px; text-transform: uppercase;">
+                            {{ $report['work_days'] }} GÜNLÜK ÇALIŞMA KARŞILIĞI
+                        </div>
+                    @endif
                 </div>
             </div>
 

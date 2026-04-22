@@ -219,26 +219,22 @@
                             </td>
 
                             <td class="px-6 py-5">
-                                <div class="flex flex-wrap gap-2">
+                                <div class="flex items-center gap-2">
                                     <a href="{{ route('drivers.show', $driver) }}"
-                                       class="rounded-xl bg-sky-100 px-3 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-200">
+                                       class="inline-flex items-center justify-center rounded-xl bg-sky-50 px-3 py-2 text-xs font-bold text-sky-600 hover:bg-sky-100 transition-colors">
                                         Detay
                                     </a>
 
                                     <a href="{{ route('drivers.edit', $driver) }}"
-                                       class="rounded-xl bg-indigo-100 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-200">
+                                       class="inline-flex items-center justify-center rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors">
                                         Düzenle
                                     </a>
 
-                                    <form method="POST"
-                                          action="{{ route('drivers.destroy', $driver) }}"
-                                          onsubmit="return confirm('Bu personeli silmek istediğinize emin misiniz?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="rounded-xl bg-red-100 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-200">
-                                            Sil
-                                        </button>
-                                    </form>
+                                    <button type="button" 
+                                            onclick="confirmDeleteDriver('{{ route('drivers.destroy', $driver) }}')"
+                                            class="inline-flex items-center justify-center rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 transition-colors">
+                                        Sil
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -257,5 +253,20 @@
     </div>
 
 </div>
+
+<form id="global-delete-form" method="POST" style="display:none">
+    @csrf
+    @method('DELETE')
+</form>
+
+<script>
+    function confirmDeleteDriver(url) {
+        if (confirm('Bu personeli silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
+            const form = document.getElementById('global-delete-form');
+            form.action = url;
+            form.submit();
+        }
+    }
+</script>
 
 @endsection

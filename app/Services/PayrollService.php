@@ -9,71 +9,147 @@ use Carbon\Carbon;
 class PayrollService
 {
     /**
-     * Belirli bir ay ve personel için hakediş hesaplar.
      */
     public function calculateMonthlyPayroll(Driver $driver, $month, $year)
     {
         $startDate = Carbon::create($year, $month, 1)->startOfMonth();
         $endDate = Carbon::create($year, $month, 1)->endOfMonth();
 
+        $driverStart = $driver->start_date ? Carbon::parse($driver->start_date)->startOfDay() : null;
+        $driverLeave = $driver->leave_date ? Carbon::parse($driver->leave_date)->endOfDay() : null;
+
+        // Araç ID'si yoksa ama eski bir şoförse, son çalıştığı aracı bulmaya çalışalım
+        $effectiveVehicleId = $driver->vehicle_id;
+        if (!$effectiveVehicleId) {
+            $lastTripWithVehicle = Trip::where('driver_id', $driver->id)
+                ->whereNotNull('vehicle_id')
+                ->orderBy('trip_date', 'desc')
+                ->first();
+            if ($lastTripWithVehicle) {
+                $effectiveVehicleId = $lastTripWithVehicle->vehicle_id;
+            }
+        }
+
         $trips = Trip::with(['serviceRoute'])
-            ->where(function ($q) use ($driver) {
+            ->where(function ($q) use ($driver, $effectiveVehicleId) {
+                // 1. Şoför ID'si doğrudan eşleşenler
                 $q->where('driver_id', $driver->id);
                 
-                // Şoför ID'si boşsa ama araç şoförün aracıysa yine ona yaz
-                if ($driver->vehicle_id) {
-                    $q->orWhere(function ($sq) use ($driver) {
-                        $sq->whereNull('driver_id')
-                           ->where('vehicle_id', $driver->vehicle_id);
+                // 2. Şoför ID'si eşleşmese bile araç şoförün aracıysa (Tenure filtresi aşağıda hakedişi netleştirecek)
+                if ($effectiveVehicleId) {
+                    $q->orWhere(function ($sq) use ($effectiveVehicleId) {
+                        $sq->where('vehicle_id', $effectiveVehicleId);
                     });
                 }
+            })
+            // GÜVENLİK FİLTRESİ: Sadece şoförün çalıştığı tarih aralığındaki seferleri getir
+            ->when($driverStart, function($q) use ($driverStart) {
+                return $q->where('trip_date', '>=', $driverStart->toDateString());
+            })
+            ->when($driverLeave, function($q) use ($driverLeave) {
+                return $q->where('trip_date', '<=', $driverLeave->toDateString());
             })
             ->whereBetween('trip_date', [$startDate, $endDate])
             ->get();
 
+        // --- 1. ANA MAAŞ HESAPLAMA (TARİH BAZLI) ---
+        // Kullanıcı isteği: Ana maaş puantaja göre değil, işe giriş/çıkış tarihlerine göre hesaplanır.
+        
+        $monthStart = $startDate->copy()->startOfDay();
+        $monthEnd = $endDate->copy()->endOfDay();
+
+        // Ay içindeki fiili çalışma başlangıç ve bitişini belirle
+        $periodStart = $driverStart ? ($driverStart->gt($monthStart) ? $driverStart->copy() : $monthStart->copy()) : $monthStart->copy();
+        $periodEnd = $driverLeave ? ($driverLeave->lt($monthEnd) ? $driverLeave->copy() : $monthEnd->copy()) : $monthEnd->copy();
+
+        $workDays = 0;
+        
+        if ($periodStart->lte($periodEnd)) {
+            // Takvim günü farkı (+1 ekleyerek kapsayıcı yapıyoruz)
+            $workDays = (float) $periodStart->diffInDays($periodEnd->startOfDay()) + 1;
+
+            // Vardiya düzeltmeleri (Yarım gün hakedişler)
+            
+            // Eğer bu ay işe başladıysa ve "Akşam" başladıysa sabahı düş
+            if ($driverStart && $periodStart->equalTo($driverStart) && $driver->start_shift === 'evening') {
+                $workDays -= 0.5;
+            }
+
+            // Eğer bu ay işten ayrıldıysa ve sadece "Sabah" veya "Akşam" yapıp bıraktıysa düzelt
+            if ($driverLeave && $periodEnd->equalTo($driverLeave->startOfDay())) {
+                if ($driver->leave_shift === 'morning') {
+                    // Sadece sabah çalıştı, akşamı düş
+                    $workDays -= 0.5;
+                }
+                // Not: 'evening' veya 'full_day' ise tam gün sayılır (düşüş yapılmaz)
+            }
+            
+            // Ayın tamamını çalıştıysa (Ay başından ay sonuna kadar aktifse) 30 güne sabitle
+            $isFullMonth = true;
+            if ($driverStart && $driverStart->gt($monthStart)) $isFullMonth = false;
+            if ($driverLeave && $driverLeave->lt($monthEnd)) $isFullMonth = false;
+            
+            if ($isFullMonth) {
+                $workDays = 30.0;
+            }
+            
+            // Hiçbir durumda 30 günü aşamaz (Kullanıcı 30 gün üzerinden baz alınacak dedi)
+            if ($workDays > 30) {
+                $workDays = 30.0;
+            }
+        }
+
+        // --- 2. EKSTRA HAKEDİŞ HESAPLAMA (PUANTAJ BAZLI) ---
         $groupedDetails = [];
         $totalExtraEarnings = 0;
-
+        
         foreach ($trips as $trip) {
             $route = $trip->serviceRoute;
             if (!$route) continue;
 
-            // ... (İşten Ayrılma Kontrolü kısmı aynı kalıyor)
-            $isMorningOnly = false;
-            if ($driver->leave_date) {
-                $leaveDate = \Carbon\Carbon::parse($driver->leave_date);
-                if ($trip->trip_date->gt($leaveDate)) continue;
-                if ($trip->trip_date->equalTo($leaveDate) && $driver->leave_shift === 'morning') {
-                    $isMorningOnly = true;
+            // --- VARDİYA BAZLI HAKEDİŞ FİLTRESİ ---
+            $tripDate = $trip->trip_date->startOfDay();
+            $canDoMorning = true;
+            $canDoEvening = true;
+
+            // İşe giriş günü kontrolü
+            if ($driverStart && $tripDate->equalTo($driverStart)) {
+                if ($driver->start_shift === 'evening') {
+                    $canDoMorning = false;
+                }
+            }
+
+            // İşten ayrılma günü kontrolü
+            if ($driverLeave && $tripDate->equalTo($driverLeave->startOfDay())) {
+                if ($driver->leave_shift === 'morning') {
+                    $canDoEvening = false;
                 }
             }
 
             $morningEarning = 0;
             $eveningEarning = 0;
 
-            // Ücret Hesaplama Mantığı
+            // Ücret Hesaplama Mantığı (Ek Hakedişler)
             if ($route->fee_type === 'paid') {
-                $morningEarning = $route->morning_fee ?? 0;
-                $eveningEarning = $route->evening_fee ?? 0;
+                $morningEarning = $canDoMorning ? ($route->morning_fee ?? 0) : 0;
+                $eveningEarning = $canDoEvening ? ($route->evening_fee ?? 0) : 0;
             } else {
-                if ($trip->morning_vehicle_id && (string)$trip->morning_vehicle_id !== (string)$route->morning_vehicle_id) {
+                if ($canDoMorning && $trip->morning_vehicle_id && (string)$trip->morning_vehicle_id !== (string)$route->morning_vehicle_id) {
                     $morningEarning = $route->fallback_morning_fee ?? 0;
                 }
-                if ($trip->evening_vehicle_id && (string)$trip->evening_vehicle_id !== (string)$route->evening_vehicle_id) {
+                if ($canDoEvening && $trip->evening_vehicle_id && (string)$trip->evening_vehicle_id !== (string)$route->evening_vehicle_id) {
                     $eveningEarning = $route->fallback_evening_fee ?? 0;
                 }
             }
 
-            if ($isMorningOnly) $eveningEarning = 0;
-
             // Hafta sonu kontrolleri...
             if ($trip->trip_date->isSaturday() && $route->saturday_pricing) {
-                if ($morningEarning == 0) $morningEarning = $route->fallback_morning_fee ?? 0;
-                if ($eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
+                if ($canDoMorning && $morningEarning == 0) $morningEarning = $route->fallback_morning_fee ?? 0;
+                if ($canDoEvening && $eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
             }
             if ($trip->trip_date->isSunday() && $route->sunday_pricing) {
-                if ($morningEarning == 0) $morningEarning = $route->fallback_morning_fee ?? 0;
-                if ($eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
+                if ($canDoMorning && $morningEarning == 0) $morningEarning = $route->fallback_morning_fee ?? 0;
+                if ($canDoEvening && $eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
             }
 
             $tripTotal = round($morningEarning + $eveningEarning, 2);
@@ -106,10 +182,15 @@ class PayrollService
             }
         }
 
+        $baseSalary = (float)($driver->base_salary ?? 0);
+        $actualBaseSalary = round(($baseSalary / 30) * $workDays, 2);
+
         return [
-            'base_salary' => $driver->base_salary ?? 0,
+            'base_salary' => $actualBaseSalary,
+            'original_base_salary' => $baseSalary,
+            'work_days' => $workDays,
             'extra_earnings' => $totalExtraEarnings,
-            'net_salary' => round(($driver->base_salary ?? 0) + $totalExtraEarnings, 2),
+            'net_salary' => round($actualBaseSalary + $totalExtraEarnings, 2),
             'details' => array_values($groupedDetails)
         ];
     }

@@ -447,7 +447,20 @@
             },
             
             startPriceEntry(cellData, priceValue) {
-                if(!priceValue) return; // If enter is pressed without a value
+                // Fiyat boş veya 0 ise direkt silme işlemini yap (modal açma)
+                if (priceValue === '' || priceValue === null || priceValue === '0' || parseFloat(priceValue) === 0) {
+                    this.activeCell = cellData;
+                    this.enteredPrice = ''; // Backend'e boş gönderince silecek
+                    this.formData = {
+                        route_id: cellData.route_id,
+                        date: cellData.date,
+                        morning_id: '',
+                        evening_id: '',
+                        status: 'İptal'
+                    };
+                    this.executeSave();
+                    return;
+                }
                 
                 this.activeCell = cellData;
                 this.enteredPrice = priceValue;

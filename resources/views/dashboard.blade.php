@@ -1,290 +1,342 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
-@section('subtitle', 'Genel operasyon ve finans görünümü')
+@section('title', 'Yönetim Paneli')
+@section('subtitle', 'Operasyonel ve Finansal Genel Bakış')
 
 @section('content')
 
 @php
+    $hour = now()->hour;
+    $greeting = 'İyi Günler';
+    if ($hour < 12) $greeting = 'Günaydın';
+    elseif ($hour < 18) $greeting = 'Tünaydın';
+    else $greeting = 'İyi Akşamlar';
+
     $chartLabels = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu'];
-
-    $incomeSeries = [
-        12000,
-        18000,
-        22000,
-        26000,
-        31000,
-        37000,
-        43000,
-        (float) $monthlyIncome,
-    ];
-
-    $operationSeries = [
-        8,
-        11,
-        13,
-        16,
-        18,
-        21,
-        24,
-        max((int) $todayTrips, 12),
-    ];
+    $incomeSeries = [12000, 18000, 22000, 26000, 31000, 37000, 43000, (float) $monthlyIncome];
+    $operationSeries = [8, 11, 13, 16, 18, 21, 24, max((int) $todayTrips, 12)];
 @endphp
 
-<div class="space-y-8">
+<div class="space-y-8 animate-in fade-in duration-700">
+    
+    <!-- Üst Hoş Geldiniz ve Hızlı Aksiyonlar -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+            <h2 class="text-3xl font-black text-slate-800 tracking-tight">{{ $greeting }}, {{ explode(' ', auth()->user()->name)[0] }}! 👋</h2>
+            <p class="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">Sistem durumu şu an stabil. İşte bugünün özeti.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-slate-100 shadow-sm">
+                <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sistem Aktif</span>
+            </div>
+            <a href="{{ route('trips.create') }}" class="group relative flex items-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
+                <svg class="relative w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                <span class="relative">YENİ SEFER EKLE</span>
+            </a>
+        </div>
+    </div>
 
-    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-
-        <div class="relative overflow-hidden rounded-[28px] p-6 text-white shadow-lg bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500">
-            <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full"></div>
-            <div class="absolute right-10 bottom-0 w-20 h-20 bg-white/10 rounded-full"></div>
-            <div class="relative flex items-start justify-between">
+    <!-- Ana İstatistik Kartları -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Kart 1: Araçlar -->
+        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-blue-500/5 transition-transform group-hover:scale-150 duration-700"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <div class="text-sm text-white/80">Toplam Araç</div>
-                    <div class="text-3xl font-bold mt-3">{{ $vehicleCount }}</div>
-                    <div class="text-xs text-white/70 mt-2">Aktif araç durumu</div>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Toplam Araç</p>
+                    <h3 class="text-4xl font-black text-slate-900 leading-none">{{ $vehicleCount }}</h3>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-xl">
-                    🚗
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                 </div>
+            </div>
+            <div class="mt-6 flex items-center gap-2">
+                <span class="flex items-center gap-1 text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    FİLO AKTİF
+                </span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sistemde Kayıtlı</span>
             </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-[28px] p-6 text-white shadow-lg bg-gradient-to-br from-cyan-400 via-teal-400 to-emerald-500">
-            <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full"></div>
-            <div class="absolute right-10 bottom-0 w-20 h-20 bg-white/10 rounded-full"></div>
-            <div class="relative flex items-start justify-between">
+        <!-- Kart 2: Gelir -->
+        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-500/5 transition-transform group-hover:scale-150 duration-700"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <div class="text-sm text-white/80">Aylık Gelir</div>
-                    <div class="text-3xl font-bold mt-3">{{ number_format($monthlyIncome, 0, ',', '.') }} ₺</div>
-                    <div class="text-xs text-white/70 mt-2">Bu ay toplam tahsilat</div>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Aylık Gelir</p>
+                    <h3 class="text-3xl font-black text-slate-900 leading-none">{{ number_format($monthlyIncome, 0, ',', '.') }} ₺</h3>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-xl">
-                    💰
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
+            </div>
+            <div class="mt-6 flex items-center gap-2">
+                <span class="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">OPERASYONEL</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bu Ayın Toplamı</span>
             </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-[28px] p-6 text-white shadow-lg bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500">
-            <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full"></div>
-            <div class="absolute right-10 bottom-0 w-20 h-20 bg-white/10 rounded-full"></div>
-            <div class="relative flex items-start justify-between">
+        <!-- Kart 3: Şoförler -->
+        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-violet-500/5 transition-transform group-hover:scale-150 duration-700"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <div class="text-sm text-white/80">Toplam Şoför</div>
-                    <div class="text-3xl font-bold mt-3">{{ $driverCount }}</div>
-                    <div class="text-xs text-white/70 mt-2">Sistem kullanıcı havuzu</div>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Toplam Şoför</p>
+                    <h3 class="text-4xl font-black text-slate-900 leading-none">{{ $driverCount }}</h3>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-xl">
-                    👨‍✈️
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-all shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
+            </div>
+            <div class="mt-6 flex items-center gap-2">
+                <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">KADRO</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ekipler Hazır</span>
             </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-[28px] p-6 text-white shadow-lg bg-gradient-to-br from-amber-400 via-orange-400 to-rose-400">
-            <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full"></div>
-            <div class="absolute right-10 bottom-0 w-20 h-20 bg-white/10 rounded-full"></div>
-            <div class="relative flex items-start justify-between">
+        <!-- Kart 4: Müşteriler -->
+        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-500/5 transition-transform group-hover:scale-150 duration-700"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <div class="text-sm text-white/80">Bugünkü Sefer</div>
-                    <div class="text-3xl font-bold mt-3">{{ $todayTrips }}</div>
-                    <div class="text-xs text-white/70 mt-2">Bugün planlanan hareket</div>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Müşteriler</p>
+                    <h3 class="text-4xl font-black text-slate-900 leading-none">{{ $customerCount }}</h3>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-xl">
-                    📍
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                 </div>
             </div>
+            <div class="mt-6 flex items-center gap-2">
+                <span class="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">KURUMSAL</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Partner Sayısı</span>
+            </div>
         </div>
+    </div>
 
-    </section>
-
-    <section class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-
-        <div class="xl:col-span-8 space-y-6">
-
-            <div class="bg-white rounded-[30px] border border-slate-200 shadow-sm p-6">
-                <div class="flex items-center justify-between mb-6">
+    <!-- Grafik ve Operasyon Bölümü -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        
+        <!-- Sol Kolon: Grafik ve Önemli Tablolar -->
+        <div class="xl:col-span-8 space-y-8">
+            
+            <!-- Gelir ve Operasyon Grafiği -->
+            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
+                <div class="p-8 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-800">Gelir Varlığı</h3>
-                        <p class="text-sm text-slate-500">Operasyon ve tahsilat eğilimi</p>
+                        <h3 class="text-xl font-black text-slate-800">Performans Analitiği</h3>
+                        <p class="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Gelir ve Sefer Verimliliği</p>
                     </div>
-                    <div class="rounded-2xl bg-slate-100 px-4 py-2 text-xs text-slate-600">
-                        Son 8 Ay
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 text-[10px] font-black text-indigo-600">
+                            <span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span> GELİR
+                        </div>
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-[10px] font-black text-emerald-600">
+                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> SEFER
+                        </div>
                     </div>
                 </div>
-
-                <div class="rounded-[24px] bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-5 h-[360px] relative overflow-hidden">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.10),transparent_30%)]"></div>
-                    <div class="relative h-full">
-                        <canvas id="dashboardRevenueChart" class="w-full h-full"></canvas>
-                    </div>
+                <div class="p-8 h-[400px]">
+                    <canvas id="dashboardRevenueChart"></canvas>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                <div class="bg-white rounded-[30px] border border-slate-200 shadow-sm p-6">
-                    <div class="flex items-center justify-between mb-5">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Son Seferler -->
+                <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 flex flex-col">
+                    <div class="flex items-center justify-between mb-8">
                         <div>
-                            <h3 class="text-lg font-bold text-slate-800">Yaklaşan Belgeler</h3>
-                            <p class="text-sm text-slate-500">Takip edilmesi gereken evrak listesi</p>
+                            <h3 class="text-lg font-black text-slate-800">Son Seferler</h3>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filo Hareketliliği</p>
                         </div>
-                        <a href="{{ route('documents.index') }}" class="text-sm font-medium text-indigo-600">Tümünü Gör</a>
+                        <a href="{{ route('trips.index') }}" class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition-all">TÜMÜ</a>
                     </div>
 
-                    <div class="space-y-4 min-h-[260px]">
-                        @forelse($upcomingDocuments->take(4) as $document)
-                            @php
-                                $ownerText = '-';
-
-                                if ($document->documentable_type === 'App\Models\Fleet\Vehicle') {
-                                    $ownerText = 'Araç - ' . ($document->documentable?->plate ?? '-');
-                                } elseif ($document->documentable_type === 'App\Models\Fleet\Driver') {
-                                    $ownerText = 'Şoför - ' . ($document->documentable?->full_name ?? '-');
-                                }
-
-                                $daysLeft = now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($document->end_date)->startOfDay(), false);
-                            @endphp
-
-                            <div class="flex items-center justify-between rounded-[22px] border border-slate-100 bg-slate-50 px-4 py-4">
-                                <div class="min-w-0">
-                                    <div class="font-semibold text-slate-800 text-sm truncate">{{ $document->document_name }}</div>
-                                    <div class="text-xs text-slate-500 mt-1 truncate">{{ $ownerText }}</div>
+                    <div class="space-y-4 flex-1">
+                        @forelse($recentTrips as $trip)
+                            <div class="flex items-center gap-4 p-3 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-slate-50 transition-all group">
+                                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white font-black text-[10px] shadow-lg group-hover:scale-110 transition-transform">
+                                    {{ substr($trip->vehicle?->plate ?? 'TR', 0, 2) }}
                                 </div>
-                                <div class="text-right ml-4">
-                                    <div class="text-xs text-slate-500">{{ $document->end_date?->format('d.m.Y') }}</div>
-                                    <div class="mt-1 inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $daysLeft <= 7 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600' }}">
-                                        {{ $daysLeft }} gün
-                                    </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-sm font-black text-slate-800 truncate">{{ $trip->vehicle?->plate ?? '-' }}</div>
+                                    <div class="text-[11px] font-bold text-slate-400 truncate">{{ $trip->driver?->full_name ?? '-' }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[12px] font-black text-slate-900">{{ number_format($trip->trip_price ?? 0, 0, ',', '.') }} ₺</div>
+                                    <div class="text-[9px] font-bold text-slate-400">{{ $trip->trip_date?->format('H:i') }}</div>
                                 </div>
                             </div>
                         @empty
-                            <div class="h-[260px] rounded-[22px] border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-center text-slate-500 px-6">
-                                Yaklaşan belge kaydı yok.
-                            </div>
+                            <p class="text-sm font-bold text-slate-400 text-center py-8">Kayıt yok.</p>
                         @endforelse
                     </div>
                 </div>
 
-                <div class="bg-white rounded-[30px] border border-slate-200 shadow-sm p-6">
-                    <div class="mb-5">
-                        <h3 class="text-lg font-bold text-slate-800">Durum Özeti</h3>
-                        <p class="text-sm text-slate-500">Anlık sistem uyarıları</p>
+                <!-- Yaklaşan Belgeler -->
+                <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 flex flex-col">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800">Kritik Belgeler</h3>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Yasal Hatırlatmalar</p>
+                        </div>
+                        <a href="{{ route('documents.index') }}" class="text-[10px] font-black text-rose-600 bg-rose-50 px-3 py-1.5 rounded-xl hover:bg-rose-100 transition-all">YÖNET</a>
                     </div>
 
-                    <div class="space-y-4 min-h-[260px]">
-                        <div class="rounded-[22px] bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 p-4 flex items-center justify-between">
-                            <span class="text-sm text-slate-600">Süresi Geçmiş Belgeler</span>
-                            <span class="text-lg font-bold text-red-600">{{ $expiredDocumentsCount }}</span>
-                        </div>
-
-                        <div class="rounded-[22px] bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-100 p-4 flex items-center justify-between">
-                            <span class="text-sm text-slate-600">7 Gün İçinde Bitecek</span>
-                            <span class="text-lg font-bold text-amber-600">{{ $documentsExpiringIn7DaysCount }}</span>
-                        </div>
-
-                        <div class="rounded-[22px] bg-gradient-to-r from-sky-50 to-cyan-50 border border-sky-100 p-4 flex items-center justify-between">
-                            <span class="text-sm text-slate-600">30 Gün İçinde Bitecek</span>
-                            <span class="text-lg font-bold text-sky-600">{{ $documentsExpiringIn30DaysCount }}</span>
-                        </div>
-
-                        <div class="rounded-[22px] bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 p-4 flex items-center justify-between">
-                            <span class="text-sm text-slate-600">Toplam Şoför</span>
-                            <span class="text-lg font-bold text-violet-600">{{ $driverCount }}</span>
-                        </div>
+                    <div class="space-y-4 flex-1">
+                        @forelse($upcomingDocuments->take(5) as $document)
+                            @php
+                                $daysLeft = now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($document->end_date)->startOfDay(), false);
+                                $color = $daysLeft <= 7 ? 'rose' : 'amber';
+                            @endphp
+                            <div class="flex items-center gap-4 p-3 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-slate-50 transition-all">
+                                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-{{ $color }}-50 text-{{ $color }}-600 font-black text-[11px] border border-{{ $color }}-100 shadow-sm">
+                                    {{ $daysLeft }}g
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-sm font-black text-slate-800 truncate">{{ $document->document_name }}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 truncate">{{ $document->documentable?->plate ?? $document->documentable?->full_name ?? 'Genel' }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[10px] font-black text-slate-500">{{ $document->end_date?->format('d/m/Y') }}</div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm font-bold text-slate-400 text-center py-8">Kayıt yok.</p>
+                        @endforelse
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <div class="xl:col-span-4 space-y-6">
-
-            <div class="bg-white rounded-[30px] border border-slate-200 shadow-sm p-6">
-                <div class="mb-5">
-                    <h3 class="text-lg font-bold text-slate-800">Finans Özeti</h3>
-                    <p class="text-sm text-slate-500">Gelir ve gider blokları</p>
+        <!-- Sağ Kolon: Durum ve Finans -->
+        <div class="xl:col-span-4 space-y-8">
+            
+            <!-- Operasyonel Sağlık (Mini Kartlar) -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-indigo-600 rounded-[35px] p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/10 rounded-full"></div>
+                    <p class="text-[9px] font-black uppercase tracking-widest text-indigo-200">Bugünkü Sefer</p>
+                    <h4 class="text-3xl font-black mt-2">{{ $todayTrips }}</h4>
+                    <p class="text-[10px] font-bold text-indigo-300 mt-2">Aktif Planlanan</p>
                 </div>
+                <div class="bg-slate-900 rounded-[35px] p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/10 rounded-full"></div>
+                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Bakımda Olan</p>
+                    <h4 class="text-3xl font-black mt-2 text-amber-400">{{ $activeMaintenances }}</h4>
+                    <p class="text-[10px] font-bold text-slate-500 mt-2">Servis Bekleyen: {{ $waitingMaintenances }}</p>
+                </div>
+            </div>
 
-                <div class="space-y-4">
-                    <div class="rounded-[24px] p-5 text-white shadow bg-gradient-to-r from-sky-500 to-blue-500">
-                        <div class="text-sm text-white/80">Toplam Gelir</div>
-                        <div class="text-2xl font-bold mt-2">{{ number_format($monthlyIncome, 2, ',', '.') }} ₺</div>
+            <!-- Finansal Özet -->
+            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-32 h-32 bg-indigo-50/50 rounded-full blur-3xl"></div>
+                <h3 class="text-xl font-black text-slate-800 mb-8 tracking-tight">Finansal Akış</h3>
+                
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-100/50">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aylık Gelir</p>
+                                <p class="text-sm font-black text-slate-800">{{ number_format($monthlyIncome, 0, ',', '.') }} ₺</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="rounded-[24px] p-5 text-white shadow bg-gradient-to-r from-rose-500 to-orange-400">
-                        <div class="text-sm text-white/80">Yakıt Gideri</div>
-                        <div class="text-2xl font-bold mt-2">{{ number_format($totalFuel, 2, ',', '.') }} ₺</div>
+                    <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-100/50">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Yakıt Gideri</p>
+                                <p class="text-sm font-black text-slate-800">{{ number_format($monthlyFuel, 0, ',', '.') }} ₺</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="rounded-[24px] p-5 text-white shadow bg-gradient-to-r from-amber-400 to-yellow-500">
-                        <div class="text-sm text-white/80">Maaş Gideri</div>
-                        <div class="text-2xl font-bold mt-2">{{ number_format($totalSalary, 2, ',', '.') }} ₺</div>
+                    <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-100/50">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trafik Cezası</p>
+                                <p class="text-sm font-black text-slate-800">{{ number_format($monthlyPenalty, 0, ',', '.') }} ₺</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="rounded-[24px] p-5 text-white shadow bg-gradient-to-r from-emerald-500 to-teal-400">
-                        <div class="text-sm text-white/80">Net Kar</div>
-                        <div class="text-2xl font-bold mt-2">{{ number_format($netProfit, 2, ',', '.') }} ₺</div>
+                    <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Net Karlılık</p>
+                            <p class="text-3xl font-black mt-1 {{ $netProfit >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                                {{ number_format($netProfit, 0, ',', '.') }} <span class="text-lg font-medium">₺</span>
+                            </p>
+                        </div>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-2xl">
+                            💰
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-[30px] border border-slate-200 shadow-sm p-6">
-                <div class="mb-5">
-                    <h3 class="text-lg font-bold text-slate-800">Genel Özet</h3>
-                    <p class="text-sm text-slate-500">Hızlı performans görünümü</p>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <span class="text-sm text-slate-500">Araç Sayısı</span>
-                        <span class="font-semibold text-slate-800">{{ $vehicleCount }}</span>
-                    </div>
-
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <span class="text-sm text-slate-500">Şoför Sayısı</span>
-                        <span class="font-semibold text-slate-800">{{ $driverCount }}</span>
-                    </div>
-
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <span class="text-sm text-slate-500">Bugünkü Sefer</span>
-                        <span class="font-semibold text-slate-800">{{ $todayTrips }}</span>
-                    </div>
-
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <span class="text-sm text-slate-500">Aylık Gelir</span>
-                        <span class="font-semibold text-emerald-600">{{ number_format($monthlyIncome, 0, ',', '.') }} ₺</span>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-slate-500">Net Karlılık</span>
-                        <span class="font-semibold {{ $netProfit >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
-                            {{ number_format($netProfit, 0, ',', '.') }} ₺
-                        </span>
+            <!-- Sistem Günlüğü -->
+            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 flex flex-col">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800">Sistem Günlüğü</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Son Aktiviteler</p>
                     </div>
                 </div>
+
+                <div class="space-y-6 flex-1">
+                    @forelse($recentActivity as $activity)
+                        <div class="flex gap-4 group">
+                            <div class="relative">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all border border-slate-100">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                @if(!$loop->last)
+                                    <div class="absolute top-10 left-1/2 -translate-x-1/2 w-px h-6 bg-slate-100"></div>
+                                @endif
+                            </div>
+                            <div>
+                                <div class="text-[13px] font-black text-slate-800 leading-tight">{{ $activity->title }}</div>
+                                <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tight">{{ $activity->user->name ?? 'Sistem' }} • {{ $activity->created_at->diffForHumans() }}</div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-xs font-bold text-slate-400 text-center py-4 uppercase">Kayıt yok.</p>
+                    @endforelse
+                </div>
+                <a href="{{ route('activity-logs.index') }}" class="block w-full text-center mt-8 py-3 rounded-2xl bg-slate-50 text-[10px] font-black text-slate-500 hover:bg-slate-900 hover:text-white transition-all uppercase tracking-widest">TÜM KAYITLAR</a>
             </div>
 
         </div>
-
-    </section>
+    </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const canvas = document.getElementById('dashboardRevenueChart');
-        if (!canvas) return;
+        const ctx = document.getElementById('dashboardRevenueChart').getContext('2d');
+        
+        const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientBlue.addColorStop(0, 'rgba(99, 102, 241, 0.3)');
+        gradientBlue.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
 
-        const ctx = canvas.getContext('2d');
-
-        const gradientIncome = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientIncome.addColorStop(0, 'rgba(34, 211, 238, 0.45)');
-        gradientIncome.addColorStop(1, 'rgba(34, 211, 238, 0.02)');
-
-        const gradientOperation = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientOperation.addColorStop(0, 'rgba(52, 211, 153, 0.35)');
-        gradientOperation.addColorStop(1, 'rgba(52, 211, 153, 0.02)');
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
         new Chart(ctx, {
             type: 'line',
@@ -294,28 +346,30 @@
                     {
                         label: 'Gelir',
                         data: @json($incomeSeries),
-                        borderColor: '#22d3ee',
-                        backgroundColor: gradientIncome,
+                        borderColor: '#6366f1',
+                        backgroundColor: gradientBlue,
                         fill: true,
-                        borderWidth: 3,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: '#22d3ee',
-                        pointBorderWidth: 0
+                        tension: 0.45,
+                        borderWidth: 4,
+                        pointRadius: 0,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: '#6366f1',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 4
                     },
                     {
-                        label: 'Operasyon',
+                        label: 'Sefer',
                         data: @json($operationSeries),
-                        borderColor: '#34d399',
-                        backgroundColor: gradientOperation,
+                        borderColor: '#10b981',
+                        backgroundColor: gradientGreen,
                         fill: true,
+                        tension: 0.45,
                         borderWidth: 3,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: '#34d399',
-                        pointBorderWidth: 0,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#10b981',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 3,
                         yAxisID: 'y1'
                     }
                 ]
@@ -329,52 +383,38 @@
                 },
                 plugins: {
                     legend: {
-                        labels: {
-                            color: '#cbd5e1',
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            padding: 20
-                        }
+                        display: false
                     },
                     tooltip: {
                         backgroundColor: 'rgba(15, 23, 42, 0.95)',
                         titleColor: '#fff',
-                        bodyColor: '#e2e8f0',
-                        borderColor: 'rgba(148, 163, 184, 0.2)',
-                        borderWidth: 1,
-                        padding: 12
+                        bodyColor: '#cbd5e1',
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13, weight: 'bold' },
+                        padding: 16,
+                        cornerRadius: 16,
+                        displayColors: true,
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
                     }
                 },
                 scales: {
                     x: {
-                        grid: {
-                            color: 'rgba(148, 163, 184, 0.08)'
-                        },
-                        ticks: {
-                            color: '#94a3b8'
-                        }
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 11, weight: 'bold' } }
                     },
                     y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(148, 163, 184, 0.08)'
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            callback: function(value) {
-                                return value.toLocaleString('tr-TR') + ' ₺';
-                            }
+                        grid: { color: 'rgba(226, 232, 240, 0.5)', borderDash: [5, 5] },
+                        ticks: { 
+                            color: '#94a3b8', 
+                            font: { size: 11, weight: 'bold' },
+                            callback: value => value.toLocaleString() + ' ₺'
                         }
                     },
                     y1: {
+                        display: false,
                         beginAtZero: true,
-                        position: 'right',
-                        grid: {
-                            drawOnChartArea: false
-                        },
-                        ticks: {
-                            color: '#94a3b8'
-                        }
+                        position: 'right'
                     }
                 }
             }

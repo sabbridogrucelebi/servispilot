@@ -16,9 +16,11 @@ use App\Models\VehicleMaintenance;
 use App\Models\VehicleMaintenanceSetting;
 use Illuminate\Support\Str;
 
+use App\Models\Concerns\LogsActivity;
+
 class Vehicle extends Model
 {
-    use BelongsToCompany;
+    use BelongsToCompany, LogsActivity;
 
     protected $fillable = [
         'company_id',
@@ -44,6 +46,8 @@ class Vehicle extends Model
         'insurance_end_date',
         'kasko_end_date',
         'is_active',
+        'current_km',
+        'status',
         'notes',
         'public_image_upload_token',
     ];
@@ -55,6 +59,7 @@ class Vehicle extends Model
         'insurance_end_date' => 'date',
         'kasko_end_date' => 'date',
         'is_active' => 'boolean',
+        'current_km' => 'integer',
     ];
 
     protected static function booted(): void
@@ -108,5 +113,51 @@ class Vehicle extends Model
         return $this->hasMany(TrafficPenalty::class)
             ->orderByDesc('penalty_date')
             ->orderByDesc('id');
+    }
+
+    /**
+     * Akıllı Bakım Tahminleme Metotları
+     */
+
+    public function getMaintenanceStatusAttribute(): array
+    {
+        $setting = $this->maintenanceSetting;
+        if (!$setting) {
+            return [
+                'has_setting' => false,
+                'oil_remaining' => null,
+                'lube_remaining' => null,
+            ];
+        }
+
+        // Yağ Değişimi Hesaplama
+        $lastOilChange = $this->maintenances()
+            ->where('maintenance_type', 'YAĞ BAKIMI')
+            ->where('status', 'completed')
+            ->orderByDesc('service_date')
+            ->first();
+
+        $lastOilKm = $lastOilChange ? $lastOilChange->km : 0;
+        $oilInterval = $setting->oil_change_interval_km ?: 10000;
+        $oilRemaining = ($lastOilKm + $oilInterval) - ($this->current_km ?: 0);
+
+        // Alt Yağlama Hesaplama
+        $lastLubeChange = $this->maintenances()
+            ->where('maintenance_type', 'ALT YAĞLAMA')
+            ->where('status', 'completed')
+            ->orderByDesc('service_date')
+            ->first();
+
+        $lastLubeKm = $lastLubeChange ? $lastLubeChange->km : 0;
+        $lubeInterval = $setting->under_lubrication_interval_km ?: 5000;
+        $lubeRemaining = ($lastLubeKm + $lubeInterval) - ($this->current_km ?: 0);
+
+        return [
+            'has_setting' => true,
+            'oil_remaining' => $oilRemaining,
+            'oil_percent' => max(0, min(100, ($oilRemaining / $oilInterval) * 100)),
+            'lube_remaining' => $lubeRemaining,
+            'lube_percent' => max(0, min(100, ($lubeRemaining / $lubeInterval) * 100)),
+        ];
     }
 }

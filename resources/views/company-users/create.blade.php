@@ -1,82 +1,118 @@
 @extends('layouts.app')
 
+@section('title', 'Yeni Kullanıcı')
+@section('subtitle', 'Sisteme yeni bir ekip arkadaşı dahil edin')
+
 @section('content')
-<h1 class="text-2xl font-bold mb-6">Yeni Kullanıcı Ekle</h1>
-
-<form action="{{ route('company-users.store') }}" method="POST" class="bg-white p-6 rounded shadow">
-    @csrf
-
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <label class="block mb-1">Ad Soyad</label>
-            <input type="text" name="name" value="{{ old('name') }}" class="w-full border rounded px-3 py-2">
-            @error('name')
-                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div>
-            <label class="block mb-1">E-posta</label>
-            <input type="email" name="email" value="{{ old('email') }}" class="w-full border rounded px-3 py-2">
-            @error('email')
-                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div>
-            <label class="block mb-1">Şifre</label>
-            <input type="password" name="password" class="w-full border rounded px-3 py-2">
-            @error('password')
-                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div>
-            <label class="block mb-1">Şifre Tekrar</label>
-            <input type="password" name="password_confirmation" class="w-full border rounded px-3 py-2">
-        </div>
-
-        <div>
-            <label class="block mb-1">Rol</label>
-            <select name="role" class="w-full border rounded px-3 py-2">
-                <option value="company_admin" {{ old('role') == 'company_admin' ? 'selected' : '' }}>Firma Admini</option>
-                <option value="operation" {{ old('role') == 'operation' ? 'selected' : '' }}>Operasyon</option>
-                <option value="accounting" {{ old('role') == 'accounting' ? 'selected' : '' }}>Muhasebe</option>
-                <option value="viewer" {{ old('role') == 'viewer' ? 'selected' : '' }}>Görüntüleyici</option>
-            </select>
-            @error('role')
-                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="flex items-center mt-7">
-            <input type="checkbox" name="is_active" checked class="mr-2">
-            <label>Aktif</label>
-        </div>
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ route('company-users.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Listeye Dön
+        </a>
     </div>
 
-    <div class="mt-8">
-        <h2 class="text-lg font-bold mb-4">Menü Yetkileri</h2>
+    <form action="{{ route('company-users.store') }}" method="POST">
+        @csrf
 
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            @foreach($permissions as $permission)
-                <label class="flex items-center gap-2 border rounded px-3 py-2">
-                    <input
-                        type="checkbox"
-                        name="permissions[]"
-                        value="{{ $permission->id }}"
-                        {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}
-                    >
-                    <span>{{ $permission->label }}</span>
-                </label>
-            @endforeach
+        <div class="grid gap-6">
+            <!-- Temel Bilgiler -->
+            <div class="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
+                <div class="mb-8 flex items-center gap-4">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900 tracking-tight">Hesap Bilgileri</h2>
+                        <p class="text-sm font-medium text-slate-400">Kullanıcının giriş ve iletişim detayları</p>
+                    </div>
+                </div>
+
+                <div class="grid gap-6 md:grid-cols-2">
+                    <div class="space-y-2">
+                        <label class="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Ad Soyad</label>
+                        <input type="text" name="name" value="{{ old('name') }}" 
+                               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold text-slate-900 transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10" 
+                               placeholder="Örn: Sabri Doğru">
+                        @error('name') <p class="px-2 text-xs font-bold text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500">E-posta Adresi</label>
+                        <input type="email" name="email" value="{{ old('email') }}" 
+                               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold text-slate-900 transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10" 
+                               placeholder="sabri@firma.com">
+                        @error('email') <p class="px-2 text-xs font-bold text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Giriş Şifresi</label>
+                        <input type="password" name="password" 
+                               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold text-slate-900 transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10">
+                        @error('password') <p class="px-2 text-xs font-bold text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Şifre Tekrar</label>
+                        <input type="password" name="password_confirmation" 
+                               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold text-slate-900 transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Rol ve Yetki</label>
+                        <select name="role" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold text-slate-900 transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 appearance-none">
+                            <option value="company_admin" {{ old('role') == 'company_admin' ? 'selected' : '' }}>Firma Yöneticisi</option>
+                            <option value="operation" {{ old('role') == 'operation' ? 'selected' : '' }}>Operasyon</option>
+                            <option value="accounting" {{ old('role') == 'accounting' ? 'selected' : '' }}>Muhasebe</option>
+                            <option value="viewer" {{ old('role') == 'viewer' ? 'selected' : '' }}>Gözlemci (Sadece Görüntüler)</option>
+                        </select>
+                        @error('role') <p class="px-2 text-xs font-bold text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex items-center px-4 mt-8">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_active" value="1" checked class="sr-only peer">
+                            <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                            <span class="ml-3 text-sm font-black text-slate-700 uppercase tracking-tighter">Hesap Aktif</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menü Yetkileri -->
+            <div class="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
+                <div class="mb-8 flex items-center gap-4">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04a11.357 11.357 0 00-1.018 4.772c0 4.113 2.193 7.713 5.5 9.69a11.354 11.354 0 0011.001 0c3.307-1.977 5.5-5.577 5.5-9.69a11.357 11.357 0 00-1.018-4.772z"></path></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900 tracking-tight">Menü Erişimi</h2>
+                        <p class="text-sm font-medium text-slate-400">Kullanıcının görebileceği modülleri belirleyin</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    @foreach($permissions as $permission)
+                        <label class="group relative flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:border-purple-200 hover:bg-white hover:shadow-lg hover:shadow-purple-100 cursor-pointer">
+                            <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" 
+                                   {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}
+                                   class="h-5 w-5 rounded-lg border-slate-200 text-purple-600 focus:ring-purple-500">
+                            <span class="text-xs font-black text-slate-700 group-hover:text-purple-700 transition-colors uppercase tracking-tight">{{ $permission->label }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="flex items-center justify-end gap-4 mt-4">
+                <a href="{{ route('company-users.index') }}" class="px-8 py-4 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors">Vazgeç</a>
+                <button type="submit" 
+                        class="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-3xl bg-indigo-600 px-12 py-4 text-sm font-bold text-white shadow-xl shadow-indigo-200 transition-all hover:bg-indigo-700 hover:scale-105 active:scale-95">
+                    <span>Kullanıcıyı Kaydet</span>
+                    <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
         </div>
-    </div>
-
-    <div class="mt-6">
-        <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded">
-            Kaydet
-        </button>
-    </div>
-</form>
+    </form>
+</div>
 @endsection
