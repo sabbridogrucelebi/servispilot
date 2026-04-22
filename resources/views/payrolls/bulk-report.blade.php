@@ -12,7 +12,7 @@
         </a>
         
         <button onclick="window.print()" class="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-lg transition-all hover:bg-slate-800">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             TÜMÜNÜ YAZDIR / PDF KAYDET
         </button>
     </div>
@@ -34,89 +34,87 @@
             $finalNet = ($report['base_salary'] + $report['extra_earnings'] + $extraBonus) - ($bank + $penalty + $advance + $deduction);
         @endphp
 
-        <!-- Hakediş Belgesi -->
-        <div class="print-area rounded-[32px] border border-slate-200 bg-white p-10 shadow-sm overflow-hidden relative mb-8" style="page-break-after: always;">
-            <div class="flex items-start justify-between border-b border-slate-100 pb-8">
+        <!-- Hakediş Belgesi (PRO) -->
+        <div class="print-container bg-white mb-8 overflow-hidden relative border border-slate-100 rounded-[32px] p-10" style="page-break-after: always;">
+            <!-- Logo ve Başlık -->
+            <div class="flex items-start justify-between border-b-2 border-slate-900 pb-6">
                 <div>
-                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">PERSONEL MAAŞ DÖKÜMÜ</h1>
-                    <p class="mt-1 text-lg font-bold text-blue-600">{{ \Carbon\Carbon::parse($period)->translatedFormat('F Y') }} Dönemi</p>
+                    <h1 class="text-2xl font-black text-slate-900 uppercase tracking-tight">PERSONEL MAAŞ DÖKÜMÜ</h1>
+                    <p class="text-sm font-bold text-blue-600 uppercase">{{ \Carbon\Carbon::parse($period)->translatedFormat('F Y') }} DÖNEMİ</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-2xl font-black text-slate-300">ServisPilot Pro</div>
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">IRMAK TURİZM TAŞIMACILIK</div>
+                    <div class="text-xl font-black text-slate-900">ServisPilot <span class="text-blue-600">PRO</span></div>
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">IRMAK TURİZM TAŞIMACILIK</div>
                 </div>
             </div>
 
-            <div class="mt-8 grid grid-cols-2 gap-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <div>
-                    <div class="text-xs font-black text-slate-400 uppercase tracking-widest">Personel Bilgileri</div>
-                    <div class="mt-2 text-xl font-black text-slate-900">{{ $driver->full_name }}</div>
-                    <div class="text-sm font-bold text-slate-500">TC No: {{ $driver->tc_no ?? '---' }}</div>
+            <!-- Personel & Maaş Özeti -->
+            <div class="mt-6 grid grid-cols-2 gap-4">
+                <div class="rounded-2xl border border-slate-200 p-4 bg-slate-50/50">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">PERSONEL BİLGİLERİ</div>
+                    <div class="text-lg font-black text-slate-900 uppercase">{{ $driver->full_name }}</div>
+                    <div class="text-xs font-bold text-slate-500">TC: {{ $driver->tc_no ?? '-----------' }}</div>
                 </div>
-                <div class="text-right">
-                    <div class="text-xs font-black text-slate-400 uppercase tracking-widest">Ana Maaş</div>
-                    <div class="mt-2 text-2xl font-black text-slate-900">{{ number_format($report['base_salary'], 2, ',', '.') }} ₺</div>
+                <div class="rounded-2xl border border-slate-200 p-4 bg-slate-50/50 text-right">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">AYLIK ANA MAAŞ</div>
+                    <div class="text-2xl font-black text-slate-900">{{ number_format($report['base_salary'], 2, ',', '.') }} ₺</div>
                 </div>
             </div>
 
-            <div class="mt-8">
-                <table class="w-full text-left text-sm border border-slate-100 rounded-2xl overflow-hidden">
-                    <thead class="bg-slate-900 text-white">
-                        <tr>
-                            <th class="px-4 py-4 font-bold">Müşteri / Güzergah</th>
-                            <th class="px-4 py-4 font-bold text-center">Sabah</th>
-                            <th class="px-4 py-4 font-bold text-center">Akşam</th>
-                            <th class="px-4 py-4 font-bold text-right">Toplam Ücret</th>
+            <!-- Sefer Hakediş Tablosu -->
+            <div class="mt-6">
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900 text-white">
+                            <th class="p-3 text-left border border-slate-900">MÜŞTERİ / GÜZERGAH ADI</th>
+                            <th class="p-3 text-center border border-slate-900 w-20">SABAH</th>
+                            <th class="p-3 text-center border border-slate-900 w-20">AKŞAM</th>
+                            <th class="p-3 text-right border border-slate-900 w-32">TOPLAM TUTAR</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-200">
                         @foreach($report['details'] as $routeSummary)
                             <tr>
-                                <td class="px-4 py-4">
-                                    <div class="font-black text-slate-900 uppercase text-[11px]">{{ $routeSummary['customer_name'] }}</div>
-                                    <div class="text-sm font-bold text-blue-600 mt-0.5">{{ $routeSummary['route_name'] }}</div>
+                                <td class="p-3 border border-slate-200">
+                                    <div class="font-black text-slate-900 uppercase text-[10px]">{{ $routeSummary['customer_name'] }}</div>
+                                    <div class="font-bold text-blue-600">{{ $routeSummary['route_name'] }}</div>
                                 </td>
-                                <td class="px-4 py-4 text-center font-black text-slate-700">{{ $routeSummary['morning_count'] }}</td>
-                                <td class="px-4 py-4 text-center font-black text-slate-700">{{ $routeSummary['evening_count'] }}</td>
-                                <td class="px-4 py-4 text-right font-black text-slate-900">{{ number_format($routeSummary['total_fee'], 2, ',', '.') }} ₺</td>
+                                <td class="p-3 text-center border border-slate-200 font-black text-slate-700">{{ $routeSummary['morning_count'] }}</td>
+                                <td class="p-3 text-center border border-slate-200 font-black text-slate-700">{{ $routeSummary['evening_count'] }}</td>
+                                <td class="p-3 text-right border border-slate-200 font-black text-slate-900">{{ number_format($routeSummary['total_fee'], 2, ',', '.') }} ₺</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
 
-            <div class="mt-10 grid grid-cols-2 gap-12">
-                <div class="space-y-6">
+            <!-- Ödemeler ve Kesintiler -->
+            <div class="mt-6 grid grid-cols-2 gap-8">
+                <div class="space-y-4">
                     <div>
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Ek Ödemeler / Kesintiler</h4>
-                        <div class="space-y-2">
-                            @if($extraBonus > 0)
-                                <div class="text-[11px] font-bold text-emerald-700">Ekstra: +{{ number_format($extraBonus, 2, ',', '.') }} ₺ ({{ $extraNotes }})</div>
-                            @endif
-                            @if($deduction > 0)
-                                <div class="text-[11px] font-bold text-rose-700">Kesinti: -{{ number_format($deduction, 2, ',', '.') }} ₺ ({{ $deductionNotes }})</div>
-                            @endif
-                        </div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">EK ÖDEME & NOTLAR</div>
+                        @if($extraBonus > 0) <div class="text-xs font-bold text-emerald-700">+{{ number_format($extraBonus, 2, ',', '.') }} ₺ ({{ $extraNotes ?: 'Ekstra' }})</div> @endif
+                        @if($deduction > 0) <div class="text-xs font-bold text-rose-700">-{{ number_format($deduction, 2, ',', '.') }} ₺ ({{ $deductionNotes ?: 'Kesinti' }})</div> @endif
                     </div>
                 </div>
-                <div class="space-y-3">
-                    <div class="flex justify-between text-sm font-bold text-slate-600"><span>Ana Maaş:</span><span>{{ number_format($report['base_salary'], 2, ',', '.') }} ₺</span></div>
-                    <div class="flex justify-between text-sm font-bold text-emerald-600"><span>Sefer Hakedişleri:</span><span>+{{ number_format($report['extra_earnings'], 2, ',', '.') }} ₺</span></div>
-                    <div class="h-px bg-slate-200 mt-4"></div>
-                    <div class="flex justify-between text-2xl font-black text-slate-900 pt-2"><span>NET ÖDENECEK:</span><span class="text-blue-600">{{ number_format($finalNet, 2, ',', '.') }} ₺</span></div>
+
+                <div class="bg-slate-900 rounded-2xl p-6 text-white space-y-2">
+                    <div class="flex justify-between text-[10px] font-bold text-white/50 uppercase"><span>Hakediş Toplamı:</span><span>+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span></div>
+                    <div class="flex justify-between text-[10px] font-bold text-rose-400 uppercase"><span>Kesintiler Toplamı:</span><span>-{{ number_format($bank + $penalty + $advance + $deduction, 2, ',', '.') }} ₺</span></div>
+                    <div class="pt-2 mt-2 border-t border-white/10 flex justify-between items-center">
+                        <span class="text-xs font-black uppercase tracking-widest text-blue-400">NET ÖDENECEK:</span>
+                        <span class="text-2xl font-black">{{ number_format($finalNet, 2, ',', '.') }} ₺</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="mt-16 grid grid-cols-2 gap-12 border-t border-dashed border-slate-200 pt-12">
-                <div class="text-center">
-                    <div class="text-xs font-black text-slate-400 uppercase tracking-widest mb-12 text-left">Teslim Eden (İşveren)</div>
-                    <div class="h-24 border-b border-slate-200 w-full mb-4"></div>
-                    <div class="text-xs font-bold text-slate-500">IRMAK TURİZM</div>
+            <!-- İmza Alanı -->
+            <div class="mt-12 grid grid-cols-2 gap-20">
+                <div class="text-center border-t border-slate-900 pt-2">
+                    <div class="text-[10px] font-black text-slate-900 uppercase">İŞVEREN İMZA</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-xs font-black text-slate-400 uppercase tracking-widest mb-12 text-left">Teslim Alan (Personel)</div>
-                    <div class="h-24 border-b border-slate-200 w-full mb-4"></div>
-                    <div class="text-sm font-black text-slate-900">{{ $driver->full_name }}</div>
+                <div class="text-center border-t border-slate-900 pt-2">
+                    <div class="text-[10px] font-black text-slate-900 uppercase">{{ $driver->full_name }}</div>
                 </div>
             </div>
         </div>
@@ -124,10 +122,18 @@
 
     <style>
         @media print {
-            .no-print { display: none !important; }
+            @page { size: A4; margin: 0; }
             body { background: white !important; margin: 0 !important; }
-            .print-area { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; margin-bottom: 0 !important; }
-            .mx-auto { max-width: 100% !important; margin: 0 !important; }
+            .no-print { display: none !important; }
+            .print-container {
+                border: none !important; box-shadow: none !important;
+                width: 210mm !important; height: 297mm !important;
+                margin: 0 auto !important; padding: 15mm !important;
+                border-radius: 0 !important;
+            }
+            .bg-slate-900 { background-color: #0f172a !important; -webkit-print-color-adjust: exact; }
+            .text-white { color: white !important; }
+            .text-blue-600 { color: #2563eb !important; }
         }
     </style>
 </div>
