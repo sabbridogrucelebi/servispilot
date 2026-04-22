@@ -31,8 +31,8 @@
         </a>
     </div>
 
-    <!-- Hakediş Belgesi (PRO Yazdırma Düzeni) -->
-    <div class="print-container bg-white shadow-sm overflow-hidden border border-slate-200 rounded-[32px] p-6 md:p-12">
+    <!-- Hakediş Belgesi -->
+    <div class="bg-white shadow-sm overflow-hidden border border-slate-200 rounded-[32px] p-6 md:p-12">
         <!-- Logo ve Başlık -->
         <div class="flex items-start justify-between border-b-2 border-slate-900 pb-6">
             <div>
@@ -62,31 +62,71 @@
         <div class="mt-6">
             <div class="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-3 flex items-center gap-2">
                 <div class="h-1.5 w-1.5 rounded-full bg-blue-600"></div>
-                AYLIK EK SEFER HAKEDİŞ DETAYLARI
+                AYLIK EK SEFER HAKEDİŞ DETAYLARI (Satıra tıklayarak günlük dökümü görün)
             </div>
-            <table class="w-full text-xs border-collapse">
-                <thead>
-                    <tr class="bg-slate-900 text-white">
-                        <th class="p-3 text-left border border-slate-900">MÜŞTERİ / GÜZERGAH ADI</th>
-                        <th class="p-3 text-center border border-slate-900 w-20">SABAH</th>
-                        <th class="p-3 text-center border border-slate-900 w-20">AKŞAM</th>
-                        <th class="p-3 text-right border border-slate-900 w-32">TOPLAM TUTAR</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    @foreach($report['details'] as $index => $routeSummary)
-                        <tr>
-                            <td class="p-3 border border-slate-200">
-                                <div class="font-black text-slate-900 uppercase text-[10px]">{{ $routeSummary['customer_name'] }}</div>
-                                <div class="font-bold text-blue-600">{{ $routeSummary['route_name'] }}</div>
-                            </td>
-                            <td class="p-3 text-center border border-slate-200 font-black text-slate-700">{{ $routeSummary['morning_count'] }}</td>
-                            <td class="p-3 text-center border border-slate-200 font-black text-slate-700">{{ $routeSummary['evening_count'] }}</td>
-                            <td class="p-3 text-right border border-slate-200 font-black text-slate-900">{{ number_format($routeSummary['total_fee'], 2, ',', '.') }} ₺</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div class="space-y-2">
+                @foreach($report['details'] as $index => $routeSummary)
+                    <div class="group border border-slate-200 rounded-2xl overflow-hidden transition-all hover:border-blue-300">
+                        <!-- Ana Satır -->
+                        <div class="flex items-center justify-between p-4 bg-white cursor-pointer select-none" 
+                             @click="openRoute = (openRoute === '{{ $index }}' ? null : '{{ $index }}')">
+                            <div class="flex-1">
+                                <div class="text-[10px] font-black text-slate-400 uppercase">{{ $routeSummary['customer_name'] }}</div>
+                                <div class="text-sm font-black text-slate-900 group-hover:text-blue-600 transition-colors uppercase">{{ $routeSummary['route_name'] }}</div>
+                            </div>
+                            <div class="flex gap-8 items-center">
+                                <div class="text-center">
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">SABAH</div>
+                                    <div class="text-sm font-black text-slate-700">{{ $routeSummary['morning_count'] }}</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">AKŞAM</div>
+                                    <div class="text-sm font-black text-slate-700">{{ $routeSummary['evening_count'] }}</div>
+                                </div>
+                                <div class="text-right min-w-[100px]">
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">TOPLAM</div>
+                                    <div class="text-sm font-black text-slate-900">{{ number_format($routeSummary['total_fee'], 2, ',', '.') }} ₺</div>
+                                </div>
+                                <div class="text-slate-300 group-hover:text-blue-400">
+                                    <svg class="h-5 w-5 transform transition-transform" :class="openRoute === '{{ $index }}' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detay Paneli (Günlük Döküm) -->
+                        <div x-show="openRoute === '{{ $index }}'" 
+                             x-collapse
+                             class="bg-slate-50 border-t border-slate-100">
+                            <div class="p-4">
+                                <table class="w-full text-[10px]">
+                                    <thead>
+                                        <tr class="text-slate-400 border-b border-slate-200">
+                                            <th class="pb-2 text-left">TARİH</th>
+                                            <th class="pb-2 text-center">SABAH</th>
+                                            <th class="pb-2 text-center">AKŞAM</th>
+                                            <th class="pb-2 text-right">GÜNLÜK TUTAR</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        @foreach($routeSummary['dates'] as $day)
+                                            <tr class="text-slate-600">
+                                                <td class="py-2 font-bold">{{ $day['date'] }}</td>
+                                                <td class="py-2 text-center font-black {{ $day['morning'] > 0 ? 'text-emerald-600' : 'text-slate-300' }}">
+                                                    {{ $day['morning'] > 0 ? '1' : '0' }}
+                                                </td>
+                                                <td class="py-2 text-center font-black {{ $day['evening'] > 0 ? 'text-emerald-600' : 'text-slate-300' }}">
+                                                    {{ $day['evening'] > 0 ? '1' : '0' }}
+                                                </td>
+                                                <td class="py-2 text-right font-black text-slate-900">{{ number_format($day['total'], 2, ',', '.') }} ₺</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         </div>
 
         <!-- Ödemeler ve Kesintiler -->
@@ -106,7 +146,7 @@
                 </div>
             </div>
 
-            <div class="bg-slate-900 rounded-2xl p-6 text-white space-y-2">
+            <div class="bg-slate-900 rounded-3xl p-6 text-white space-y-2">
                 <div class="flex justify-between text-[10px] font-bold text-white/50 uppercase"><span>Hakediş Toplamı:</span><span>+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span></div>
                 <div class="flex justify-between text-[10px] font-bold text-rose-400 uppercase"><span>Kesintiler Toplamı:</span><span>-{{ number_format($bank + $penalty + $advance + $deduction, 2, ',', '.') }} ₺</span></div>
                 <div class="pt-2 mt-2 border-t border-white/10 flex justify-between items-center">
@@ -129,41 +169,6 @@
                 <div class="text-[10px] font-black text-slate-900 uppercase">{{ $driver->full_name }}</div>
             </div>
         </div>
-
-        <div class="mt-8 text-center border-t border-slate-100 pt-4">
-            <p class="text-[8px] text-slate-400 italic uppercase">Bu belge ServisPilot PRO sistemi tarafından {{ now()->format('d.m.Y H:i') }} tarihinde oluşturulmuştur.</p>
-        </div>
     </div>
-
-    <style>
-        @media print {
-            @page {
-                size: A4;
-                margin: 0;
-            }
-            body {
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .print-container {
-                border: none !important;
-                box-shadow: none !important;
-                width: 210mm !important;
-                height: 297mm !important;
-                margin: 0 auto !important;
-                padding: 15mm !important;
-                border-radius: 0 !important;
-            }
-            .bg-slate-50\/50 { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; }
-            .bg-slate-900 { background-color: #0f172a !important; -webkit-print-color-adjust: exact; }
-            .text-white { color: white !important; }
-            .text-blue-600 { color: #2563eb !important; }
-            .text-rose-400 { color: #fb7185 !important; }
-        }
-    </style>
 </div>
 @endsection
