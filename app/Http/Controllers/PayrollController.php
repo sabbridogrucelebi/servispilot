@@ -139,7 +139,7 @@ class PayrollController extends Controller
             ];
         }
         
-        return view('payrolls.bulk-report', compact('reports', 'period'));
+        return view('payrolls.print-bulk', compact('reports', 'period'));
     }
 
     public function showReport($driverId, $period)
@@ -150,7 +150,7 @@ class PayrollController extends Controller
         $payrollService = new PayrollService();
         $report = $payrollService->calculateMonthlyPayroll($driver, (int)$month, (int)$year);
 
-        return view('payrolls.report', compact('driver', 'period', 'report'));
+        return view('payrolls.print-single', compact('driver', 'period', 'report'));
     }
 
     public function create()
