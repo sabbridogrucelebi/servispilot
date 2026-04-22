@@ -148,7 +148,7 @@
                         <th class="px-4 py-5 font-black text-emerald-400 uppercase tracking-widest text-right w-32">EK HAKEDİŞ</th>
                         <th class="px-4 py-5 font-black text-rose-400 uppercase tracking-widest text-center bg-rose-900/10 w-32">TRAFİK CEZASI</th>
                         <th class="px-4 py-5 font-black text-orange-400 uppercase tracking-widest text-center w-32">AVANS</th>
-                        <th class="px-4 py-5 font-black text-slate-400 uppercase tracking-widest text-center w-32">KESİNTİ</th>
+                        <th class="px-4 py-5 font-black text-slate-400 uppercase tracking-widest text-center w-32">KESİNTİ / İCRA</th>
                         <th class="px-4 py-5 font-black text-amber-400 uppercase tracking-widest text-center bg-amber-900/10 w-32">EKSTRA (+)</th>
                         <th class="px-4 py-5 font-black text-white uppercase tracking-widest text-right">NET ÖDENECEK</th>
                         <th class="px-4 py-5 font-black text-white text-center">İŞLEM</th>
@@ -223,7 +223,7 @@
                                     <div x-show="showDeductionNote" x-transition>
                                         <input type="text" name="payrolls[{{ $id }}][deduction_notes]" value="{{ $ex->deduction_notes ?? '' }}"
                                                @change="saveRow({{ $id }})"
-                                               placeholder="Kesinti sebebi..."
+                                               placeholder="İcra/Kesinti sebebi..."
                                                class="w-full rounded-lg border-rose-200 bg-rose-50 py-1 px-2 text-[10px] font-bold text-rose-900 placeholder-rose-300">
                                     </div>
                                 </div>

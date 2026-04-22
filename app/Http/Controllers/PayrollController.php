@@ -16,7 +16,13 @@ class PayrollController extends Controller
         [$year, $month] = explode('-', $period);
 
         $payrollService = new PayrollService();
-        $drivers = Driver::where('is_active', true)->orderBy('full_name')->get();
+        $drivers = Driver::query()
+            ->with(['vehicle'])
+            ->where('is_active', true)
+            ->leftJoin('vehicles', 'drivers.vehicle_id', '=', 'vehicles.id')
+            ->orderBy('vehicles.plate', 'asc')
+            ->select('drivers.*')
+            ->get();
         
         $calculatedPayrolls = [];
         foreach ($drivers as $driver) {
