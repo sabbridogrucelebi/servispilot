@@ -345,13 +345,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('trips', TripController::class)
         ->middleware('permission:trips.view');
 
-    Route::resource('payrolls', PayrollController::class)
-        ->middleware('permission:payrolls.view');
-    Route::post('/payrolls/bulk-store', [PayrollController::class, 'bulkStore'])->name('payrolls.bulk-store');
-    Route::post('/payrolls/update-single', [PayrollController::class, 'updateSingle'])->name('payrolls.update-single');
     Route::get('/payrolls/bulk-report', [PayrollController::class, 'bulkReport'])->name('payrolls.bulk-report');
     Route::get('/payrolls/print/{driver}/{period}', [PayrollController::class, 'printSingle'])->name('payrolls.print');
     Route::get('/payrolls/report/{driver}/{period}', [PayrollController::class, 'showReport'])->name('payrolls.report');
+    Route::post('/payrolls/bulk-store', [PayrollController::class, 'bulkStore'])->name('payrolls.bulk-store');
+    Route::post('/payrolls/update-single', [PayrollController::class, 'updateSingle'])->name('payrolls.update-single');
+
+    Route::resource('payrolls', PayrollController::class)
+        ->middleware('permission:payrolls.view');
 
     Route::resource('documents', DocumentController::class)
         ->middleware('permission:documents.view');
