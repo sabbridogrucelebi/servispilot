@@ -147,9 +147,19 @@
             </div>
 
             <div class="bg-slate-900 rounded-3xl p-6 text-white space-y-3">
-                <div class="flex justify-between text-[10px] font-bold text-white/50 uppercase border-b border-white/5 pb-2">
-                    <span>Brüt Hakediş Toplamı:</span>
-                    <span class="text-emerald-400">+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span>
+                <div class="space-y-1.5 border-b border-white/5 pb-3">
+                    <div class="flex justify-between text-[10px] font-bold text-white/50 uppercase">
+                        <span>Ana Maaş + Seferler:</span>
+                        <span>+{{ number_format($report['base_salary'] + $report['extra_earnings'], 2, ',', '.') }} ₺</span>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold text-emerald-400 uppercase">
+                        <span>Ekstra (+):</span>
+                        <span>+{{ number_format($extraBonus, 2, ',', '.') }} ₺</span>
+                    </div>
+                    <div class="flex justify-between text-[11px] font-black text-white uppercase pt-1">
+                        <span>TOPLAM BRÜT HAKEDİŞ:</span>
+                        <span>+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span>
+                    </div>
                 </div>
                 
                 <div class="space-y-1.5 py-1">

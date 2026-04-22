@@ -167,9 +167,13 @@
             </div>
 
             <div class="total-card-pro">
-                <div class="summary-row-pro" style="color: #60a5fa; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 15px;">
-                    <span>TOPLAM HAKEDİŞ</span>
-                    <span style="color: white;">+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span>
+                <div class="summary-row-pro" style="color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; margin-bottom: 8px;">
+                    <span>Hakediş (Maaş+Sefer):</span>
+                    <span style="color: white;">+{{ number_format($report['base_salary'] + $report['extra_earnings'], 2, ',', '.') }} ₺</span>
+                </div>
+                <div class="summary-row-pro" style="color: #10b981; font-weight: 800; margin-bottom: 12px;">
+                    <span>EKSTRA (+):</span>
+                    <span>+{{ number_format($extraBonus, 2, ',', '.') }} ₺</span>
                 </div>
                 
                 <div class="summary-row-pro"><span>Banka Ödemesi:</span><span>-{{ number_format($bank, 2, ',', '.') }} ₺</span></div>
