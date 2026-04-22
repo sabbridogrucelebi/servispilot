@@ -122,6 +122,26 @@ class PayrollController extends Controller
         }
     }
 
+    public function bulkReport(Request $request)
+    {
+        $driverIds = explode(',', $request->input('driver_ids'));
+        $period = $request->input('period');
+        
+        $drivers = Driver::whereIn('id', $driverIds)->get();
+        $payrollService = new \App\Services\PayrollService();
+        
+        $reports = [];
+        foreach ($drivers as $driver) {
+            $periodDate = \Carbon\Carbon::parse($period);
+            $reports[] = [
+                'driver' => $driver,
+                'report' => $payrollService->calculateMonthlyPayroll($driver, $periodDate->month, $periodDate->year)
+            ];
+        }
+        
+        return view('payrolls.bulk-report', compact('reports', 'period'));
+    }
+
     public function showReport($driverId, $period)
     {
         $driver = Driver::findOrFail($driverId);
