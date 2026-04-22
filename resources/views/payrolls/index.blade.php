@@ -4,12 +4,37 @@
 @section('subtitle', 'Personel hakediş, kesinti ve ödeme merkezi')
 
 @section('content')
-<div class="space-y-6" x-data="{ 
-    totals: { base: 0, bank: 0, trips: 0, penalty: 0, advance: 0, deduction: 0, extra: 0, net: 0 },
-    saving: false,
-    undoStack: [],
     showBulkModal: false,
     selectedDrivers: [],
+    isLocked: {{ $isLocked ? 'true' : 'false' }},
+    showLockPrompt: {{ $shouldAskLock ? 'true' : 'false' }},
+
+    toggleLock() {
+        fetch('{{ route('payrolls.toggle-lock') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ period: '{{ $period }}' })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+                this.isLocked = res.is_locked;
+                // Opsiyonel: Toast/Alert eklenebilir
+            }
+        });
+    },
+
+    lockPrevPeriod() {
+        fetch('{{ route('payrolls.toggle-lock') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ period: '{{ $prevPeriod }}' })
+        })
+        .then(res => res.json())
+        .then(res => {
+            this.showLockPrompt = false;
+        });
+    },
     
     // Satırı Kaydet
     saveRow(id) {

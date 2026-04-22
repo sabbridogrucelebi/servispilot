@@ -39,12 +39,51 @@ class PayrollController extends Controller
             ];
         }
 
-        return view('payrolls.index', compact('calculatedPayrolls', 'period'));
+        // Kilit Kontrolü
+        $lockStatus = \App\Models\PayrollLock::where('period', $period)->first();
+        $isLocked = $lockStatus ? $lockStatus->is_locked : false;
+
+        // Otomatik Hatırlatıcı Mantığı (Admin ise, ayın 5'i geçtiyse ve geçen ay kilitli değilse)
+        $shouldAskLock = false;
+        $prevPeriod = now()->subMonth()->format('Y-m');
+        if ((auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) && now()->day >= 5) {
+            $prevLock = \App\Models\PayrollLock::where('period', $prevPeriod)->first();
+            if (!$prevLock || !$prevLock->is_locked) {
+                $shouldAskLock = true;
+            }
+        }
+
+        return view('payrolls.index', compact('calculatedPayrolls', 'period', 'isLocked', 'shouldAskLock', 'prevPeriod'));
+    }
+
+    public function toggleLock(Request $request)
+    {
+        if (!auth()->user()->isCompanyAdmin() && !auth()->user()->isSuperAdmin()) {
+            return response()->json(['error' => 'Bu işlem için yetkiniz yok.'], 403);
+        }
+        
+        $period = $request->period;
+        $lock = \App\Models\PayrollLock::firstOrNew(['period' => $period]);
+        $lock->is_locked = !$lock->is_locked;
+        $lock->save();
+
+        return response()->json([
+            'status' => 'success', 
+            'is_locked' => $lock->is_locked,
+            'message' => $lock->is_locked ? 'Maaş tablosu düzenlemeye kapatıldı.' : 'Maaş tablosu düzenlemeye açıldı.'
+        ]);
     }
 
     public function bulkStore(Request $request)
     {
         $period = $request->get('period');
+
+        // Kilit Kontrolü
+        $lock = \App\Models\PayrollLock::where('period', $period)->first();
+        if ($lock && $lock->is_locked && !auth()->user()->isCompanyAdmin() && !auth()->user()->isSuperAdmin()) {
+            return response()->json(['error' => 'Bu dönem kilitlenmiştir. Düzenleme yapılamaz.'], 403);
+        }
+
         $data = $request->get('payrolls', []);
 
         foreach ($data as $driverId => $payrollData) {
@@ -91,6 +130,12 @@ class PayrollController extends Controller
             $driverId = $request->input('driver_id');
             $period = $request->input('period');
             $data = $request->input('data');
+
+            // Kilit Kontrolü
+            $lock = \App\Models\PayrollLock::where('period', $period)->first();
+            if ($lock && $lock->is_locked && !auth()->user()->isCompanyAdmin() && !auth()->user()->isSuperAdmin()) {
+                return response()->json(['error' => 'Bu dönem kilitlenmiştir. Düzenleme yapılamaz.'], 403);
+            }
 
             $net = (float)($data['base_salary'] + $data['extra_earnings'] + ($data['extra_bonus'] ?? 0)) 
                  - (float)(($data['bank_payment'] ?? 0) + ($data['traffic_penalty'] ?? 0) + ($data['advance_payment'] ?? 0) + ($data['deduction'] ?? 0));
