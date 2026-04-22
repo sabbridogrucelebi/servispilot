@@ -346,6 +346,7 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:trips.view');
 
     Route::get('/payrolls/bulk-report', [PayrollController::class, 'bulkReport'])->name('payrolls.bulk-report');
+    Route::post('/payrolls/toggle-lock', [PayrollController::class, 'toggleLock'])->name('payrolls.toggle-lock');
     Route::get('/payrolls/print/{driver}/{period}', [PayrollController::class, 'printSingle'])->name('payrolls.print');
     Route::get('/payrolls/report/{driver}/{period}', [PayrollController::class, 'showReport'])->name('payrolls.report');
     Route::post('/payrolls/bulk-store', [PayrollController::class, 'bulkStore'])->name('payrolls.bulk-store');

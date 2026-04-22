@@ -4,6 +4,10 @@
 @section('subtitle', 'Personel hakediş, kesinti ve ödeme merkezi')
 
 @section('content')
+<div class="space-y-6" x-data="{ 
+    totals: { base: 0, bank: 0, trips: 0, penalty: 0, advance: 0, deduction: 0, extra: 0, net: 0 },
+    saving: false,
+    undoStack: [],
     showBulkModal: false,
     selectedDrivers: [],
     isLocked: {{ $isLocked ? 'true' : 'false' }},
@@ -19,7 +23,6 @@
         .then(res => {
             if (res.status === 'success') {
                 this.isLocked = res.is_locked;
-                // Opsiyonel: Toast/Alert eklenebilir
             }
         });
     },
@@ -38,6 +41,8 @@
     
     // Satırı Kaydet
     saveRow(id) {
+        if (this.isLocked && !{{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'true' : 'false' }}) return;
+        
         this.saving = true;
         const data = {
             base_salary: parseFloat(document.getElementById('base_' + id).value) || 0,
@@ -138,10 +143,36 @@
     <div class="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div class="flex flex-col gap-4 md:flex-row md:items-center">
-                <form action="{{ route('payrolls.index') }}" method="GET">
-                    <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Çalışma Dönemi</label>
-                    <input type="month" name="period" value="{{ $period }}" onchange="this.form.submit()"
-                           class="rounded-2xl border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                <form action="{{ route('payrolls.index') }}" method="GET" class="flex items-end gap-3">
+                    <div>
+                        <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Çalışma Dönemi</label>
+                        <input type="month" name="period" value="{{ $period }}" onchange="this.form.submit()"
+                               class="rounded-2xl border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    @if(auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin())
+                        <button type="button" @click="toggleLock()" 
+                                :class="isLocked ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'"
+                                class="flex items-center gap-2 px-4 py-3 rounded-2xl border font-black text-xs transition-all hover:scale-105 active:scale-95 shadow-sm uppercase tracking-widest mb-0.5">
+                            <template x-if="isLocked">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v4m10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    <span>KİLİTLİ</span>
+                                </div>
+                            </template>
+                            <template x-if="!isLocked">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+                                    <span>KİLİTLE</span>
+                                </div>
+                            </template>
+                        </button>
+                    @else
+                        <div x-show="isLocked" class="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50 text-slate-400 border border-slate-200 font-black text-xs uppercase tracking-widest mb-0.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v4m10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            <span>DÜZENLEME KAPALI</span>
+                        </div>
+                    @endif
                 </form>
             </div>
 
@@ -209,18 +240,30 @@
                             <input type="hidden" id="trips_{{ $id }}" class="val-trips" value="{{ $calc['extra_earnings'] }}">
                             <td class="px-4 py-4 text-right font-black text-slate-900 text-sm">{{ number_format($calc['base_salary'], 2, ',', '.') }} ₺</td>
                             <td class="px-2 py-4 bg-blue-50/30">
-                                <input type="number" step="0.01" id="bank_{{ $id }}" value="{{ $bank }}" @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" class="w-full rounded-xl border-blue-100 bg-white py-2 px-3 text-right font-black text-blue-700 text-sm focus:ring-2 focus:ring-blue-500">
+                                <input type="number" step="0.01" id="bank_{{ $id }}" value="{{ $bank }}" 
+                                       :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                       @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" 
+                                       class="w-full rounded-xl border-blue-100 bg-white py-2 px-3 text-right font-black text-blue-700 text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                             </td>
                             <td class="px-4 py-4 text-right font-black text-emerald-600 text-sm">+{{ number_format($calc['extra_earnings'], 2, ',', '.') }} ₺</td>
                             <td class="px-2 py-4 bg-rose-50/30">
-                                <input type="number" step="0.01" id="penalty_{{ $id }}" value="{{ $penalty }}" @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" class="w-full rounded-xl border-rose-100 bg-white py-2 px-3 text-right font-black text-rose-700 text-sm focus:ring-2 focus:ring-rose-500">
+                                <input type="number" step="0.01" id="penalty_{{ $id }}" value="{{ $penalty }}" 
+                                       :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                       @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" 
+                                       class="w-full rounded-xl border-rose-100 bg-white py-2 px-3 text-right font-black text-rose-700 text-sm focus:ring-2 focus:ring-rose-500 disabled:bg-slate-50 disabled:text-slate-400">
                             </td>
                             <td class="px-2 py-4">
-                                <input type="number" step="0.01" id="advance_{{ $id }}" value="{{ $advance }}" @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" class="w-full rounded-xl border-orange-100 bg-white py-2 px-3 text-right font-black text-orange-700 text-sm focus:ring-2 focus:ring-orange-500">
+                                <input type="number" step="0.01" id="advance_{{ $id }}" value="{{ $advance }}" 
+                                       :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                       @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" 
+                                       class="w-full rounded-xl border-orange-100 bg-white py-2 px-3 text-right font-black text-orange-700 text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-slate-50 disabled:text-slate-400">
                             </td>
                             <td class="px-2 py-4">
                                 <div class="space-y-2">
-                                    <input type="number" step="0.01" id="deduction_{{ $id }}" value="{{ $deduction }}" @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }}); showDeductionNote = ($event.target.value > 0)" @change="saveRow({{ $id }})" class="w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-right font-black text-slate-700 text-sm focus:ring-2 focus:ring-slate-500">
+                                    <input type="number" step="0.01" id="deduction_{{ $id }}" value="{{ $deduction }}" 
+                                           :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                           @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }}); showDeductionNote = ($event.target.value > 0)" @change="saveRow({{ $id }})" 
+                                           class="w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-right font-black text-slate-700 text-sm focus:ring-2 focus:ring-slate-500 disabled:bg-slate-50 disabled:text-slate-400">
                                     <div x-show="showDeductionNote" x-transition>
                                         <input type="text" name="payrolls[{{ $id }}][deduction_notes]" value="{{ $ex->deduction_notes ?? '' }}" @change="saveRow({{ $id }})" placeholder="İcra/Kesinti sebebi..." class="w-full rounded-lg border-rose-200 bg-rose-50 py-1 px-2 text-[10px] font-bold text-rose-900 placeholder-rose-300">
                                     </div>
@@ -228,7 +271,10 @@
                             </td>
                             <td class="px-2 py-4 bg-amber-50/30">
                                 <div class="space-y-2">
-                                    <input type="number" step="0.01" id="extra_{{ $id }}" value="{{ $extraBonus }}" @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }}); showExtraNote = ($event.target.value > 0)" @change="saveRow({{ $id }})" class="w-full rounded-xl border-amber-200 bg-white py-2 px-3 text-right font-black text-amber-700 text-sm focus:ring-2 focus:ring-amber-500">
+                                    <input type="number" step="0.01" id="extra_{{ $id }}" value="{{ $extraBonus }}" 
+                                           :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                           @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }}); showExtraNote = ($event.target.value > 0)" @change="saveRow({{ $id }})" 
+                                           class="w-full rounded-xl border-amber-200 bg-white py-2 px-3 text-right font-black text-amber-700 text-sm focus:ring-2 focus:ring-amber-500 disabled:bg-slate-50 disabled:text-slate-400">
                                     <div x-show="showExtraNote" x-transition>
                                         <input type="text" name="payrolls[{{ $id }}][extra_notes]" value="{{ $ex->extra_notes ?? '' }}" @change="saveRow({{ $id }})" placeholder="Ekstra sebebi..." class="w-full rounded-lg border-rose-200 bg-rose-50 py-1 px-2 text-[10px] font-bold text-rose-900 placeholder-rose-300">
                                     </div>
@@ -309,6 +355,29 @@
                 <button @click="bulkPrint()" class="flex-[2] rounded-2xl bg-slate-900 py-4 text-sm font-black text-white shadow-lg transition-all hover:bg-slate-800 hover:scale-[1.02]">
                     SEÇİLENLERİ YAZDIR / PDF YAP
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Otomatik Kilit Hatırlatıcı Modalı -->
+    <div x-show="showLockPrompt" 
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-cloak
+         style="display: none;">
+        <div class="bg-white rounded-[40px] shadow-2xl max-w-md w-full p-8 border border-slate-100 text-center">
+            <div class="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-rose-100">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <h3 class="text-2xl font-black text-slate-900 mb-2">Ay Kilitlensin mi?</h3>
+            <p class="text-slate-500 font-bold mb-8 leading-relaxed">
+                {{ \Carbon\Carbon::parse($prevPeriod)->translatedFormat('F Y') }} dönemi sona erdi. Hesapların güvenliği için tabloyu kilitlemek ister misiniz?
+            </p>
+            <div class="grid grid-cols-2 gap-4">
+                <button @click="showLockPrompt = false" class="px-6 py-4 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-slate-200 transition-all">ŞİMDİ DEĞİL</button>
+                <button @click="lockPrevPeriod()" class="px-6 py-4 rounded-2xl bg-slate-900 text-white font-black hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all">EVET, KİLİTLE</button>
             </div>
         </div>
     </div>
