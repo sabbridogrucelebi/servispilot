@@ -18,7 +18,7 @@ class PayrollController extends Controller
         $payrollService = new PayrollService();
         $drivers = Driver::query()
             ->with(['vehicle'])
-            ->where('is_active', true)
+            ->where('drivers.is_active', true)
             ->leftJoin('vehicles', 'drivers.vehicle_id', '=', 'vehicles.id')
             ->orderBy('vehicles.plate', 'asc')
             ->select('drivers.*')
