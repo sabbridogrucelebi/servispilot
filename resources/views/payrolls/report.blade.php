@@ -146,12 +146,34 @@
                 </div>
             </div>
 
-            <div class="bg-slate-900 rounded-3xl p-6 text-white space-y-2">
-                <div class="flex justify-between text-[10px] font-bold text-white/50 uppercase"><span>Hakediş Toplamı:</span><span>+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span></div>
-                <div class="flex justify-between text-[10px] font-bold text-rose-400 uppercase"><span>Kesintiler Toplamı:</span><span>-{{ number_format($bank + $penalty + $advance + $deduction, 2, ',', '.') }} ₺</span></div>
-                <div class="pt-2 mt-2 border-t border-white/10 flex justify-between items-center">
+            <div class="bg-slate-900 rounded-3xl p-6 text-white space-y-3">
+                <div class="flex justify-between text-[10px] font-bold text-white/50 uppercase border-b border-white/5 pb-2">
+                    <span>Brüt Hakediş Toplamı:</span>
+                    <span class="text-emerald-400">+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span>
+                </div>
+                
+                <div class="space-y-1.5 py-1">
+                    <div class="flex justify-between text-[10px] font-bold text-white/70 uppercase">
+                        <span>Bankaya Yatan:</span>
+                        <span>-{{ number_format($bank, 2, ',', '.') }} ₺</span>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold text-rose-300 uppercase">
+                        <span>Trafik Cezası:</span>
+                        <span>-{{ number_format($penalty, 2, ',', '.') }} ₺</span>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold text-white/70 uppercase">
+                        <span>Avans Ödemesi:</span>
+                        <span>-{{ number_format($advance, 2, ',', '.') }} ₺</span>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold text-rose-300 uppercase">
+                        <span>Kesinti / İcra:</span>
+                        <span>-{{ number_format($deduction, 2, ',', '.') }} ₺</span>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-white/20 flex justify-between items-center">
                     <span class="text-xs font-black uppercase tracking-widest text-blue-400">NET ÖDENECEK:</span>
-                    <span class="text-2xl font-black">{{ number_format($finalNet, 2, ',', '.') }} ₺</span>
+                    <span class="text-3xl font-black text-white">{{ number_format($finalNet, 2, ',', '.') }} ₺</span>
                 </div>
             </div>
         </div>

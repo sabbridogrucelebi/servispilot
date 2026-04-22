@@ -71,8 +71,19 @@
             <div style="display: flex; gap: 30px; align-items: stretch;">
                 <div style="flex: 1.3;"><div style="font-size: 10px; font-weight: 900; color: #0f172a; margin-bottom: 10px;">EKSTRA ÖDEME & KESİNTİ ANALİZİ</div>@if($extraBonus > 0) <div style="font-weight: 700; color: #059669;">+ EKSTRA: {{ number_format($extraBonus, 2, ',', '.') }} ₺</div> @endif @if($deduction > 0) <div style="font-weight: 700; color: #dc2626;">- KESİNTİ: {{ number_format($deduction, 2, ',', '.') }} ₺</div> @endif</div>
                 <div class="total-card-pro">
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: #94a3b8;"><span>Brüt Toplam:</span><span>+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span></div>
-                    <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 10px;"><span style="font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800; color: #60a5fa; letter-spacing: 1px;">NET ÖDENECEK</span><span class="net-val-pro">{{ number_format($finalNet, 2, ',', '.') }} ₺</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #60a5fa; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 12px;">
+                        <span>TOPLAM HAKEDİŞ</span>
+                        <span style="color: white;">+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px; color: #94a3b8;"><span>Banka:</span><span>-{{ number_format($bank, 2, ',', '.') }} ₺</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px; color: #94a3b8;"><span>Ceza:</span><span>-{{ number_format($penalty, 2, ',', '.') }} ₺</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px; color: #94a3b8;"><span>Avans:</span><span>-{{ number_format($advance, 2, ',', '.') }} ₺</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px; color: #94a3b8;"><span>İcra:</span><span>-{{ number_format($deduction, 2, ',', '.') }} ₺</span></div>
+                    
+                    <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
+                        <span style="font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800; color: #60a5fa; letter-spacing: 1px;">NET ÖDENECEK</span>
+                        <span class="net-val-pro">{{ number_format($finalNet, 2, ',', '.') }} ₺</span>
+                    </div>
                 </div>
             </div>
 

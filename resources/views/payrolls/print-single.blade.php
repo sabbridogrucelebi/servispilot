@@ -167,9 +167,17 @@
             </div>
 
             <div class="total-card-pro">
-                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: #94a3b8;"><span>Brüt Toplam:</span><span>+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span></div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #fca5a5;"><span>Toplam Mahsup:</span><span>-{{ number_format($bank + $penalty + $advance + $deduction, 2, ',', '.') }} ₺</span></div>
-                <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 10px;">
+                <div class="summary-row-pro" style="color: #60a5fa; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 15px;">
+                    <span>TOPLAM HAKEDİŞ</span>
+                    <span style="color: white;">+{{ number_format($report['base_salary'] + $report['extra_earnings'] + $extraBonus, 2, ',', '.') }} ₺</span>
+                </div>
+                
+                <div class="summary-row-pro"><span>Banka Ödemesi:</span><span>-{{ number_format($bank, 2, ',', '.') }} ₺</span></div>
+                <div class="summary-row-pro"><span>Trafik Cezası:</span><span>-{{ number_format($penalty, 2, ',', '.') }} ₺</span></div>
+                <div class="summary-row-pro"><span>Avans / Ödeme:</span><span>-{{ number_format($advance, 2, ',', '.') }} ₺</span></div>
+                <div class="summary-row-pro"><span>Kesinti / İcra:</span><span>-{{ number_format($deduction, 2, ',', '.') }} ₺</span></div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 15px; padding-top: 15px;">
                     <span style="font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800; color: #60a5fa; letter-spacing: 1px;">NET ÖDENECEK TUTAR</span>
                     <span class="net-val-pro">{{ number_format($finalNet, 2, ',', '.') }} ₺</span>
                 </div>
