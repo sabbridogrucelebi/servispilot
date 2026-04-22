@@ -23,6 +23,7 @@ class User extends Authenticatable
         'role',
         'user_type',
         'is_active',
+        'is_super_admin',
     ];
 
     protected $hidden = [
@@ -32,7 +33,8 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'is_active' => 'boolean',
+        'is_active'         => 'boolean',
+        'is_super_admin'    => 'boolean',
     ];
 
     /*
@@ -61,6 +63,11 @@ class User extends Authenticatable
     | ROLE HELPERS
     |--------------------------------------------------------------------------
     */
+
+    public function isSuperAdmin(): bool
+    {
+        return (bool) $this->is_super_admin;
+    }
 
     public function isCompanyAdmin(): bool
     {
@@ -110,6 +117,11 @@ class User extends Authenticatable
 
     public function hasPermission(string $permissionKey): bool
     {
+        // Super admin her şeye erişebilir
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
         if ($this->isCustomerPortal()) {
             return false;
         }
@@ -119,6 +131,30 @@ class User extends Authenticatable
         }
 
         return $this->permissions->contains('key', $permissionKey);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MODULE CHECK
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Kullanıcının firmasının ilgili modüle erişimi var mı?
+     */
+    public function canAccessModule(string $moduleKey): bool
+    {
+        // Super admin tüm modüllere erişebilir
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Firma yoksa erişim yok
+        if (!$this->company) {
+            return false;
+        }
+
+        return $this->company->hasModule($moduleKey);
     }
 
     /*

@@ -4,6 +4,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckPermission;
+use App\Http\Middleware\SuperAdminMiddleware;
+use App\Http\Middleware\CheckLicense;
+use App\Http\Middleware\CheckModule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,8 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'permission' => CheckPermission::class,
+            'permission'  => CheckPermission::class,
+            'super_admin' => SuperAdminMiddleware::class,
+            'license'     => CheckLicense::class,
+            'module'      => CheckModule::class,
         ]);
+
+        // Tüm web route'larında lisans kontrolü
+        $middleware->appendToGroup('web', CheckLicense::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

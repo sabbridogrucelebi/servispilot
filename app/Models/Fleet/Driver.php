@@ -26,6 +26,8 @@ class Driver extends Model
         'src_type',
         'birth_date',
         'start_date',
+        'leave_date',
+        'leave_shift',
         'base_salary',
         'is_active',
         'address',
@@ -35,6 +37,7 @@ class Driver extends Model
     protected $casts = [
         'birth_date' => 'date',
         'start_date' => 'date',
+        'leave_date' => 'date',
         'base_salary' => 'decimal:2',
         'is_active' => 'boolean',
     ];

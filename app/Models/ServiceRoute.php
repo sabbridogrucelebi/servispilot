@@ -22,21 +22,47 @@ class ServiceRoute extends Model
         'customer_id',
         'vehicle_id',
         'driver_id',
+        'morning_vehicle_id',
+        'evening_vehicle_id',
         'route_name',
-        'route_type',
+        'vehicle_type',
+        'service_type',
         'start_location',
         'end_location',
         'departure_time',
         'arrival_time',
         'price',
+        'fee_type',
+        'saturday_pricing',
+        'sunday_pricing',
+        'morning_fee',
+        'evening_fee',
+        'fallback_morning_fee',
+        'fallback_evening_fee',
         'is_active',
         'notes',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'morning_fee' => 'decimal:2',
+        'evening_fee' => 'decimal:2',
+        'fallback_morning_fee' => 'decimal:2',
+        'fallback_evening_fee' => 'decimal:2',
+        'saturday_pricing' => 'boolean',
+        'sunday_pricing' => 'boolean',
         'is_active' => 'boolean',
     ];
+
+    public function morningVehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class, 'morning_vehicle_id');
+    }
+
+    public function eveningVehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class, 'evening_vehicle_id');
+    }
 
     public function company(): BelongsTo
     {

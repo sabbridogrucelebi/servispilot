@@ -83,6 +83,16 @@
                                 Düzenle
                             </a>
 
+                            <button type="button" onclick="openLeaveModal()"
+                                    class="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                                🛑 İşten Ayrıldı
+                            </button>
+
+                            <button type="button" onclick="openChangeVehicleModal()"
+                                    class="rounded-2xl bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                                🚐 Araç Değiştir
+                            </button>
+
                             <a href="{{ route('drivers.index') }}"
                                class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                                 Listeye Dön
@@ -628,8 +638,76 @@
         </div>
     </div>
 
+    <!-- İşten Ayrılma Modalı -->
+    <div id="leaveModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl">
+            <h3 class="text-2xl font-black text-slate-900">🛑 İşten Ayrılma Kaydı</h3>
+            <p class="mt-2 text-sm text-slate-500 font-medium">Şoförün ayrılış tarihini ve son vardiyasını seçin.</p>
+            
+            <form action="{{ route('drivers.leave-work', $driver) }}" method="POST" class="mt-6 space-y-5">
+                @csrf
+                <div>
+                    <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Ayrılma Tarihi</label>
+                    <input type="date" name="leave_date" value="{{ date('Y-m-d') }}" required
+                           class="w-full rounded-2xl border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Son Yapılan Sefer</label>
+                    <select name="leave_shift" required
+                            class="w-full rounded-2xl border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                        <option value="morning">Sabah Seferini Yaptı Bıraktı</option>
+                        <option value="evening">Akşam Seferini Yaptı Bıraktı</option>
+                        <option value="full_day">Tüm Gün Seferlerini Yaptı Bıraktı</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeLeaveModal()" class="flex-1 rounded-2xl border border-slate-200 py-3 text-sm font-bold text-slate-600">Vazgeç</button>
+                    <button type="submit" class="flex-1 rounded-2xl bg-rose-600 py-3 text-sm font-bold text-white shadow-lg shadow-rose-200">Kaydı Onayla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Araç Değiştirme Modalı -->
+    <div id="changeVehicleModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl">
+            <h3 class="text-2xl font-black text-slate-900">🚐 Araç Değiştir / Ata</h3>
+            <p class="mt-2 text-sm text-slate-500 font-medium">Şoförü atamak istediğiniz aracı seçin.</p>
+            
+            <form action="{{ route('drivers.change-vehicle', $driver) }}" method="POST" class="mt-6 space-y-5">
+                @csrf
+                <div>
+                    <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Yeni Araç Seçin</label>
+                    <select name="vehicle_id" required
+                            class="w-full rounded-2xl border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Araç Seçiniz...</option>
+                        @foreach(\App\Models\Fleet\Vehicle::orderBy('plate')->get() as $v)
+                            <option value="{{ $v->id }}" {{ $driver->vehicle_id == $v->id ? 'selected' : '' }}>
+                                {{ $v->plate }} ({{ $v->brand }} {{ $v->model }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeChangeVehicleModal()" class="flex-1 rounded-2xl border border-slate-200 py-3 text-sm font-bold text-slate-600">Vazgeç</button>
+                    <button type="submit" class="flex-1 rounded-2xl bg-blue-600 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200">Atamayı Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        function openLeaveModal() { document.getElementById('leaveModal').classList.replace('hidden', 'flex'); }
+        function closeLeaveModal() { document.getElementById('leaveModal').classList.replace('flex', 'hidden'); }
+        
+        function openChangeVehicleModal() { document.getElementById('changeVehicleModal').classList.replace('hidden', 'flex'); }
+        function closeChangeVehicleModal() { document.getElementById('changeVehicleModal').classList.replace('flex', 'hidden'); }
+
         document.addEventListener('DOMContentLoaded', function () {
+            // ... mevcut script içeriği ...
             const typeEl = document.getElementById('document_type');
             const startEl = document.getElementById('start_date');
             const endEl = document.getElementById('end_date');

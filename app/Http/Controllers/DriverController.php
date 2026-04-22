@@ -341,6 +341,36 @@ class DriverController extends Controller
             ->with('success', 'Personel silindi.');
     }
 
+    public function leaveWork(Request $request, Driver $driver)
+    {
+        $validated = $request->validate([
+            'leave_date' => 'required|date',
+            'leave_shift' => 'required|string|in:morning,evening,full_day',
+        ]);
+
+        $driver->update([
+            'is_active' => false,
+            'leave_date' => $validated['leave_date'],
+            'leave_shift' => $validated['leave_shift'],
+            'vehicle_id' => null, // İşten ayrılınca aracı boşa çıkar
+        ]);
+
+        return redirect()->back()->with('success', 'Personel işten ayrılma kaydı başarıyla yapıldı.');
+    }
+
+    public function changeVehicle(Request $request, Driver $driver)
+    {
+        $validated = $request->validate([
+            'vehicle_id' => 'required|exists:vehicles,id',
+        ]);
+
+        $driver->update([
+            'vehicle_id' => $validated['vehicle_id'],
+        ]);
+
+        return redirect()->back()->with('success', 'Personel araç ataması başarıyla güncellendi.');
+    }
+
     protected function resolveDriverDocumentStatus(Driver $driver): array
     {
         $documents = $driver->documents->map(function ($document) use ($driver) {

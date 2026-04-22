@@ -28,6 +28,9 @@ use App\Http\Controllers\CustomerContractController;
 use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerPortalUserController;
 use App\Http\Controllers\CustomerServiceRouteController;
+use App\Http\Controllers\VehicleTrackingController;
+use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\CompanyController as SuperAdminCompanyController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -100,6 +103,14 @@ Route::get('/dashboard', function () {
 
 })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
 
+    Route::get('/vehicle-tracking', [VehicleTrackingController::class, 'index'])
+        ->middleware(['auth', 'permission:vehicles.view'])
+        ->name('vehicle-tracking.index');
+
+    Route::post('/vehicle-tracking', [VehicleTrackingController::class, 'store'])
+        ->middleware(['auth', 'permission:vehicles.view'])
+        ->name('vehicle-tracking.store');
+
 Route::middleware('auth')->group(function () {
 
     /*
@@ -109,6 +120,9 @@ Route::middleware('auth')->group(function () {
     */
     Route::get('/customer-portal', [CustomerPortalController::class, 'dashboard'])
         ->name('customer.portal.dashboard');
+
+    Route::get('/customer-portal/trips', [CustomerPortalController::class, 'trips'])
+        ->name('customer.portal.trips');
 
     /*
     |--------------------------------------------------------------------------
@@ -267,6 +281,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('drivers', DriverController::class)
         ->middleware('permission:drivers.view');
+    Route::post('drivers/{driver}/leave-work', [DriverController::class, 'leaveWork'])->name('drivers.leave-work');
+    Route::post('drivers/{driver}/change-vehicle', [DriverController::class, 'changeVehicle'])->name('drivers.change-vehicle');
 
     Route::resource('customers', CustomerController::class)
         ->middleware('permission:customers.view');
@@ -331,6 +347,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('payrolls', PayrollController::class)
         ->middleware('permission:payrolls.view');
+    Route::post('payrolls/bulk-store', [PayrollController::class, 'bulkStore'])->name('payrolls.bulk-store');
+    Route::get('payrolls/report/{driver}/{period}', [PayrollController::class, 'showReport'])->name('payrolls.report');
 
     Route::resource('documents', DocumentController::class)
         ->middleware('permission:documents.view');
@@ -389,3 +407,34 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| LİSANS SÜRESİ DOLDU SAYFASI
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->get('/license-expired', function () {
+    return view('license-expired');
+})->name('license.expired');
+
+/*
+|--------------------------------------------------------------------------
+| SUPER ADMIN PANELİ
+|--------------------------------------------------------------------------
+*/
+Route::prefix('super-admin')
+    ->middleware(['auth', 'super_admin'])
+    ->name('super-admin.')
+    ->group(function () {
+
+        Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])
+            ->name('dashboard');
+
+        Route::resource('companies', SuperAdminCompanyController::class);
+
+        Route::post('/companies/{company}/users', [SuperAdminCompanyController::class, 'storeUser'])
+            ->name('companies.users.store');
+
+        Route::put('/companies/{company}/modules', [SuperAdminCompanyController::class, 'updateModules'])
+            ->name('companies.modules.update');
+    });

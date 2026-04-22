@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\CustomerServiceRoute;
 use App\Models\Fleet\Vehicle;
 use App\Models\Fleet\Driver;
 
 class Trip extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToCompany;
 
     protected $fillable = [
+        'company_id',
         'service_route_id',
         'vehicle_id',
         'morning_vehicle_id',
@@ -25,7 +27,7 @@ class Trip extends Model
     ];
 
     protected $casts = [
-        'trip_date' => 'date',
+        'trip_date'  => 'date',
         'trip_price' => 'decimal:2',
     ];
 

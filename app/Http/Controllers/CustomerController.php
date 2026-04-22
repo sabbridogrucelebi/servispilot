@@ -47,7 +47,7 @@ class CustomerController extends Controller
             ->with('success', 'Müşteri başarıyla eklendi.');
     }
 
-    public function show(Customer $customer)
+    public function show(Request $request, Customer $customer)
     {
         $contracts = $customer->contracts()->get();
 
@@ -71,13 +71,68 @@ class CustomerController extends Controller
             ->orderBy('plate')
             ->get();
 
+        // INVOICE TAB LOGIC
+        $selectedMonth = $request->get('month', now()->month);
+        $selectedYear = $request->get('year', now()->year);
+        
+        $monthOptions = [
+            1 => 'Ocak', 2 => 'Şubat', 3 => 'Mart', 4 => 'Nisan',
+            5 => 'Mayıs', 6 => 'Haziran', 7 => 'Temmuz', 8 => 'Ağustos',
+            9 => 'Eylül', 10 => 'Ekim', 11 => 'Kasım', 12 => 'Aralık',
+        ];
+        $yearOptions = range(now()->year, 2023);
+
+        $startOfMonth = \Carbon\Carbon::create($selectedYear, $selectedMonth, 1)->startOfDay();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        $subtotal = \App\Models\Trip::query()
+            ->whereHas('serviceRoute', function ($q) use ($customer) {
+                $q->where('customer_id', $customer->id);
+            })
+            ->whereDate('trip_date', '>=', $startOfMonth->toDateString())
+            ->whereDate('trip_date', '<=', $endOfMonth->toDateString())
+            ->sum('trip_price');
+
+        $vatRate = (float) ($customer->vat_rate ?? 0);
+        $vatAmount = $subtotal * ($vatRate / 100);
+        $invoiceTotal = $subtotal + $vatAmount;
+
+        $withholdingAmount = 0;
+        $withholdingRate = $customer->withholding_rate;
+
+        if ($withholdingRate && str_contains($withholdingRate, '/')) {
+            [$numerator, $denominator] = array_pad(explode('/', $withholdingRate), 2, null);
+            $numerator = (float) $numerator;
+            $denominator = (float) $denominator;
+
+            if ($numerator > 0 && $denominator > 0) {
+                $withholdingAmount = $vatAmount * ($numerator / $denominator);
+            }
+        }
+
+        $netTotal = $invoiceTotal - $withholdingAmount;
+
+        $invoiceSummary = [
+            'subtotal' => $subtotal,
+            'vat_rate' => $vatRate,
+            'vat_amount' => $vatAmount,
+            'withholding_rate' => $withholdingRate,
+            'withholding_amount' => $withholdingAmount,
+            'net_total' => $netTotal,
+        ];
+
         return view('customers.show', compact(
             'customer',
             'contracts',
             'activeContract',
             'customerUsers',
             'serviceRoutes',
-            'activeVehicles'
+            'activeVehicles',
+            'selectedMonth',
+            'selectedYear',
+            'monthOptions',
+            'yearOptions',
+            'invoiceSummary'
         ));
     }
 

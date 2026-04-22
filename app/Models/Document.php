@@ -7,9 +7,12 @@ use App\Models\Fleet\Vehicle;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToCompany;
 
 class Document extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
         'company_id',
         'documentable_id',
@@ -25,8 +28,8 @@ class Document extends Model
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'start_date'  => 'date',
+        'end_date'    => 'date',
         'archived_at' => 'datetime',
     ];
 
@@ -70,7 +73,7 @@ class Document extends Model
             return false;
         }
 
-        $today = now()->startOfDay();
+        $today  = now()->startOfDay();
         $target = now()->copy()->addDays($days)->endOfDay();
 
         return $this->end_date->between($today, $target);

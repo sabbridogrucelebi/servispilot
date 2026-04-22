@@ -43,7 +43,7 @@
         </div>
     </header>
 
-    <main class="mx-auto max-w-7xl px-6 py-8">
+    <main class="px-6 py-8">
         @yield('content')
     </main>
 </div>

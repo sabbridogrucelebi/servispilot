@@ -17,6 +17,8 @@ use App\Models\Fleet\VehicleImage;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\ArventoService;
+use App\Models\VehicleTrackingSetting;
 
 class VehicleController extends Controller
 {
@@ -156,6 +158,18 @@ class VehicleController extends Controller
             'token' => $vehicle->public_image_upload_token,
         ]);
 
+        // Arvento Canlı Verileri
+        $arventoStats = null;
+        $arventoSetting = VehicleTrackingSetting::where('provider', 'arvento')->first();
+        if ($arventoSetting) {
+            try {
+                $arventoService = new ArventoService($arventoSetting);
+                $arventoStats = $arventoService->getVehicleDailyStats($vehicle->plate);
+            } catch (\Exception $e) {
+                \Log::error("Arvento Stats Fetch Error: " . $e->getMessage());
+            }
+        }
+
         return view('vehicles.show', compact(
             'vehicle',
             'income',
@@ -175,7 +189,8 @@ class VehicleController extends Controller
             'vehicleMaintenances',
             'vehiclePenalties',
             'vehicleImages',
-            'publicImageUploadUrl'
+            'publicImageUploadUrl',
+            'arventoStats'
         ));
     }
 

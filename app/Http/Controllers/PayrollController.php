@@ -4,18 +4,89 @@ namespace App\Http\Controllers;
 
 use App\Models\Payroll;
 use App\Models\Fleet\Driver;
+use App\Services\PayrollService;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PayrollController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $payrolls = Payroll::with('driver')
-            ->orderByDesc('period_month')
-            ->latest()
-            ->get();
+        $period = $request->get('period', now()->format('Y-m'));
+        [$year, $month] = explode('-', $period);
 
-        return view('payrolls.index', compact('payrolls'));
+        $payrollService = new PayrollService();
+        $drivers = Driver::where('is_active', true)->orderBy('full_name')->get();
+        
+        $calculatedPayrolls = [];
+        foreach ($drivers as $driver) {
+            $calculation = $payrollService->calculateMonthlyPayroll($driver, (int)$month, (int)$year);
+            
+            $existing = Payroll::where('driver_id', $driver->id)
+                ->where('period_month', $period)
+                ->first();
+
+            $calculatedPayrolls[] = [
+                'driver' => $driver,
+                'calculation' => $calculation,
+                'existing' => $existing
+            ];
+        }
+
+        return view('payrolls.index', compact('calculatedPayrolls', 'period'));
+    }
+
+    public function bulkStore(Request $request)
+    {
+        $period = $request->get('period');
+        $data = $request->get('payrolls', []);
+
+        foreach ($data as $driverId => $payrollData) {
+            $base = (float)($payrollData['base_salary'] ?? 0);
+            $trips = (float)($payrollData['extra_earnings'] ?? 0);
+            $extraBonus = (float)($payrollData['extra_bonus'] ?? 0);
+            
+            $bank = (float)($payrollData['bank_payment'] ?? 0);
+            $penalty = (float)($payrollData['traffic_penalty'] ?? 0);
+            $advance = (float)($payrollData['advance_payment'] ?? 0);
+            $deduction = (float)($payrollData['deduction'] ?? 0);
+
+            // Net Ödenecek = (Ana Maaş + Sefer Hakediş + Ekstra) - (Banka + Ceza + Avans + Kesinti)
+            $net = ($base + $trips + $extraBonus) - ($bank + $penalty + $advance + $deduction);
+
+            Payroll::updateOrCreate(
+                [
+                    'driver_id' => $driverId,
+                    'period_month' => $period,
+                ],
+                [
+                    'company_id' => auth()->user()->company_id,
+                    'base_salary' => $base,
+                    'extra_payment' => $trips,
+                    'extra_bonus' => $extraBonus,
+                    'extra_notes' => $payrollData['extra_notes'] ?? null,
+                    'bank_payment' => $bank,
+                    'traffic_penalty' => $penalty,
+                    'advance_payment' => $advance,
+                    'deduction' => $deduction,
+                    'net_salary' => $net,
+                    'is_active' => true,
+                ]
+            );
+        }
+
+        return redirect()->back()->with('success', "$period dönemi maaş ve finansal kayıtları başarıyla güncellendi.");
+    }
+
+    public function showReport($driverId, $period)
+    {
+        $driver = Driver::findOrFail($driverId);
+        [$year, $month] = explode('-', $period);
+
+        $payrollService = new PayrollService();
+        $report = $payrollService->calculateMonthlyPayroll($driver, (int)$month, (int)$year);
+
+        return view('payrolls.report', compact('driver', 'period', 'report'));
     }
 
     public function create()

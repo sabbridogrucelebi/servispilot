@@ -17,8 +17,17 @@ trait BelongsToCompany
         });
 
         static::addGlobalScope('company', function (Builder $builder) {
-            if (auth()->check() && auth()->user()->company_id) {
-                $builder->where($builder->getModel()->getTable() . '.company_id', auth()->user()->company_id);
+            if (auth()->check()) {
+                $user = auth()->user();
+
+                // Super admin tüm firmaların verilerini görebilir
+                if ($user->is_super_admin) {
+                    return;
+                }
+
+                if ($user->company_id) {
+                    $builder->where($builder->getModel()->getTable() . '.company_id', $user->company_id);
+                }
             }
         });
     }

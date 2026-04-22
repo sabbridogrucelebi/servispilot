@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToCompany;
 
 class CustomerContract extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'customer_id',
         'year',
         'start_date',
@@ -18,8 +22,8 @@ class CustomerContract extends Model
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date' => 'date',
-        'year' => 'integer',
+        'end_date'   => 'date',
+        'year'       => 'integer',
     ];
 
     public function customer(): BelongsTo

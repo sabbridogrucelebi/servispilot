@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\BelongsToCompany;
 use Carbon\Carbon;
 
 class TrafficPenalty extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToCompany;
 
     protected $fillable = [
         'company_id',
@@ -30,11 +31,11 @@ class TrafficPenalty extends Model
     ];
 
     protected $casts = [
-        'penalty_date' => 'date',
-        'payment_date' => 'date',
-        'penalty_amount' => 'decimal:2',
+        'penalty_date'      => 'date',
+        'payment_date'      => 'date',
+        'penalty_amount'    => 'decimal:2',
         'discounted_amount' => 'decimal:2',
-        'paid_amount' => 'decimal:2',
+        'paid_amount'       => 'decimal:2',
     ];
 
     public function vehicle()

@@ -21,6 +21,10 @@ class Payroll extends Model
         'deduction',
         'advance_payment',
         'net_salary',
+        'bank_payment',
+        'traffic_penalty',
+        'extra_bonus',
+        'extra_notes',
         'notes',
     ];
 
@@ -30,6 +34,9 @@ class Payroll extends Model
         'deduction' => 'decimal:2',
         'advance_payment' => 'decimal:2',
         'net_salary' => 'decimal:2',
+        'bank_payment' => 'decimal:2',
+        'traffic_penalty' => 'decimal:2',
+        'extra_bonus' => 'decimal:2',
     ];
 
     public function company(): BelongsTo

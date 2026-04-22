@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToCompany;
 
 class ActivityLog extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
         'company_id',
         'user_id',
@@ -26,7 +29,7 @@ class ActivityLog extends Model
     protected $casts = [
         'old_values' => 'array',
         'new_values' => 'array',
-        'meta' => 'array',
+        'meta'       => 'array',
     ];
 
     public function user(): BelongsTo

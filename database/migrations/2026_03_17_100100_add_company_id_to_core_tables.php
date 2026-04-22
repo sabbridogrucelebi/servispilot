@@ -21,9 +21,6 @@ return new class extends Migration
             $table->foreignId('company_id')->nullable()->constrained('companies')->nullOnDelete();
         });
 
-        Schema::table('customers', function (Blueprint $table) {
-            $table->foreignId('company_id')->nullable()->constrained('companies')->nullOnDelete();
-        });
 
         Schema::table('service_routes', function (Blueprint $table) {
             $table->foreignId('company_id')->nullable()->constrained('companies')->nullOnDelete();
@@ -60,7 +57,7 @@ return new class extends Migration
         DB::table('users')->whereNull('company_id')->update(['company_id' => $companyId]);
         DB::table('vehicles')->whereNull('company_id')->update(['company_id' => $companyId]);
         DB::table('drivers')->whereNull('company_id')->update(['company_id' => $companyId]);
-        DB::table('customers')->whereNull('company_id')->update(['company_id' => $companyId]);
+
         DB::table('service_routes')->whereNull('company_id')->update(['company_id' => $companyId]);
         DB::table('route_stops')->whereNull('company_id')->update(['company_id' => $companyId]);
         DB::table('trips')->whereNull('company_id')->update(['company_id' => $companyId]);
@@ -95,9 +92,7 @@ return new class extends Migration
             $table->dropConstrainedForeignId('company_id');
         });
 
-        Schema::table('customers', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('company_id');
-        });
+
 
         Schema::table('drivers', function (Blueprint $table) {
             $table->dropConstrainedForeignId('company_id');

@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToCompany;
 
 class CustomerServiceRoute extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'customer_id',
         'route_name',
         'service_type',
@@ -25,13 +29,13 @@ class CustomerServiceRoute extends Model
     ];
 
     protected $casts = [
-        'morning_fee' => 'decimal:2',
-        'evening_fee' => 'decimal:2',
+        'morning_fee'          => 'decimal:2',
+        'evening_fee'          => 'decimal:2',
         'fallback_morning_fee' => 'decimal:2',
         'fallback_evening_fee' => 'decimal:2',
-        'saturday_pricing' => 'boolean',
-        'sunday_pricing' => 'boolean',
-        'is_active' => 'boolean',
+        'saturday_pricing'     => 'boolean',
+        'sunday_pricing'       => 'boolean',
+        'is_active'            => 'boolean',
     ];
 
     /*

@@ -24,6 +24,12 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
+        // Super Admin → Super Admin Paneli
+        if ($user && $user->isSuperAdmin()) {
+            return redirect()->route('super-admin.dashboard');
+        }
+
+        // Müşteri Portalı
         if ($user && $user->isCustomerPortal()) {
             return redirect()->route('customer.portal.dashboard');
         }

@@ -81,7 +81,7 @@
     </div>
 
     @if($currentTab === 'general')
-        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 {{ $arventoStats ? 'xl:grid-cols-5' : 'xl:grid-cols-4' }}">
             <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-sky-500 to-blue-600 p-5 text-white shadow-xl">
                 <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
                 <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
@@ -121,6 +121,24 @@
                     <div class="mt-2 text-xs text-white/75">Gelir - yakıt - maaş sonucu</div>
                 </div>
             </div>
+
+            @if($arventoStats)
+                <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-rose-500 to-red-600 p-5 text-white shadow-xl">
+                    <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
+                    <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
+                    <div class="relative">
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                            </span>
+                            <div class="text-sm font-medium text-white/80">Bugünkü Max Hız</div>
+                        </div>
+                        <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ number_format($arventoStats['max_speed'] ?? 0, 0) }} <span class="text-sm font-normal opacity-80">km/h</span></div>
+                        <div class="mt-2 text-xs text-white/75 italic">Arvento Canlı Sistem Verisi</div>
+                    </div>
+                </div>
+            @endif
         </div>
     @endif
 </div>

@@ -62,7 +62,7 @@ class TripController extends Controller
 
             if ($selectedCustomer) {
                 $serviceRoutes = CustomerServiceRoute::query()
-                    ->with(['morningVehicle', 'eveningVehicle'])
+                    ->with(['morningVehicle.drivers', 'eveningVehicle.drivers'])
                     ->where('customer_id', $selectedCustomer->id)
                     ->where('is_active', true)
                     ->orderBy('route_name')
@@ -127,6 +127,19 @@ class TripController extends Controller
                         $defaultMorningVehiclePlate = $route->morningVehicle?->plate;
                         $defaultEveningVehiclePlate = $route->eveningVehicle?->plate;
 
+                        $formatDriver = function ($vehicle) {
+                            if (!$vehicle) return '';
+                            $driver = $vehicle->drivers->where('is_active', true)->first() ?? $vehicle->drivers->first();
+                            if (!$driver) return '';
+                            $parts = explode(' ', trim($driver->full_name));
+                            if (count($parts) > 1) {
+                                $lastName = array_pop($parts);
+                                $firstName = implode(' ', $parts);
+                                return $firstName . ' ' . mb_substr($lastName, 0, 1) . '.';
+                            }
+                            return $parts[0];
+                        };
+
                         $matrix[$dateKey][$route->id] = [
                             'trip_id' => $trip?->id,
                             'value' => $enteredPrice,
@@ -138,8 +151,10 @@ class TripController extends Controller
                             'vehicle_plate' => $trip?->vehicle?->plate,
                             'morning_vehicle_id' => $trip?->morning_vehicle_id,
                             'morning_vehicle_plate' => $trip?->morningVehicle?->plate,
+                            'morning_driver_name' => $formatDriver($trip?->morningVehicle),
                             'evening_vehicle_id' => $trip?->evening_vehicle_id,
                             'evening_vehicle_plate' => $trip?->eveningVehicle?->plate,
+                            'evening_driver_name' => $formatDriver($trip?->eveningVehicle),
                             'driver_id' => $trip?->driver_id,
                             'driver_name' => $trip?->driver?->full_name,
                             'notes' => $trip?->notes,
@@ -148,8 +163,10 @@ class TripController extends Controller
                             'is_holiday' => $isHoliday,
                             'default_morning_vehicle_id' => $defaultMorningVehicleId,
                             'default_morning_vehicle_plate' => $defaultMorningVehiclePlate,
+                            'default_morning_driver_name' => $formatDriver($route->morningVehicle),
                             'default_evening_vehicle_id' => $defaultEveningVehicleId,
                             'default_evening_vehicle_plate' => $defaultEveningVehiclePlate,
+                            'default_evening_driver_name' => $formatDriver($route->eveningVehicle),
                         ];
 
                         if (!is_null($enteredPrice)) {
@@ -209,23 +226,36 @@ class TripController extends Controller
             12 => 'Aralık',
         ];
 
-        $yearOptions = range($now->year + 3, 2020);
+        $yearOptions = range(now()->year, 2023); // En yüksek yıl (şu anki yıl) en üstte görünsün
 
-        return view('trips.index', [
+        $viewData = [
             'customers' => $customers,
             'vehicles' => $vehicles,
-            'selectedCustomer' => $selectedCustomer,
             'selectedCustomerId' => $selectedCustomerId,
+            'selectedCustomer' => $selectedCustomer,
+            'serviceRoutes' => $serviceRoutes,
             'selectedMonth' => $selectedMonth,
             'selectedYear' => $selectedYear,
-            'monthOptions' => $monthOptions,
-            'yearOptions' => $yearOptions,
-            'serviceRoutes' => $serviceRoutes,
             'monthDays' => $monthDays,
             'matrix' => $matrix,
-            'routeTotals' => $routeTotals,
+            'monthOptions' => $monthOptions,
+            'yearOptions' => $yearOptions,
             'summary' => $summary,
-        ]);
+            'routeTotals' => $routeTotals,
+        ];
+
+        if ($request->get('export') === 'excel' && $selectedCustomer) {
+            if ($request->filled('hidden_routes')) {
+                $hiddenIds = explode(',', $request->get('hidden_routes'));
+                $viewData['serviceRoutes'] = $viewData['serviceRoutes']->reject(function($route) use ($hiddenIds) {
+                    return in_array((string)$route->id, $hiddenIds);
+                })->values(); // reset keys
+            }
+            $filename = str_replace(' ', '_', $selectedCustomer->company_name) . '_' . $monthOptions[$selectedMonth] . '_Puantaj.xlsx';
+            return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PuantajExport($viewData), $filename);
+        }
+
+        return view('trips.index', $viewData);
     }
 
     public function upsertCell(Request $request): JsonResponse
@@ -252,21 +282,10 @@ class TripController extends Controller
         $notes = $validated['notes'] ?? null;
         $tripStatus = $validated['trip_status'] ?? 'Yapıldı';
 
-        if ($tripPrice === null || $tripPrice === '') {
-            $existingTrip = Trip::query()
-                ->where('service_route_id', $serviceRoute->id)
-                ->whereDate('trip_date', $tripDate->toDateString())
-                ->first();
-
-            if ($existingTrip) {
-                $existingTrip->delete();
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Hücre kaydı temizlendi.',
-                'deleted' => true,
-            ]);
+        // trip_price zorunluluğunu kaldırıyoruz, boş olsa bile kayıt edilebilir.
+        if (array_key_exists('trip_price', $validated) && ($validated['trip_price'] === '' || $validated['trip_price'] === null)) {
+            // Eğer özellikle silmek istiyorsa trip_status = 'İptal' veya benzeri bir mantık kurulabilir.
+            // Ama şimdilik fiyat boşsa sadece fiyatı null yapıp aracı kaydedeceğiz.
         }
 
         $defaultMorningVehicleId = $serviceRoute->morning_vehicle_id;
@@ -290,6 +309,50 @@ class TripController extends Controller
         }
 
         $fallbackVehicleId = $morningVehicleId ?: $eveningVehicleId ?: $singleVehicleId;
+
+        // EĞER FİYAT 0 VEYA BOŞSA: Kayıtlı özel plakaları sil ve varsayılana dön
+        if ($tripPrice === 0 || $tripPrice === '0' || $tripPrice === null || $tripPrice === '') {
+            Trip::where('service_route_id', $serviceRoute->id)
+                ->where('trip_date', $tripDate->toDateString())
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Özel kayıt silindi, varsayılana dönüldü.',
+                'trip' => [
+                    'id' => null,
+                    'trip_date' => $tripDate->format('Y-m-d'),
+                    'trip_price' => null,
+                    'display_trip_price' => '',
+                    'trip_status' => 'Yapıldı',
+                    'vehicle_id' => null,
+                    'vehicle_plate' => $serviceRoute->morningVehicle?->plate ?: $serviceRoute->eveningVehicle?->plate,
+                    'morning_vehicle_id' => $defaultMorningVehicleId,
+                    'morning_vehicle_plate' => $serviceRoute->morningVehicle?->plate,
+                    'evening_vehicle_id' => $defaultEveningVehicleId,
+                    'evening_vehicle_plate' => $serviceRoute->eveningVehicle?->plate,
+                    'driver_id' => null,
+                    'driver_name' => null,
+                    'notes' => null,
+                    'default_morning_vehicle_id' => $defaultMorningVehicleId,
+                    'default_morning_vehicle_plate' => $serviceRoute->morningVehicle?->plate,
+                    'default_evening_vehicle_id' => $defaultEveningVehicleId,
+                    'default_evening_vehicle_plate' => $serviceRoute->eveningVehicle?->plate,
+                ],
+            ]);
+        }
+
+        // EĞER ŞOFÖR BOŞ GELİRSE (Puantajdan sadece araç seçilirse)
+        // Seçilen aracın o anki aktif şoförünü otomatik bul ve ata.
+        if (!$driverId && $fallbackVehicleId) {
+            $autoDriver = Driver::where('vehicle_id', $fallbackVehicleId)
+                ->where('is_active', true)
+                ->first();
+            
+            if ($autoDriver) {
+                $driverId = $autoDriver->id;
+            }
+        }
 
         $trip = Trip::query()->updateOrCreate(
             [
