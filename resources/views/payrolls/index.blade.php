@@ -52,7 +52,6 @@
                             <th class="px-4 py-5 font-black text-white uppercase tracking-widest w-48">PERSONEL</th>
                             <th class="px-4 py-5 font-black text-white uppercase tracking-widest text-right">ANA MAAŞ</th>
                             
-                            <!-- Yeni Sıralama -->
                             <th class="px-4 py-5 font-black text-blue-400 uppercase tracking-widest text-center bg-blue-900/20 w-32">BANKAYA YATAN</th>
                             <th class="px-4 py-5 font-black text-emerald-400 uppercase tracking-widest text-right w-32">EK HAKEDİŞ</th>
                             <th class="px-4 py-5 font-black text-rose-400 uppercase tracking-widest text-center bg-rose-900/10 w-32">TRAFİK CEZASI</th>
@@ -81,7 +80,10 @@
                                 
                                 $liveNet = ($calc['base_salary'] + $calc['extra_earnings'] + $extraBonus) - ($bank + $penalty + $advance + $deduction);
                             @endphp
-                            <tr class="transition-colors hover:bg-slate-50/80 group" x-data="{ showExtraNote: {{ $extraBonus > 0 ? 'true' : 'false' }} }">
+                            <tr class="transition-colors hover:bg-slate-50/80 group" x-data="{ 
+                                showExtraNote: {{ $extraBonus > 0 ? 'true' : 'false' }},
+                                showDeductionNote: {{ $deduction > 0 ? 'true' : 'false' }}
+                            }">
                                 <td class="px-4 py-4 text-center font-bold text-slate-400">{{ $index + 1 }}</td>
                                 <td class="px-4 py-4">
                                     <div class="font-extrabold text-slate-900 whitespace-nowrap">{{ $driver->full_name }}</div>
@@ -123,9 +125,17 @@
 
                                 <!-- Kesinti -->
                                 <td class="px-2 py-4">
-                                    <input type="number" step="0.01" id="deduction_{{ $id }}" name="payrolls[{{ $id }}][deduction]" value="{{ $deduction }}"
-                                           @input="calculateNet({{ $id }})"
-                                           class="w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-right font-black text-slate-700 focus:ring-2 focus:ring-slate-500">
+                                    <div class="space-y-2">
+                                        <input type="number" step="0.01" id="deduction_{{ $id }}" name="payrolls[{{ $id }}][deduction]" value="{{ $deduction }}"
+                                               @input="calculateNet({{ $id }}); showDeductionNote = ($event.target.value > 0)"
+                                               class="w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-right font-black text-slate-700 focus:ring-2 focus:ring-slate-500">
+                                        
+                                        <div x-show="showDeductionNote" x-transition>
+                                            <input type="text" name="payrolls[{{ $id }}][deduction_notes]" value="{{ $ex->deduction_notes ?? '' }}"
+                                                   placeholder="Kesinti sebebi..."
+                                                   class="w-full rounded-lg border-rose-200 bg-rose-50 py-1 px-2 text-[10px] font-bold text-rose-900 placeholder-rose-300">
+                                        </div>
+                                    </div>
                                 </td>
 
                                 <!-- Ekstra (+) -->
@@ -138,7 +148,7 @@
                                         <div x-show="showExtraNote" x-transition>
                                             <input type="text" name="payrolls[{{ $id }}][extra_notes]" value="{{ $ex->extra_notes ?? '' }}"
                                                    placeholder="Ekstra sebebi..."
-                                                   class="w-full rounded-lg border-amber-100 bg-amber-50/50 py-1 px-2 text-[10px] font-bold text-amber-900 placeholder-amber-300">
+                                                   class="w-full rounded-lg border-rose-200 bg-rose-50 py-1 px-2 text-[10px] font-bold text-rose-900 placeholder-rose-300">
                                         </div>
                                     </div>
                                 </td>

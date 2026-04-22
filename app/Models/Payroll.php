@@ -25,6 +25,7 @@ class Payroll extends Model
         'traffic_penalty',
         'extra_bonus',
         'extra_notes',
+        'deduction_notes',
         'notes',
     ];
 

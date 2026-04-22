@@ -69,6 +69,7 @@ class PayrollController extends Controller
                     'traffic_penalty' => $penalty,
                     'advance_payment' => $advance,
                     'deduction' => $deduction,
+                    'deduction_notes' => $payrollData['deduction_notes'] ?? null,
                     'net_salary' => $net,
                     'is_active' => true,
                 ]

@@ -9,6 +9,7 @@
     $penalty = $ex ? (float)$ex->traffic_penalty : 0;
     $advance = $ex ? (float)$ex->advance_payment : 0;
     $deduction = $ex ? (float)$ex->deduction : 0;
+    $deductionNotes = $ex ? $ex->deduction_notes : '';
     $extraBonus = $ex ? (float)$ex->extra_bonus : 0;
     $extraNotes = $ex ? $ex->extra_notes : '';
     
@@ -24,7 +25,7 @@
         </a>
         
         <button onclick="window.print()" class="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-lg transition-all hover:bg-slate-800">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             YAZDIR / PDF KAYDET
         </button>
     </div>
@@ -59,7 +60,7 @@
         <!-- Sefer Özet Tablosu -->
         <div class="mt-8">
             <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <svg class="h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <svg class="h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 0-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 AYLIK EK SEFER ÖZETİ
             </h3>
             <div class="overflow-hidden border border-slate-100 rounded-2xl">
@@ -133,21 +134,44 @@
             </div>
         </div>
 
-        <!-- Finansal Özet ve İmza Alanı Aynı Kalıyor... -->
+        <!-- Detaylı Finansal Özet -->
         <div class="mt-10 grid grid-cols-2 gap-12">
-            <div>
-                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Ek Ödeme / Notlar</h4>
-                <div class="space-y-3">
+            <div class="space-y-6">
+                <!-- Ekstralar -->
+                <div>
+                    <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Ek Ödemeler</h4>
                     @if($extraBonus > 0)
-                        <div class="flex justify-between text-sm font-bold text-emerald-600">
-                            <span>Ekstra Ödeme:</span>
-                            <span>+{{ number_format($extraBonus, 2, ',', '.') }} ₺</span>
-                        </div>
-                        <div class="rounded-xl bg-slate-50 p-3 text-xs text-slate-600 italic border border-slate-100">
-                            <strong>Açıklama:</strong> {{ $extraNotes ?: 'Belirtilmedi' }}
+                        <div class="rounded-xl bg-emerald-50 p-4 border border-emerald-100">
+                            <div class="flex justify-between text-sm font-black text-emerald-700">
+                                <span>Ekstra Bonus:</span>
+                                <span>+{{ number_format($extraBonus, 2, ',', '.') }} ₺</span>
+                            </div>
+                            @if($extraNotes)
+                                <div class="mt-2 text-[11px] font-bold text-emerald-600 bg-white/50 p-2 rounded-lg italic">
+                                    Not: {{ $extraNotes }}
+                                </div>
+                            @endif
                         </div>
                     @else
-                        <p class="text-xs text-slate-400 italic">Bu ay ekstra ödeme veya not bulunmamaktadır.</p>
+                        <p class="text-[11px] text-slate-400 italic">Ek ödeme bulunmamaktadır.</p>
+                    @endif
+                </div>
+
+                <!-- Kesinti Notları -->
+                <div>
+                    <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Kesinti Açıklamaları</h4>
+                    @if($deduction > 0 && $deductionNotes)
+                        <div class="rounded-xl bg-rose-50 p-4 border border-rose-100">
+                            <div class="flex justify-between text-sm font-black text-rose-700">
+                                <span>Toplam Kesinti:</span>
+                                <span>-{{ number_format($deduction, 2, ',', '.') }} ₺</span>
+                            </div>
+                            <div class="mt-2 text-[11px] font-bold text-rose-600 bg-white/50 p-2 rounded-lg italic">
+                                Sebebi: {{ $deductionNotes }}
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-[11px] text-slate-400 italic">Kesinti açıklaması bulunmamaktadır.</p>
                     @endif
                 </div>
             </div>
