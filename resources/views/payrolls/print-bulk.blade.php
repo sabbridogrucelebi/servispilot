@@ -22,8 +22,8 @@
         .total-card-eco { flex: 1; background: #ffffff; border: 2px solid #0f172a; padding: 20px; border-radius: 28px; }
         .summary-row-eco { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px; color: #64748b; font-weight: 600; }
         .total-brut-eco { display: flex; justify-content: space-between; font-size: 11px; margin: 6px 0; padding: 6px 0; border-top: 1px dashed #e2e8f0; border-bottom: 1px dashed #e2e8f0; font-weight: 900; color: #0f172a; }
-        .net-total-eco { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .net-amount-eco { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 900; color: #0f172a; }
+        .net-total-eco { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #0f172a; padding-top: 10px; }
+        .net-amount-eco { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; color: #0f172a; white-space: nowrap; }
         .signature-grid { margin-top: 80px; display: flex; gap: 80px; }
         .signature-line { border-top: 2px solid #0f172a; margin-bottom: 10px; padding-top: 8px; }
     </style>

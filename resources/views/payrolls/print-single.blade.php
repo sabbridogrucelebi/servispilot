@@ -80,9 +80,9 @@
         }
         .summary-row-eco { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: #64748b; font-weight: 600; }
         .total-brut-eco { display: flex; justify-content: space-between; font-size: 12px; margin: 8px 0; padding: 8px 0; border-top: 1px dashed #e2e8f0; border-bottom: 1px dashed #e2e8f0; font-weight: 900; color: #0f172a; }
-        .net-total-eco { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .net-label-eco { font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 900; color: #2563eb; letter-spacing: 1px; }
-        .net-amount-eco { font-family: 'Outfit', sans-serif; font-size: 36px; font-weight: 900; color: #0f172a; }
+        .net-total-eco { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #0f172a; padding-top: 15px; }
+        .net-label-eco { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 900; color: #2563eb; letter-spacing: 1px; }
+        .net-amount-eco { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 800; color: #0f172a; white-space: nowrap; }
 
         .signature-grid { margin-top: 100px; display: flex; gap: 80px; }
         .signature-item { flex: 1; text-align: center; }
