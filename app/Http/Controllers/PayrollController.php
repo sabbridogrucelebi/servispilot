@@ -146,7 +146,16 @@ class PayrollController extends Controller
     {
         $driver = Driver::findOrFail($driverId);
         [$year, $month] = explode('-', $period);
+        $payrollService = new PayrollService();
+        $report = $payrollService->calculateMonthlyPayroll($driver, (int)$month, (int)$year);
 
+        return view('payrolls.report', compact('driver', 'period', 'report'));
+    }
+
+    public function printSingle($driverId, $period)
+    {
+        $driver = Driver::findOrFail($driverId);
+        [$year, $month] = explode('-', $period);
         $payrollService = new PayrollService();
         $report = $payrollService->calculateMonthlyPayroll($driver, (int)$month, (int)$year);
 
