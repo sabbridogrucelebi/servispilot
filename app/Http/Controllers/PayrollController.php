@@ -80,8 +80,8 @@ class PayrollController extends Controller
 
         // Kilit Kontrolü
         $lock = \App\Models\PayrollLock::where('period', $period)->first();
-        if ($lock && $lock->is_locked && !auth()->user()->isCompanyAdmin() && !auth()->user()->isSuperAdmin()) {
-            return response()->json(['error' => 'Bu dönem kilitlenmiştir. Düzenleme yapılamaz.'], 403);
+        if ($lock && $lock->is_locked) {
+            return response()->json(['error' => 'Bu dönem kilitlenmiştir. Düzenleme yapmak için önce kilidi açmalısınız.'], 403);
         }
 
         $data = $request->get('payrolls', []);
@@ -133,8 +133,8 @@ class PayrollController extends Controller
 
             // Kilit Kontrolü
             $lock = \App\Models\PayrollLock::where('period', $period)->first();
-            if ($lock && $lock->is_locked && !auth()->user()->isCompanyAdmin() && !auth()->user()->isSuperAdmin()) {
-                return response()->json(['error' => 'Bu dönem kilitlenmiştir. Düzenleme yapılamaz.'], 403);
+            if ($lock && $lock->is_locked) {
+                return response()->json(['error' => 'Bu dönem kilitlenmiştir. Düzenleme yapmak için önce kilidi açmalısınız.'], 403);
             }
 
             $net = (float)($data['base_salary'] + $data['extra_earnings'] + ($data['extra_bonus'] ?? 0)) 

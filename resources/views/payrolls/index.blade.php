@@ -41,7 +41,7 @@
     
     // Satırı Kaydet
     saveRow(id) {
-        if (this.isLocked && !{{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'true' : 'false' }}) return;
+        if (this.isLocked) return;
         
         this.saving = true;
         const data = {
@@ -241,27 +241,27 @@
                             <td class="px-4 py-4 text-right font-black text-slate-900 text-sm">{{ number_format($calc['base_salary'], 2, ',', '.') }} ₺</td>
                             <td class="px-2 py-4 bg-blue-50/30">
                                 <input type="number" step="0.01" id="bank_{{ $id }}" value="{{ $bank }}" 
-                                       :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                       :readonly="isLocked"
                                        @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" 
                                        class="w-full rounded-xl border-blue-100 bg-white py-2 px-3 text-right font-black text-blue-700 text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                             </td>
                             <td class="px-4 py-4 text-right font-black text-emerald-600 text-sm">+{{ number_format($calc['extra_earnings'], 2, ',', '.') }} ₺</td>
                             <td class="px-2 py-4 bg-rose-50/30">
                                 <input type="number" step="0.01" id="penalty_{{ $id }}" value="{{ $penalty }}" 
-                                       :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                       :readonly="isLocked"
                                        @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" 
                                        class="w-full rounded-xl border-rose-100 bg-white py-2 px-3 text-right font-black text-rose-700 text-sm focus:ring-2 focus:ring-rose-500 disabled:bg-slate-50 disabled:text-slate-400">
                             </td>
                             <td class="px-2 py-4">
                                 <input type="number" step="0.01" id="advance_{{ $id }}" value="{{ $advance }}" 
-                                       :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                       :readonly="isLocked"
                                        @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }})" @change="saveRow({{ $id }})" 
                                        class="w-full rounded-xl border-orange-100 bg-white py-2 px-3 text-right font-black text-orange-700 text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-slate-50 disabled:text-slate-400">
                             </td>
                             <td class="px-2 py-4">
                                 <div class="space-y-2">
                                     <input type="number" step="0.01" id="deduction_{{ $id }}" value="{{ $deduction }}" 
-                                           :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                           :readonly="isLocked"
                                            @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }}); showDeductionNote = ($event.target.value > 0)" @change="saveRow({{ $id }})" 
                                            class="w-full rounded-xl border-slate-200 bg-white py-2 px-3 text-right font-black text-slate-700 text-sm focus:ring-2 focus:ring-slate-500 disabled:bg-slate-50 disabled:text-slate-400">
                                     <div x-show="showDeductionNote" x-transition>
@@ -272,7 +272,7 @@
                             <td class="px-2 py-4 bg-amber-50/30">
                                 <div class="space-y-2">
                                     <input type="number" step="0.01" id="extra_{{ $id }}" value="{{ $extraBonus }}" 
-                                           :readonly="isLocked && {{ (auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin()) ? 'false' : 'true' }}"
+                                           :readonly="isLocked"
                                            @focus="track({{ $id }}, $event.target)" @input="calculateNet({{ $id }}); showExtraNote = ($event.target.value > 0)" @change="saveRow({{ $id }})" 
                                            class="w-full rounded-xl border-amber-200 bg-white py-2 px-3 text-right font-black text-amber-700 text-sm focus:ring-2 focus:ring-amber-500 disabled:bg-slate-50 disabled:text-slate-400">
                                     <div x-show="showExtraNote" x-transition>
