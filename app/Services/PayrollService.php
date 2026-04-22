@@ -76,7 +76,7 @@ class PayrollService
                 if ($eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
             }
 
-            $tripTotal = $morningEarning + $eveningEarning;
+            $tripTotal = round($morningEarning + $eveningEarning, 2);
             
             if ($tripTotal > 0) {
                 $routeKey = $route->id;
@@ -94,7 +94,7 @@ class PayrollService
                 if ($morningEarning > 0) $groupedDetails[$routeKey]['morning_count']++;
                 if ($eveningEarning > 0) $groupedDetails[$routeKey]['evening_count']++;
                 
-                $groupedDetails[$routeKey]['total_fee'] += $tripTotal;
+                $groupedDetails[$routeKey]['total_fee'] = round($groupedDetails[$routeKey]['total_fee'] + $tripTotal, 2);
                 $groupedDetails[$routeKey]['dates'][] = [
                     'date' => $trip->trip_date->format('d.m.Y'),
                     'morning' => $morningEarning,
@@ -102,14 +102,14 @@ class PayrollService
                     'total' => $tripTotal
                 ];
                 
-                $totalExtraEarnings += $tripTotal;
+                $totalExtraEarnings = round($totalExtraEarnings + $tripTotal, 2);
             }
         }
 
         return [
             'base_salary' => $driver->base_salary ?? 0,
             'extra_earnings' => $totalExtraEarnings,
-            'net_salary' => ($driver->base_salary ?? 0) + $totalExtraEarnings,
+            'net_salary' => round(($driver->base_salary ?? 0) + $totalExtraEarnings, 2),
             'details' => array_values($groupedDetails)
         ];
     }
