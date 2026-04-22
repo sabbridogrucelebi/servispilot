@@ -5,6 +5,7 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ 
+    totals: { base: 0, bank: 0, trips: 0, penalty: 0, advance: 0, deduction: 0, extra: 0, net: 0 },
     calculateNet(id) {
         const base = parseFloat(document.getElementById('base_' + id).value) || 0;
         const trips = parseFloat(document.getElementById('trips_' + id).value) || 0;
@@ -17,6 +18,27 @@
         
         const net = (base + trips + extra) - (bank + penalty + advance + deduction);
         document.getElementById('net_display_' + id).innerText = net.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺';
+        this.updateTotals();
+    },
+    updateTotals() {
+        let t = { base: 0, bank: 0, trips: 0, penalty: 0, advance: 0, deduction: 0, extra: 0, net: 0 };
+        
+        // Statik kolonları (PHP'den gelen) topla
+        document.querySelectorAll('.val-base').forEach(el => t.base += parseFloat(el.value) || 0);
+        document.querySelectorAll('.val-trips').forEach(el => t.trips += parseFloat(el.value) || 0);
+        
+        // Input kolonlarını topla
+        document.querySelectorAll('[id^=bank_]').forEach(el => t.bank += parseFloat(el.value) || 0);
+        document.querySelectorAll('[id^=penalty_]').forEach(el => t.penalty += parseFloat(el.value) || 0);
+        document.querySelectorAll('[id^=advance_]').forEach(el => t.advance += parseFloat(el.value) || 0);
+        document.querySelectorAll('[id^=deduction_]').forEach(el => t.deduction += parseFloat(el.value) || 0);
+        document.querySelectorAll('[id^=extra_]').forEach(el => t.extra += parseFloat(el.value) || 0);
+        
+        t.net = (t.base + t.trips + t.extra) - (t.bank + t.penalty + t.advance + t.deduction);
+        this.totals = t;
+    },
+    init() {
+        this.updateTotals();
     }
 }">
     <!-- Üst Bar -->
@@ -86,12 +108,12 @@
                             }">
                                 <td class="px-4 py-4 text-center font-bold text-slate-400">{{ $index + 1 }}</td>
                                 <td class="px-4 py-4">
-                                    <div class="font-extrabold text-slate-900 whitespace-nowrap">{{ $driver->full_name }}</div>
-                                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{{ $driver->vehicle?->plate ?? 'ARAÇSIZ' }}</div>
+                                    <div class="text-base font-black text-slate-900 whitespace-nowrap">{{ $driver->full_name }}</div>
+                                    <div class="text-[12px] text-slate-500 font-bold uppercase tracking-wide">{{ $driver->vehicle?->plate ?? 'ARAÇSIZ' }}</div>
                                 </td>
                                 
-                                <input type="hidden" id="base_{{ $id }}" name="payrolls[{{ $id }}][base_salary]" value="{{ $calc['base_salary'] }}">
-                                <input type="hidden" id="trips_{{ $id }}" name="payrolls[{{ $id }}][extra_earnings]" value="{{ $calc['extra_earnings'] }}">
+                                <input type="hidden" id="base_{{ $id }}" class="val-base" name="payrolls[{{ $id }}][base_salary]" value="{{ $calc['base_salary'] }}">
+                                <input type="hidden" id="trips_{{ $id }}" class="val-trips" name="payrolls[{{ $id }}][extra_earnings]" value="{{ $calc['extra_earnings'] }}">
 
                                 <td class="px-4 py-4 text-right font-black text-slate-900 text-sm">
                                     {{ number_format($calc['base_salary'], 2, ',', '.') }} ₺
@@ -169,6 +191,22 @@
                             </tr>
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr class="bg-slate-50 border-t-2 border-slate-200">
+                            <td colspan="2" class="px-4 py-6 text-right font-black text-slate-900 text-sm uppercase tracking-widest">GENEL TOPLAMLAR</td>
+                            <td class="px-4 py-6 text-right font-black text-slate-900 text-sm" x-text="totals.base.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺'"></td>
+                            <td class="px-4 py-6 text-center font-black text-blue-700 text-sm bg-blue-50/30" x-text="totals.bank.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺'"></td>
+                            <td class="px-4 py-6 text-right font-black text-emerald-600 text-sm" x-text="totals.trips.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺'"></td>
+                            <td class="px-4 py-6 text-center font-black text-rose-700 text-sm bg-rose-50/30" x-text="totals.penalty.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺'"></td>
+                            <td class="px-4 py-6 text-center font-black text-orange-700 text-sm" x-text="totals.advance.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺'"></td>
+                            <td class="px-4 py-6 text-center font-black text-slate-700 text-sm" x-text="totals.deduction.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺'"></td>
+                            <td class="px-4 py-6 text-center font-black text-amber-700 text-sm bg-amber-50/30" x-text="totals.extra.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺'"></td>
+                            <td class="px-4 py-6 text-right">
+                                <div class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2.5 font-black text-white text-sm shadow-lg shadow-blue-200" x-text="totals.net.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ₺'"></div>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </form>
