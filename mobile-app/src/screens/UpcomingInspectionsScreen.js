@@ -1,11 +1,94 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Linking, Alert } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Linking, Alert, Image, Animated, Easing, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 import api from '../api/axios';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const Star = ({ size, top, left, delay, duration }) => {
+    const opacity = useRef(new Animated.Value(0.05)).current;
+    useEffect(() => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(opacity, { toValue: 0.3, duration: duration / 2, easing: Easing.inOut(Easing.ease), useNativeDriver: true, delay }),
+                Animated.timing(opacity, { toValue: 0.05, duration: duration / 2, easing: Easing.inOut(Easing.ease), useNativeDriver: true })
+            ])
+        ).start();
+    }, []);
+    return <Animated.View style={{ position: 'absolute', top, left, width: size, height: size, borderRadius: size/2, backgroundColor: '#fff', opacity }} />;
+};
+
+const ShootingStar = () => {
+    const anim = useRef(new Animated.Value(0)).current;
+    useEffect(() => {
+        const shoot = () => {
+            anim.setValue(0);
+            Animated.timing(anim, { toValue: 1, duration: 1200, easing: Easing.linear, useNativeDriver: true }).start(() => {
+                setTimeout(shoot, 3000 + Math.random() * 5000);
+            });
+        };
+        setTimeout(shoot, 1000 + Math.random() * 3000);
+    }, []);
+    const translateX = anim.interpolate({ inputRange: [0, 1], outputRange: [SCREEN_WIDTH, -SCREEN_WIDTH/2] });
+    const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [-100, SCREEN_HEIGHT/2] });
+    const opacity = anim.interpolate({ inputRange: [0, 0.1, 0.8, 1], outputRange: [0, 1, 1, 0] });
+    return <Animated.View style={{ position: 'absolute', width: 2, height: 80, backgroundColor: 'rgba(255,255,255,0.8)', transform: [{ rotate: '45deg' }, { translateX }, { translateY }], opacity, shadowColor: '#fff', shadowOpacity: 1, shadowRadius: 4 }} />;
+};
+
+const StarryBackground = () => {
+    const stars = React.useMemo(() => {
+        return Array.from({length: 300}).map((_, i) => ({ 
+            id: i, 
+            size: Math.random() * 1.5 + 0.5, 
+            top: Math.floor(Math.random() * 100) + '%', 
+            left: Math.floor(Math.random() * 100) + '%', 
+            delay: Math.random() * 3000, 
+            duration: 2000 + Math.random() * 4000 
+        }));
+    }, []);
+    
+    return (
+        <View style={StyleSheet.absoluteFillObject}>
+            <LinearGradient colors={['#020617', '#0A192F', '#09163F', '#020617']} style={StyleSheet.absoluteFillObject} start={{x: 0, y: 0}} end={{x: 1, y: 1}} />
+            {stars.map(s => <Star key={s.id} {...s} />)}
+            <ShootingStar />
+        </View>
+    );
+};
+
+const AnimatedRandevuButton = ({ onPress }) => {
+    const btnStars = React.useMemo(() => {
+        return Array.from({length: 20}).map((_, i) => ({ 
+            id: i, 
+            size: Math.random() * 1.5 + 0.5, 
+            top: Math.floor(Math.random() * 100) + '%', 
+            left: Math.floor(Math.random() * 100) + '%', 
+            delay: Math.random() * 2000, 
+            duration: 1000 + Math.random() * 2000 
+        }));
+    }, []);
+
+    return (
+        <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={{marginTop: 4}}>
+            <View style={[s.actionBtn, { overflow: 'hidden', shadowColor: '#0A192F', marginTop: 0 }]}>
+                <LinearGradient 
+                    colors={['#020617', '#0A192F', '#09163F']} 
+                    style={s.actionBtnInner} 
+                    start={{ x: 0, y: 0 }} 
+                    end={{ x: 1, y: 1 }}
+                >
+                    {btnStars.map(st => <Star key={`bstar_${st.id}`} {...st} />)}
+                    <Text style={[s.actionBtnText, {color: '#fff', textTransform: 'capitalize'}]}>Randevu Al</Text>
+                    <Icon name="open-in-new" size={18} color="#fff" style={{ marginLeft: 6 }} />
+                </LinearGradient>
+            </View>
+        </TouchableOpacity>
+    );
+};
 
 export default function UpcomingInspectionsScreen({ navigation }) {
     const [vehicles, setVehicles] = useState([]);
@@ -32,11 +115,23 @@ export default function UpcomingInspectionsScreen({ navigation }) {
     const copyToClipboard = async (text, label) => {
         if (!text || text === '-') return;
         await Clipboard.setStringAsync(text);
-        Alert.alert('Kopyalandı', `${label} panoya kopyalandı.`);
+        Alert.alert('Kopyalandı', `${label} panoya kopyalandı: ${text}`);
     };
 
     const openTuvturk = () => {
         Linking.openURL('https://www.tuvturk.com.tr/hizmetlerimiz/hizli-islemler/arac-muayene-randevusu-alma');
+    };
+
+    const getVehicleImage = (type) => {
+        const t = (type || '').toLowerCase();
+        if (t.includes('minibüs')) return require('../../assets/arac_tipleri/servis_pilot_minibus.png');
+        if (t.includes('midibüs')) return require('../../assets/arac_tipleri/servis_pilot_midibus.png');
+        if (t.includes('otobüs')) return require('../../assets/arac_tipleri/servis_pilot_otobus.png');
+        if (t.includes('panelvan')) return require('../../assets/arac_tipleri/servis_pilot_panelvan.png');
+        if (t.includes('kamyonet')) return require('../../assets/arac_tipleri/servis_pilot_kamyonet.png');
+        if (t.includes('binek') || t.includes('sedan') || t.includes('taksi')) return require('../../assets/arac_tipleri/servis_pilot_taksi.png');
+        
+        return require('../../assets/arac_tipleri/servis_pilot_panelvan.png');
     };
 
     const renderVehicle = ({ item }) => {
@@ -63,157 +158,208 @@ export default function UpcomingInspectionsScreen({ navigation }) {
             }
         }
 
-        const iconName = item.vehicle_type === 'Otobüs' ? 'bus' : (item.vehicle_type === 'Minibüs' ? 'van-passenger' : 'car');
+        const imgSource = item.image_url ? { uri: item.image_url } : getVehicleImage(item.vehicle_type || item.type);
 
         return (
-            <View style={s.card}>
-                {/* Üst Kısım: Araç Bilgileri */}
-                <View style={s.cardHeader}>
-                    <View style={s.headerLeft}>
-                        <View style={s.iconBox}>
-                            <Icon name={iconName} size={26} color="#3B82F6" />
-                        </View>
-                        <View style={s.headerTextCol}>
-                            <Text style={s.plateText}>{item.plate}</Text>
-                            <Text style={s.brandText} numberOfLines={1}>{item.brand_model || 'Marka Belirtilmemiş'}</Text>
-                        </View>
+            <TouchableOpacity style={s.card} activeOpacity={0.8} onPress={()=>navigation.navigate('VehicleDetail', { vehicle: item })}>
+                <View style={s.cardInner}>
+                    
+                    {/* Sol Resim Kutusu */}
+                    <View style={s.cardImageWrap}>
+                        <Image source={imgSource} style={{width: 90, height: 90, resizeMode: 'contain'}} />
                     </View>
-                    <View style={s.headerRight}>
-                        <View style={s.badge}>
-                            <Text style={s.badgeText}>{item.vehicle_type || 'Belirsiz Tip'}</Text>
-                        </View>
-                        <Text style={s.yearText}>{item.model_year ? `${item.model_year} Model` : ''}</Text>
-                    </View>
-                </View>
 
-                <View style={s.driverRow}>
-                    <Icon name="account-tie" size={16} color="#64748B" />
-                    <Text style={s.driverText} numberOfLines={1}>{item.driver || 'Personel Atanmamış'}</Text>
+                    {/* Sağ Bilgi Alanı */}
+                    <View style={s.cardContent}>
+                        <Text style={s.plateText}>{item.plate}</Text>
+                        
+                        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 6, gap: 6}}>
+                            <Text style={[s.brandText, {marginBottom: 0, flexShrink: 1}]} numberOfLines={1}>{item.brand_model || 'Marka / Model Belirtilmemiş'}</Text>
+                            {!!item.model_year && (
+                                <View style={{backgroundColor: '#FEF08A', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6}}>
+                                    <Text style={{fontSize: 10, fontWeight: '500', color: '#854D0E'}}>{item.model_year}</Text>
+                                </View>
+                            )}
+                        </View>
+                        
+                        <View style={[s.metaRow, { flexWrap: 'wrap', rowGap: 4, marginBottom: 8 }]}>
+                            <View style={{flexDirection: 'row', alignItems: 'center', flexShrink: 1}}>
+                                <Icon name="account" size={12} color="#64748B" />
+                                <Text style={[s.metaText, {flexShrink: 1}]} numberOfLines={2}>{item.driver || 'Atanmamış'}</Text>
+                            </View>
+                            
+                            {/* Seri No Satırı */}
+                            <Icon name="circle-small" size={14} color="#CBD5E1" style={{marginHorizontal: 4}} />
+                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                <Icon name="barcode-scan" size={12} color="#3B82F6" />
+                                <Text style={[s.metaText, {color: '#3B82F6', fontWeight: '700', marginLeft: 2}]}>{item.license_serial_no || 'Belirtilmemiş'}</Text>
+                                {item.license_serial_no && item.license_serial_no !== '-' && (
+                                    <TouchableOpacity style={{marginLeft: 6, padding: 2}} onPress={() => copyToClipboard(item.license_serial_no, 'Seri Numarası')}>
+                                        <Icon name="content-copy" size={14} color="#94A3B8" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        </View>
+
+                    </View>
                 </View>
 
                 {/* Alt Kısım: Muayene Bilgisi ve Aksiyonlar */}
-                <LinearGradient 
-                    colors={isOverdue ? ['#FEF2F2', '#FEE2E2'] : ['#FFFBEB', '#FEF3C7']} 
-                    style={[s.statusBox, isOverdue && { borderColor: '#FECACA' }]}
-                >
+                <View style={[s.statusBox, isOverdue && { borderColor: '#FECACA', backgroundColor: '#FEF2F2' }]}>
                     <View style={s.statusTop}>
                         <View style={s.dateWrap}>
-                            <Icon name={isOverdue ? "alert-circle" : "clock-outline"} size={16} color={isOverdue ? "#EF4444" : "#D97706"} />
-                            <Text style={[s.dateLabel, isOverdue && { color: '#EF4444' }]}>SON TARİH: {formattedDate}</Text>
+                            <Icon name={isOverdue ? "alert-circle" : "clock-outline"} size={16} color={isOverdue ? "#EF4444" : "#D97706"} style={{marginTop: 2}} />
+                            <View style={{marginLeft: 6}}>
+                                <Text style={[s.dateLabel, isOverdue && { color: '#EF4444' }]}>SON TARİH</Text>
+                                <Text style={[s.dateValue, isOverdue && { color: '#EF4444' }]}>{formattedDate}</Text>
+                            </View>
                         </View>
                         <Text style={[s.daysLeft, isOverdue && { color: '#DC2626' }]}>{daysLeftText}</Text>
                     </View>
 
-                    <TouchableOpacity style={s.actionBtn} onPress={openTuvturk} activeOpacity={0.8}>
-                        <LinearGradient colors={['#4F46E5', '#3B82F6']} style={s.actionBtnInner} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                            <Text style={s.actionBtnText}>RANDEVU AL</Text>
-                            <Icon name="open-in-new" size={18} color="#fff" style={{ marginLeft: 6 }} />
-                        </LinearGradient>
-                    </TouchableOpacity>
-                </LinearGradient>
-            </View>
+                    <AnimatedRandevuButton onPress={openTuvturk} />
+                </View>
+            </TouchableOpacity>
         );
     };
 
     return (
         <View style={s.container}>
-            <LinearGradient colors={['#040B16', '#0A1526', '#0D1B2A']} style={s.header}>
-                <SafeAreaView edges={['top']}>
-                    <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
-                            <View style={s.backBtn}>
-                                <Icon name="chevron-left" size={26} color="#fff" />
-                            </View>
-                        </TouchableOpacity>
-                        <View style={s.headerTitleContainer}>
-                            <Text style={s.headerTitle}>Yaklaşan Muayeneler</Text>
-                            <Text style={s.headerSubtitle}>Canlı Veri Senkronizasyonu</Text>
+            <StarryBackground />
+            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+                
+                <View style={[s.appBar, { marginTop: 20 }]}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+                        <View style={s.darkGlassBtn}>
+                            <Icon name="chevron-left" size={26} color="#fff" />
                         </View>
-                        <View style={s.headerRightPlaceholder} />
+                    </TouchableOpacity>
+                    <View style={{alignItems: 'center', flex: 1, marginRight: 44}}>
+                        <Text style={s.appBarTitle}>Yaklaşan Muayeneler</Text>
                     </View>
-                </SafeAreaView>
-            </LinearGradient>
+                </View>
 
-            <View style={s.content}>
                 {loading ? (
                     <View style={s.center}>
                         <ActivityIndicator size="large" color="#F59E0B" />
-                        <Text style={s.loadingText}>Sistemden canlı veriler çekiliyor...</Text>
+                        <Text style={s.loadingText}>Canlı veriler çekiliyor...</Text>
                     </View>
                 ) : (
                     <FlatList
                         data={vehicles}
                         keyExtractor={i => i.id.toString()}
                         renderItem={renderVehicle}
-                        contentContainerStyle={s.listContent}
+                        contentContainerStyle={s.listContainer}
                         showsVerticalScrollIndicator={false}
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchVehicles(); }} tintColor="#F59E0B" />
                         }
                         ListEmptyComponent={
-                            <View style={s.empty}>
-                                <View style={s.emptyIconBox}>
-                                    <Icon name="check-decagram" size={48} color="#10B981" />
+                            <View style={s.emptyState}>
+                                <View style={s.emptyIconWrap}>
+                                    <Icon name="check-decagram" size={64} color="#10B981" />
                                 </View>
                                 <Text style={s.emptyTitle}>Harika Haber!</Text>
-                                <Text style={s.emptyTxt}>Yakın zamanda muayenesi bitecek veya gecikmiş aracınız bulunmuyor.</Text>
+                                <Text style={s.emptyDesc}>Yakın zamanda muayenesi bitecek veya gecikmiş aracınız bulunmuyor.</Text>
                             </View>
                         }
                     />
                 )}
+            </SafeAreaView>
+
+            {/* Custom Floating Bottom Bar */}
+            <View style={s.bottomBarWrap}>
+                <View style={s.bottomBar}>
+                    <TouchableOpacity style={s.tabItem} onPress={() => navigation.goBack()}>
+                        <Icon name="menu" size={24} color="#94A3B8" />
+                        <Text style={s.tabText}>Menü</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity style={s.tabItem} onPress={() => navigation.navigate('Vehicles')}>
+                        <Icon name="car" size={24} color="#2563EB" />
+                        <Text style={[s.tabText, {color: '#2563EB'}]}>Araçlar</Text>
+                    </TouchableOpacity>
+
+                    <View style={s.fabWrap}>
+                        <TouchableOpacity style={s.fabBtn} activeOpacity={0.8} onPress={() => Alert.alert('Bilgi', 'Yeni kayıt ekleme modülü')}>
+                            <Icon name="plus" size={32} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity style={s.tabItem}>
+                        <Icon name="message-outline" size={24} color="#94A3B8" />
+                        <Text style={s.tabText}>Mesaj</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={s.tabItem}>
+                        <Icon name="account-outline" size={24} color="#94A3B8" />
+                        <Text style={s.tabText}>Profil</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
+
         </View>
     );
 }
 
 const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F1F5F9' },
-    header: { paddingBottom: 24, paddingHorizontal: 16, paddingTop: 14, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 15 },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8 },
-    backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-    headerTitleContainer: { alignItems: 'center' },
-    headerTitle: { fontSize: 18, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
-    headerSubtitle: { fontSize: 10, color: '#F59E0B', fontWeight: '800', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1.5 },
-    headerRightPlaceholder: { width: 44 },
-    content: { flex: 1, marginTop: -10 },
-    listContent: { paddingHorizontal: 16, paddingTop: 24, paddingBottom: 120 },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loadingText: { marginTop: 12, fontSize: 13, color: '#64748B', fontWeight: '700' },
-    
-    empty: { alignItems: 'center', paddingVertical: 60, paddingHorizontal: 30 },
-    emptyIconBox: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center', marginBottom: 20, borderWidth: 4, borderColor: '#D1FAE5' },
-    emptyTitle: { fontSize: 20, fontWeight: '900', color: '#0F172A', marginBottom: 8 },
-    emptyTxt: { color: '#64748B', fontSize: 14, fontWeight: '600', textAlign: 'center', lineHeight: 22 },
-    
-    /* Yeni Dikey Kart Tasarımı */
-    card: { backgroundColor: '#fff', borderRadius: 28, marginBottom: 20, padding: 18, shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.15, shadowRadius: 24, elevation: 10, borderWidth: 1, borderColor: '#E2E8F0' },
+    container: { flex: 1, backgroundColor: '#020617' },
     
     // Header
-    cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-    headerLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 12 },
-    iconBox: { width: 52, height: 52, borderRadius: 18, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 14, borderWidth: 1, borderColor: '#DBEAFE' },
-    headerTextCol: { flex: 1 },
-    plateText: { fontSize: 18, fontWeight: '900', color: '#0F172A', letterSpacing: 0.5 },
-    brandText: { fontSize: 12, color: '#64748B', fontWeight: '600', marginTop: 4 },
+    appBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingTop: 10, paddingBottom: 24 },
+    appBarTitle: { fontSize: 20, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
+    appBarSub: { fontSize: 10, color: '#F59E0B', marginTop: 4, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.5 },
+    darkGlassBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
     
-    headerRight: { alignItems: 'flex-end' },
-    badge: { backgroundColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, marginBottom: 6 },
-    badgeText: { fontSize: 10, fontWeight: '900', color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5 },
-    yearText: { fontSize: 12, color: '#94A3B8', fontWeight: '700' },
-
-    // Driver
-    driverRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, backgroundColor: '#F8FAFC', paddingHorizontal: 14, paddingVertical: 12, borderRadius: 14, borderWidth: 1, borderColor: '#F1F5F9' },
-    driverText: { fontSize: 13, color: '#475569', fontWeight: '700', marginLeft: 8, flex: 1 },
-
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    loadingText: { marginTop: 12, fontSize: 13, color: '#94A3B8', fontWeight: '700' },
+    
+    // List
+    listContainer: { paddingHorizontal: 20, paddingBottom: 130 },
+    card: { backgroundColor: '#fff', borderRadius: 30, padding: 16, marginBottom: 16, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:8}, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4 },
+    cardInner: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+    cardImageWrap: { width: 90, height: 70, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 16, overflow: 'hidden' },
+    cardContent: { flex: 1 },
+    plateText: { fontSize: 16, fontWeight: '800', color: '#0F172A', letterSpacing: 0.3, marginBottom: 2 },
+    brandText: { fontSize: 11, fontWeight: '600', color: '#64748B', marginBottom: 6 },
+    metaRow: { flexDirection: 'row', alignItems: 'center' },
+    metaText: { fontSize: 10, fontWeight: '600', color: '#94A3B8', marginLeft: 4 },
+    
     // Status Box (Alt Kısım)
-    statusBox: { borderRadius: 20, padding: 16, borderWidth: 1, borderColor: '#FDE68A' },
-    statusTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
-    dateWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.7)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10 },
-    dateLabel: { fontSize: 11, fontWeight: '900', color: '#B45309', marginLeft: 6, letterSpacing: 0.5 },
-    daysLeft: { fontSize: 18, fontWeight: '900', color: '#D97706', marginTop: 2 },
+    statusBox: { borderRadius: 20, padding: 16, borderWidth: 1, borderColor: '#F1F5F9', backgroundColor: '#F8FAFC' },
+    statusTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    dateWrap: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fff', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+    dateLabel: { fontSize: 10, fontWeight: '800', color: '#B45309', letterSpacing: 0.5 },
+    dateValue: { fontSize: 14, fontWeight: '900', color: '#B45309', marginTop: 2 },
+    daysLeft: { fontSize: 20, fontWeight: '900', color: '#0F172A' },
     
-    // Actions
-    actionBtn: { overflow: 'hidden', borderRadius: 16, shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8, marginTop: 12 },
+    actionBtn: { overflow: 'hidden', borderRadius: 16, shadowColor: '#1E3A8A', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8, marginTop: 4 },
     actionBtnInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16 },
-    actionBtnText: { color: '#fff', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+    actionBtnText: { fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+
+    emptyState: { alignItems: 'center', paddingVertical: 80, paddingHorizontal: 32 },
+    emptyIconWrap: { width: 140, height: 140, borderRadius: 70, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', marginBottom: 30, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:12}, shadowOpacity: 0.05, shadowRadius: 24, elevation: 8 },
+    emptyTitle: { fontSize: 24, fontWeight: '900', color: '#0F172A', marginBottom: 12 },
+    emptyDesc: { fontSize: 16, color: '#64748B', textAlign: 'center', lineHeight: 24, marginBottom: 36, fontWeight: '500' },
+    
+    // Bottom Bar
+    bottomBarWrap: { position: 'absolute', bottom: 30, left: 20, right: 20, zIndex: 100 },
+    bottomBar: { 
+        backgroundColor: '#fff', 
+        borderRadius: 30, 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        paddingHorizontal: 20, 
+        height: 70,
+        shadowColor: '#0A1A3A', 
+        shadowOffset: {width:0, height:10}, 
+        shadowOpacity: 0.1, 
+        shadowRadius: 20, 
+        elevation: 10 
+    },
+    tabItem: { alignItems: 'center', justifyContent: 'center', width: 50 },
+    tabText: { fontSize: 10, fontWeight: '700', color: '#94A3B8', marginTop: 4 },
+    fabWrap: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginTop: -32, shadowColor: '#2563EB', shadowOffset: {width:0, height:8}, shadowOpacity: 0.4, shadowRadius: 16, elevation: 12 },
+    fabBtn: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }
 });

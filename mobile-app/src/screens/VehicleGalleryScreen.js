@@ -147,61 +147,76 @@ export default function VehicleGalleryScreen() {
         <View style={s.card}>
             <View style={s.imageBox}>
                 <Image source={{ uri: item.url }} style={s.image} resizeMode="cover" />
-                {item.is_featured && (
-                    <View style={s.featuredBadge}>
-                        <Icon name="star" size={12} color="#fff" />
-                        <Text style={s.featuredTxt}>Vitrin</Text>
-                    </View>
-                )}
-            </View>
-            <View style={s.cardInfo}>
-                <Text style={s.imgTitle}>{item.title}</Text>
-                <View style={s.tagsRow}>
-                    <View style={s.tag}><Text style={s.tagTxt}>{item.type_label}</Text></View>
-                    <View style={[s.tag, {backgroundColor: '#F1F5F9'}]}><Text style={[s.tagTxt, {color: '#64748B'}]}>Kaynak: {item.source_label}</Text></View>
-                </View>
-                <View style={s.actionRow}>
-                    {!item.is_featured && (
-                        <TouchableOpacity style={s.actionBtn} onPress={() => setAsFeatured(item.id)}>
-                            <Icon name="star-outline" size={14} color="#3B82F6" />
-                            <Text style={[s.actionTxt, {color: '#3B82F6'}]}>Vitrin Yap</Text>
-                        </TouchableOpacity>
+                
+                {/* Transparent Black Overlay for Premium look */}
+                <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.8)']} style={StyleSheet.absoluteFillObject} />
+                
+                <View style={s.cardOverlayContent}>
+                    {item.is_featured && (
+                        <View style={s.featuredBadge}>
+                            <Icon name="star" size={10} color="#fff" />
+                            <Text style={s.featuredTxt}>VİTRİN</Text>
+                        </View>
                     )}
-                    <TouchableOpacity style={s.actionBtn} onPress={() => deleteImage(item.id)}>
-                        <Icon name="trash-can-outline" size={14} color="#EF4444" />
-                        <Text style={[s.actionTxt, {color: '#EF4444'}]}>Sil</Text>
-                    </TouchableOpacity>
+                    
+                    <View style={s.overlayBottom}>
+                        <Text style={s.imgTitleOverlay} numberOfLines={1}>{item.title || item.type_label}</Text>
+                        <Text style={s.imgSubOverlay}>{item.source_label}</Text>
+                    </View>
                 </View>
+            </View>
+            
+            <View style={s.actionRow}>
+                {!item.is_featured && (
+                    <TouchableOpacity style={s.actionBtn} onPress={() => setAsFeatured(item.id)}>
+                        <Icon name="star-outline" size={16} color="#3B82F6" />
+                    </TouchableOpacity>
+                )}
+                <TouchableOpacity style={[s.actionBtn, {marginLeft: 'auto'}]} onPress={() => deleteImage(item.id)}>
+                    <Icon name="trash-can-outline" size={16} color="#EF4444" />
+                </TouchableOpacity>
             </View>
         </View>
     );
 
+
     return (
         <View style={s.container}>
-            <LinearGradient colors={['#040B16', '#0D1B2A']} style={s.header}>
+            <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={s.header} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
                 <SafeAreaView edges={['top']}>
                     <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()}><Icon name="chevron-left" size={28} color="#fff" /></TouchableOpacity>
-                        <View style={{flex:1, alignItems:'center'}}><Text style={s.headerTitle}>{plate} - Galeri</Text></View>
-                        <TouchableOpacity style={s.addBtn} onPress={() => setUploadModalVisible(true)}>
-                            <Icon name="cloud-upload" size={24} color="#fff" />
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+                            <Icon name="arrow-left" size={20} color="#fff" />
                         </TouchableOpacity>
+                        <View style={s.headerTitleWrap}>
+                            <Text style={s.headerTitle}>{plate} · Galeri</Text>
+                            <View style={s.headerSubWrap}>
+                                <View style={s.statusDotSmall} />
+                                <Text style={s.headerSubTxt}>Araç Görselleri Yönetimi</Text>
+                            </View>
+                        </View>
+                        <View style={{flexDirection:'row', gap: 8}}>
+                            <TouchableOpacity style={s.topBtn} onPress={fetchGallery}><Icon name="refresh" size={20} color="#fff" /></TouchableOpacity>
+                            <TouchableOpacity style={s.topAddBtn} onPress={() => setUploadModalVisible(true)}>
+                                <Icon name="plus" size={20} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </SafeAreaView>
             </LinearGradient>
 
-            <View style={s.driverLinkBox}>
-                <View style={s.driverLinkHead}>
-                    <Icon name="link-variant" size={20} color="#4F46E5" />
-                    <Text style={s.driverLinkTitle}>Şoför İçin Hızlı Yükleme Linki</Text>
-                </View>
-                <Text style={s.driverLinkDesc}>Bu linki şoföre gönderin, telefondan kamerayla direkt araç resimlerini yüklesin.</Text>
-                <View style={s.linkRow}>
-                    <Text style={s.linkTxt} numberOfLines={1}>{uploadLink}</Text>
-                    <TouchableOpacity style={s.copyBtn} onPress={copyToClipboard}>
-                        <Icon name="content-copy" size={16} color="#fff" />
-                        <Text style={s.copyBtnTxt}>Kopyala</Text>
-                    </TouchableOpacity>
+            <View style={s.driverLinkWrapper}>
+                <View style={s.driverLinkBox}>
+                    <View style={s.driverLinkHead}>
+                        <Icon name="cellphone-link" size={20} color="#4F46E5" />
+                        <Text style={s.driverLinkTitle}>Şoför Hızlı Yükleme</Text>
+                    </View>
+                    <View style={s.linkRow}>
+                        <Text style={s.linkTxt} numberOfLines={1}>{uploadLink}</Text>
+                        <TouchableOpacity style={s.copyBtn} onPress={copyToClipboard}>
+                            <Icon name="content-copy" size={16} color="#4F46E5" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
 
@@ -291,67 +306,73 @@ export default function VehicleGalleryScreen() {
 }
 
 const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8FAFC' },
-    header: { paddingBottom: 30, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
-    headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 0 : 40 },
-    headerTitle: { color: '#fff', fontSize: 16, fontWeight: '800' },
-    addBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
-
-    driverLinkBox: { marginHorizontal: 16, marginTop: -20, backgroundColor: '#fff', borderRadius: 24, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 5, borderWidth: 1, borderColor: '#F1F5F9' },
-    driverLinkHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-    driverLinkTitle: { fontSize: 14, fontWeight: '800', color: '#1E293B' },
-    driverLinkDesc: { fontSize: 11, color: '#64748B', lineHeight: 16, marginBottom: 15 },
-    linkRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 12, paddingLeft: 12, borderWidth: 1, borderColor: '#E2E8F0', overflow: 'hidden' },
-    linkTxt: { flex: 1, fontSize: 11, color: '#475569', fontWeight: '500' },
-    copyBtn: { backgroundColor: '#4F46E5', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 12 },
-    copyBtnTxt: { color: '#fff', fontSize: 12, fontWeight: '700' },
-
-    list: { padding: 16, paddingBottom: 40 },
-    card: { width: '48%', backgroundColor: '#fff', borderRadius: 20, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 3, borderWidth: 1, borderColor: '#F1F5F9', overflow: 'hidden' },
-    imageBox: { width: '100%', height: 120, backgroundColor: '#E2E8F0', position: 'relative' },
-    image: { width: '100%', height: '100%' },
-    featuredBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: '#10B981', flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
-    featuredTxt: { color: '#fff', fontSize: 9, fontWeight: '800' },
+    container: { flex: 1, backgroundColor: '#F4F7FA' },
     
-    cardInfo: { padding: 12 },
-    imgTitle: { fontSize: 13, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
-    tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-    tag: { backgroundColor: '#EEF2FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-    tagTxt: { fontSize: 9, fontWeight: '700', color: '#4F46E5' },
-    actionRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 10 },
-    actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    actionTxt: { fontSize: 10, fontWeight: '700' },
+    header: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden', paddingBottom: 40 },
+    headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 10, marginBottom: 20 },
+    backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+    headerTitleWrap: { alignItems: 'center' },
+    headerTitle: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
+    headerSubWrap: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
+    statusDotSmall: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981' },
+    headerSubTxt: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
+    topBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+    topAddBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(59, 130, 246, 0.4)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#3B82F6' },
+    
+    driverLinkWrapper: { paddingHorizontal: 20, marginTop: -30, zIndex: 20 },
+    driverLinkBox: { backgroundColor: '#fff', borderRadius: 24, padding: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.08, shadowRadius: 24, elevation: 8, borderWidth: 1, borderColor: '#F1F5F9' },
+    driverLinkHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+    driverLinkTitle: { fontSize: 14, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
+    linkRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 16, paddingLeft: 16, borderWidth: 1, borderColor: '#E2E8F0', height: 48 },
+    linkTxt: { flex: 1, fontSize: 13, color: '#475569', fontWeight: '600' },
+    copyBtn: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1, borderLeftColor: '#E2E8F0' },
 
-    empty: { alignItems: 'center', marginTop: 80 },
-    emptyTxt: { color: '#94A3B8', marginTop: 12, fontWeight: '600' },
+    list: { padding: 20, paddingBottom: 100, paddingTop: 20 },
+    card: { width: '48%', backgroundColor: '#fff', borderRadius: 24, marginBottom: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4, borderWidth: 1, borderColor: '#F1F5F9', overflow: 'hidden' },
+    imageBox: { width: '100%', height: 180, position: 'relative' },
+    image: { width: '100%', height: '100%' },
+    
+    cardOverlayContent: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 12, justifyContent: 'space-between' },
+    featuredBadge: { alignSelf: 'flex-start', backgroundColor: '#F59E0B', flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+    featuredTxt: { color: '#fff', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
+    
+    overlayBottom: { marginTop: 'auto' },
+    imgTitleOverlay: { fontSize: 13, fontWeight: '800', color: '#fff', marginBottom: 2, letterSpacing: -0.5 },
+    imgSubOverlay: { fontSize: 10, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+    
+    actionRow: { flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: '#fff' },
+    actionBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+
+    empty: { alignItems: 'center', marginTop: 60 },
+    emptyTxt: { color: '#94A3B8', marginTop: 16, fontWeight: '600', fontSize: 16 },
 
     /* Modal Styles */
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'flex-end' },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.6)', justifyContent: 'flex-end' },
     modalContentWrap: { width: '100%', maxHeight: '90%' },
-    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, paddingBottom: 40 },
-    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-    modalTitle: { fontSize: 20, fontWeight: '900', color: '#0F172A' },
+    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 36, borderTopRightRadius: 36, padding: 30, paddingBottom: 50 },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
+    modalTitle: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
     
-    inputGroup: { marginBottom: 20 },
-    label: { fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 8 },
-    input: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, color: '#0F172A' },
+    inputGroup: { marginBottom: 24 },
+    label: { fontSize: 13, fontWeight: '800', color: '#475569', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
+    input: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingHorizontal: 18, paddingVertical: 16, fontSize: 15, color: '#0F172A', fontWeight: '600' },
     
     typeScroll: { flexDirection: 'row', marginHorizontal: -4 },
-    typeBtn: { paddingHorizontal: 16, paddingVertical: 10, backgroundColor: '#F1F5F9', borderRadius: 20, marginHorizontal: 4, borderWidth: 1, borderColor: 'transparent' },
-    typeBtnActive: { backgroundColor: '#EEF2FF', borderColor: '#4F46E5' },
-    typeBtnTxt: { fontSize: 12, fontWeight: '600', color: '#64748B' },
-    typeBtnTxtActive: { color: '#4F46E5', fontWeight: '800' },
+    typeBtn: { paddingHorizontal: 18, paddingVertical: 12, backgroundColor: '#F1F5F9', borderRadius: 14, marginHorizontal: 4, borderWidth: 1, borderColor: 'transparent' },
+    typeBtnActive: { backgroundColor: '#EFF6FF', borderColor: '#3B82F6' },
+    typeBtnTxt: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+    typeBtnTxtActive: { color: '#3B82F6', fontWeight: '900' },
 
-    filePickBox: { width: '100%', height: 160, backgroundColor: '#F8FAFC', borderRadius: 20, borderWidth: 2, borderColor: '#E2E8F0', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
-    filePickTxt: { fontSize: 13, fontWeight: '600', color: '#94A3B8', marginTop: 8 },
+    filePickBox: { width: '100%', height: 180, backgroundColor: '#F8FAFC', borderRadius: 24, borderWidth: 2, borderColor: '#E2E8F0', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
+    filePickTxt: { fontSize: 14, fontWeight: '800', color: '#94A3B8', marginTop: 10 },
     selectedImgPreview: { width: '100%', height: '100%' },
 
-    checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 24, backgroundColor: '#F8FAFC', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0' },
-    checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#CBD5E1', alignItems: 'center', justifyContent: 'center' },
-    checkboxActive: { backgroundColor: '#4F46E5', borderColor: '#4F46E5' },
-    checkTitle: { fontSize: 13, fontWeight: '700', color: '#1E293B' },
-    checkDesc: { fontSize: 11, color: '#64748B', marginTop: 2 },
+    checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 30, backgroundColor: '#F8FAFC', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0' },
+    checkbox: { width: 24, height: 24, borderRadius: 8, borderWidth: 2, borderColor: '#CBD5E1', alignItems: 'center', justifyContent: 'center' },
+    checkboxActive: { backgroundColor: '#3B82F6', borderColor: '#3B82F6' },
+    checkTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', letterSpacing: -0.5 },
+    checkDesc: { fontSize: 12, color: '#64748B', marginTop: 4, fontWeight: '500' },
 
-    submitBtn: { backgroundColor: '#A855F7', paddingVertical: 16, borderRadius: 16, alignItems: 'center' },
-    submitBtnTxt: { color: '#fff', fontSize: 15, fontWeight: '800' }
+    submitBtn: { backgroundColor: '#3B82F6', paddingVertical: 20, borderRadius: 20, alignItems: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 6 },
+    submitBtnTxt: { color: '#fff', fontSize: 17, fontWeight: '900' }
 });

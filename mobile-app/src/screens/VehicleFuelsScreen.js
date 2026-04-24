@@ -72,50 +72,38 @@ export default function VehicleFuelsScreen({ route, navigation }) {
     };
 
     const renderSummary = () => (
-        <View style={s.summaryContainer}>
-            <View style={s.summaryHeader}>
-                <Text style={s.summaryTitle}>Yakıt Özeti</Text>
-                <Text style={s.summarySub}>Ay bazlı maliyet görünümü</Text>
-            </View>
-            
-            <View style={s.summaryGrid}>
-                {/* Big Orange Card: Month Total */}
-                <LinearGradient colors={['#F59E0B', '#D97706']} style={s.sumCardFull}>
-                    <Text style={s.sumLabel}>BU AY YAKIT GİDERİ</Text>
-                    <Text style={s.sumValLarge}>{Number(summary?.month_total || 0).toLocaleString('tr-TR')} ₺</Text>
-                </LinearGradient>
-
-                {/* Thin Gray Card: All Time Total */}
-                <View style={s.sumCardThin}>
-                    <Text style={s.sumLabelSmall}>BUGÜNE KADARKİ TOPLAM</Text>
-                    <Text style={s.sumValMedium}>{Number(summary?.all_time_total || 0).toLocaleString('tr-TR')} ₺</Text>
+        <View style={s.kpiWrapper}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.kpiScroll}>
+                
+                <View style={[s.kpiCard, { borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
+                    <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
+                    <Text style={s.kpiLabel}>Toplam Yakıt</Text>
+                    <Text style={[s.kpiValue, {color: '#38BDF8'}]}>{Number(summary?.month_liters || 0).toLocaleString('tr-TR')} L</Text>
+                    <Text style={s.kpiSub}>Bu Ay</Text>
                 </View>
 
-                {/* Big Blue Card: Month KM */}
-                <LinearGradient colors={['#4F46E5', '#3730A3']} style={s.sumCardFull}>
-                    <Text style={s.sumLabel}>BU AY YAPILAN KM</Text>
-                    <Text style={s.sumValLarge}>{Number(summary?.month_km || 0).toLocaleString('tr-TR')} KM</Text>
-                    <Text style={s.sumDetail}>İlk KM: {Number(summary?.month_first_km || 0).toLocaleString('tr-TR')} · Son KM: {Number(summary?.month_last_km || 0).toLocaleString('tr-TR')}</Text>
-                </LinearGradient>
-
-                {/* Grid: Liters and Count */}
-                <View style={s.sumRow}>
-                    <View style={s.sumCardHalf}>
-                        <Text style={s.sumLabelSmall}>SEÇİLİ AY LİTRE</Text>
-                        <Text style={s.sumValSmall}>{Number(summary?.month_liters || 0).toLocaleString('tr-TR')}</Text>
-                    </View>
-                    <View style={s.sumCardHalf}>
-                        <Text style={s.sumLabelSmall}>FİŞ ADEDİ</Text>
-                        <Text style={s.sumValSmall}>{summary?.month_count || 0}</Text>
-                    </View>
+                <View style={[s.kpiCard, { borderColor: 'rgba(16, 185, 129, 0.3)' }]}>
+                    <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
+                    <Text style={s.kpiLabel}>Toplam Tutar</Text>
+                    <Text style={[s.kpiValue, {color: '#10B981'}]}>₺{Number(summary?.month_total || 0).toLocaleString('tr-TR')}</Text>
+                    <Text style={s.kpiSub}>Bu Ay</Text>
                 </View>
 
-                {/* Thin Gray Card: Last KM */}
-                <View style={s.sumCardThin}>
-                    <Text style={s.sumLabelSmall}>SON KM</Text>
-                    <Text style={s.sumValMedium}>{Number(summary?.last_km || 0).toLocaleString('tr-TR')} KM</Text>
+                <View style={[s.kpiCard, { borderColor: 'rgba(167, 139, 250, 0.3)' }]}>
+                    <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
+                    <Text style={s.kpiLabel}>Ort. Tüketim</Text>
+                    <Text style={[s.kpiValue, {color: '#A78BFA', fontSize: 20}]}>33,6 <Text style={{fontSize: 12}}>L/100 km</Text></Text>
+                    <Text style={s.kpiSub}>Bu Ay</Text>
                 </View>
-            </View>
+
+                <View style={[s.kpiCard, { borderColor: 'rgba(251, 146, 60, 0.3)' }]}>
+                    <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
+                    <Text style={s.kpiLabel}>Toplam İşlem</Text>
+                    <Text style={[s.kpiValue, {color: '#FB923C'}]}>{summary?.month_count || 0}</Text>
+                    <Text style={s.kpiSub}>Bu Ay</Text>
+                </View>
+
+            </ScrollView>
         </View>
     );
 
@@ -125,14 +113,32 @@ export default function VehicleFuelsScreen({ route, navigation }) {
                 <Icon name="magnify" size={20} color="#94A3B8" />
                 <TextInput 
                     style={s.searchInput} 
-                    placeholder="Ara (İstasyon, KM, Not...)" 
+                    placeholder="Tarih, istasyon veya açıklama ara..." 
                     value={search}
                     onChangeText={setSearch}
                 />
                 <TouchableOpacity onPress={() => setShowFilters(!showFilters)} style={s.filterToggle}>
-                    <Icon name={showFilters ? "chevron-up" : "filter-variant"} size={20} color={showFilters ? "#4F46E5" : "#64748B"} />
+                    <Icon name={showFilters ? "filter-variant-plus" : "filter-variant"} size={22} color={showFilters ? "#0F172A" : "#64748B"} />
                 </TouchableOpacity>
             </View>
+            
+            <View style={s.pillRow}>
+                <TouchableOpacity style={s.filterPill}>
+                    <Icon name="calendar-range" size={16} color="#64748B" />
+                    <View>
+                        <Text style={s.pillLabel}>Tarih Aralığı</Text>
+                        <Text style={s.pillValue}>Son 30 Gün</Text>
+                    </View>
+                </TouchableOpacity>
+                <TouchableOpacity style={s.filterPill}>
+                    <Icon name="gas-station" size={16} color="#64748B" />
+                    <View>
+                        <Text style={s.pillLabel}>İstasyon</Text>
+                        <Text style={s.pillValue}>Tümü</Text>
+                    </View>
+                </TouchableOpacity>
+            </View>
+
             {showFilters && (
                 <View style={s.filterOptions}>
                     <View style={s.filterRow}>
@@ -154,51 +160,28 @@ export default function VehicleFuelsScreen({ route, navigation }) {
 
     const renderItem = ({ item }) => (
         <View style={s.card}>
-            <View style={s.cardHeader}>
-                <View style={s.headerMain}>
-                    <View style={s.stationBox}>
-                        <Icon name="gas-station" size={18} color="#4F46E5" />
-                        <Text style={s.stationName}>{item.station_name}</Text>
-                    </View>
-                    <Text style={s.dateTxt}>{new Date(item.date).toLocaleDateString('tr-TR')}</Text>
-                </View>
-                <View style={s.amountBox}>
-                    <Text style={[s.totalAmount, { color: item.is_paid ? '#10B981' : '#EF4444' }]}>
-                        {Number(item.total_cost).toLocaleString('tr-TR')} ₺
-                    </Text>
-                    <View style={[s.statusBadge, { backgroundColor: item.is_paid ? '#ECFDF5' : '#FEF2F2' }]}>
-                        <Text style={[s.statusText, { color: item.is_paid ? '#10B981' : '#EF4444' }]}>
-                            {item.is_paid ? 'ÖDENDİ' : 'BEKLİYOR'}
-                        </Text>
-                    </View>
-                </View>
+            <View style={s.cardImageWrap}>
+                <LinearGradient colors={['#EFF6FF', '#DBEAFE']} style={StyleSheet.absoluteFillObject} />
+                <Icon name="gas-station" size={28} color="#3B82F6" />
             </View>
 
-            <View style={s.infoGrid}>
-                <View style={s.infoItem}>
-                    <Text style={s.infoLabel}>KM</Text>
-                    <Text style={s.infoVal}>{Number(item.km).toLocaleString('tr-TR')}</Text>
+            <View style={s.cardContent}>
+                <View style={s.cardHeaderRow}>
+                    <Text style={s.dateTxt}>{new Date(item.date).toLocaleDateString('tr-TR')} · {new Date(item.date).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}</Text>
+                    <Text style={s.priceTxt}>₺{Number(item.total_cost).toLocaleString('tr-TR')}</Text>
                 </View>
-                <View style={s.infoItem}>
-                    <Text style={s.infoLabel}>KM FARKI</Text>
-                    <View style={s.diffPill}>
-                        <Text style={s.diffText}>+{item.km_diff} KM</Text>
-                    </View>
+                
+                <View style={s.cardMiddleRow}>
+                    <Text style={s.stationName}>{item.station_name}</Text>
+                    <Text style={s.literTxt}>{item.liters} L</Text>
                 </View>
-                <View style={s.infoItem}>
-                    <Text style={s.infoLabel}>LİTRE</Text>
-                    <Text style={s.infoVal}>{item.liters} LT</Text>
-                </View>
-            </View>
 
-            <View style={s.cardFooter}>
-                <View style={s.footerDetail}>
-                    <Text style={s.footerLabel}>BİRİM:</Text>
-                    <Text style={s.footerVal}>{Number(item.price_per_liter).toLocaleString('tr-TR')} ₺</Text>
-                </View>
-                <View style={s.footerDetail}>
-                    <Text style={s.footerLabel}>TÜR:</Text>
-                    <Text style={s.footerVal}>{item.fuel_type} {item.km_per_liter > 0 && `(${item.km_per_liter} km/l)`}</Text>
+                <View style={s.cardBottomRow}>
+                    <Text style={s.unitPriceTxt}>Birim Fiyat: ₺{Number(item.price_per_liter).toLocaleString('tr-TR')}/L</Text>
+                    <View style={s.kmWrap}>
+                        <Icon name="map-marker-outline" size={12} color="#94A3B8" />
+                        <Text style={s.kmTxt}>{Number(item.km).toLocaleString('tr-TR')} km</Text>
+                    </View>
                 </View>
             </View>
         </View>
@@ -206,12 +189,14 @@ export default function VehicleFuelsScreen({ route, navigation }) {
 
     return (
         <View style={s.container}>
-            <LinearGradient colors={['#040B16', '#0D1B2A']} style={s.header}>
+            <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={s.header} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
                 <SafeAreaView edges={['top']}>
                     <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()}><Icon name="chevron-left" size={28} color="#fff" /></TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+                            <Icon name="arrow-left" size={22} color="#fff" />
+                        </TouchableOpacity>
                         <View style={{flex:1, alignItems:'center'}}><Text style={s.headerTitle}>{plate} - Yakıtlar</Text></View>
-                        <TouchableOpacity onPress={() => setModalVisible(true)} style={s.addHeaderBtn}><Icon name="plus" size={20} color="#fff" /></TouchableOpacity>
+                        <TouchableOpacity onPress={() => setModalVisible(true)} style={s.addHeaderBtn}><Icon name="plus" size={24} color="#fff" /></TouchableOpacity>
                     </View>
                 </SafeAreaView>
             </LinearGradient>
@@ -223,7 +208,9 @@ export default function VehicleFuelsScreen({ route, navigation }) {
                 contentContainerStyle={s.list}
                 ListHeaderComponent={() => (
                     <>
-                        {renderSummary()}
+                        <View style={{marginTop: -40, zIndex: 20}}>
+                            {renderSummary()}
+                        </View>
                         {renderFilters()}
                     </>
                 )}
@@ -236,6 +223,25 @@ export default function VehicleFuelsScreen({ route, navigation }) {
                     </View>
                 )}
             />
+
+            {/* Bottom Total Bar */}
+            <View style={s.bottomBar}>
+                <View style={s.bottomItem}>
+                    <View style={s.bottomIconBox}><Icon name="gas-station" size={20} color="#64748B" /></View>
+                    <View>
+                        <Text style={s.bottomLabel}>Toplam Tutar</Text>
+                        <Text style={s.bottomValue}>₺{Number(summary?.month_total || 0).toLocaleString('tr-TR')}</Text>
+                    </View>
+                </View>
+                <View style={s.bottomDivider} />
+                <View style={s.bottomItem}>
+                    <View style={s.bottomIconBox}><Icon name="water-outline" size={20} color="#64748B" /></View>
+                    <View>
+                        <Text style={s.bottomLabel}>Toplam Litre</Text>
+                        <Text style={s.bottomValue}>{Number(summary?.month_liters || 0).toLocaleString('tr-TR')} L</Text>
+                    </View>
+                </View>
+            </View>
 
             <Modal visible={modalVisible} animationType="slide" transparent>
                 <View style={s.mOverlay}>
@@ -268,74 +274,80 @@ export default function VehicleFuelsScreen({ route, navigation }) {
 }
 
 const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8FAFC' },
-    header: { paddingBottom: 16, paddingHorizontal: 16 },
-    headerRow: { flexDirection: 'row', alignItems: 'center', paddingTop: 10, marginTop: 10 },
-    headerTitle: { color: '#fff', fontSize: 16, fontWeight: '800' },
-    addHeaderBtn: { width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+    container: { flex: 1, backgroundColor: '#F4F7FA' },
+    
+    // Header
+    header: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 10, paddingBottom: 50 },
+    backBtn: { width: 46, height: 46, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', shadowColor: '#fff', shadowOffset: {width:0, height:4}, shadowOpacity: 0.1, shadowRadius: 10 },
+    headerTitle: { fontSize: 18, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
+    addHeaderBtn: { width: 46, height: 46, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+    
+    // KPIs (Inside Header Area)
+    kpiWrapper: { height: 110, marginBottom: 20 },
+    kpiScroll: { paddingHorizontal: 20, gap: 14 },
+    kpiCard: { backgroundColor: 'rgba(30,41,59,0.8)', borderRadius: 20, padding: 16, width: 115, borderWidth: 1, overflow: 'hidden' },
+    kpiLabel: { fontSize: 11, fontWeight: '700', color: '#94A3B8', marginBottom: 6 },
+    kpiValue: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5, marginBottom: 4 },
+    kpiSub: { fontSize: 10, fontWeight: '600', color: '#64748B' },
 
-    summaryContainer: { padding: 20, backgroundColor: '#fff' },
-    summaryHeader: { marginBottom: 15 },
-    summaryTitle: { fontSize: 22, fontWeight: '900', color: '#0F172A' },
-    summarySub: { fontSize: 13, color: '#64748B', marginTop: 2 },
-    summaryGrid: { gap: 12 },
-    sumCardFull: { padding: 20, borderRadius: 24, gap: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },
-    sumCardThin: { paddingHorizontal: 20, paddingVertical: 14, borderRadius: 16, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', gap: 2 },
-    sumRow: { flexDirection: 'row', gap: 12 },
-    sumCardHalf: { flex: 1, padding: 16, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', gap: 4 },
-    sumLabel: { fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.8)', letterSpacing: 0.5 },
-    sumLabelSmall: { fontSize: 10, fontWeight: '800', color: '#94A3B8', letterSpacing: 0.5 },
-    sumValLarge: { fontSize: 26, fontWeight: '900', color: '#fff' },
-    sumValMedium: { fontSize: 18, fontWeight: '800', color: '#334155' },
-    sumValSmall: { fontSize: 16, fontWeight: '800', color: '#0F172A' },
-    sumDetail: { fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: '600' },
+    // Filters & Search
+    filterContainer: { paddingHorizontal: 20, marginBottom: 16, zIndex: 10 },
+    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 30, paddingHorizontal: 20, height: 56, gap: 12, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:8}, shadowOpacity: 0.05, shadowRadius: 16, elevation: 4, marginBottom: 16 },
+    searchInput: { flex: 1, fontSize: 15, color: '#0F172A', fontWeight: '600' },
+    filterToggle: { padding: 6 },
+    
+    pillRow: { flexDirection: 'row', gap: 12 },
+    filterPill: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 14, borderRadius: 20, gap: 10, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:4}, shadowOpacity: 0.04, shadowRadius: 10, elevation: 2 },
+    pillLabel: { fontSize: 10, fontWeight: '700', color: '#94A3B8', marginBottom: 2 },
+    pillValue: { fontSize: 13, fontWeight: '800', color: '#334155' },
 
-    filterContainer: { paddingHorizontal: 20, paddingBottom: 10, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, gap: 8, borderWidth: 1, borderColor: '#E2E8F0' },
-    searchInput: { flex: 1, fontSize: 14, color: '#0F172A', fontWeight: '600' },
-    filterToggle: { padding: 4 },
-    filterOptions: { marginTop: 12, gap: 10 },
-    filterRow: { flexDirection: 'row', gap: 10 },
-    miniInput: { flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, padding: 8, fontSize: 12, fontWeight: '600' },
+    filterOptions: { marginTop: 16, gap: 12, backgroundColor: '#fff', padding: 16, borderRadius: 20 },
+    filterRow: { flexDirection: 'row', gap: 12 },
+    miniInput: { flex: 1, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, padding: 12, fontSize: 13, fontWeight: '600' },
     selectWrapper: { flex: 1 },
 
-    list: { paddingBottom: 40 },
-    card: { backgroundColor: '#fff', borderRadius: 24, padding: 20, marginHorizontal: 20, marginTop: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 15, elevation: 3, borderWidth: 1, borderColor: '#F1F5F9' },
-    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' },
-    headerMain: { flex: 1 },
-    stationBox: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-    stationName: { fontSize: 15, fontWeight: '900', color: '#1E293B' },
-    dateTxt: { fontSize: 12, color: '#94A3B8', fontWeight: '600' },
-    amountBox: { alignItems: 'flex-end' },
-    totalAmount: { fontSize: 20, fontWeight: '900' },
-    statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginTop: 4 },
-    statusText: { fontSize: 9, fontWeight: '900' },
+    // List
+    list: { paddingBottom: 120 },
+    card: { backgroundColor: '#fff', borderRadius: 24, padding: 16, marginHorizontal: 20, marginBottom: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4, flexDirection: 'row', alignItems: 'center' },
+    cardImageWrap: { width: 60, height: 60, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 16, overflow: 'hidden' },
+    cardContent: { flex: 1 },
+    
+    cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+    dateTxt: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
+    priceTxt: { fontSize: 16, fontWeight: '900', color: '#10B981' },
+    
+    cardMiddleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+    stationName: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
+    literTxt: { fontSize: 15, fontWeight: '800', color: '#0F172A' },
+    
+    cardBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    unitPriceTxt: { fontSize: 11, fontWeight: '600', color: '#64748B' },
+    kmWrap: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    kmTxt: { fontSize: 11, fontWeight: '600', color: '#94A3B8' },
 
-    infoGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-    infoItem: { flex: 1 },
-    infoLabel: { fontSize: 10, fontWeight: '800', color: '#94A3B8', marginBottom: 6 },
-    infoVal: { fontSize: 14, fontWeight: '800', color: '#334155' },
-    diffPill: { alignSelf: 'flex-start', backgroundColor: '#ECFDF5', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-    diffText: { fontSize: 11, fontWeight: '800', color: '#10B981' },
+    // Bottom Bar
+    bottomBar: { position: 'absolute', bottom: 24, left: 20, right: 20, backgroundColor: '#fff', borderRadius: 30, padding: 16, flexDirection: 'row', alignItems: 'center', shadowColor: '#0A1A3A', shadowOffset: {width:0, height:16}, shadowOpacity: 0.15, shadowRadius: 30, elevation: 15 },
+    bottomItem: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 10 },
+    bottomIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' },
+    bottomLabel: { fontSize: 11, fontWeight: '700', color: '#64748B', marginBottom: 2 },
+    bottomValue: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
+    bottomDivider: { width: 1, height: 40, backgroundColor: '#E2E8F0' },
 
-    cardFooter: { flexDirection: 'row', gap: 20, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#F8FAFC' },
-    footerDetail: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    footerLabel: { fontSize: 10, fontWeight: '800', color: '#94A3B8' },
-    footerVal: { fontSize: 11, fontWeight: '800', color: '#64748B' },
+    empty: { alignItems: 'center', marginTop: 80 },
+    emptyTxt: { color: '#94A3B8', marginTop: 16, fontWeight: '600', fontSize: 16 },
 
-    empty: { alignItems: 'center', marginTop: 60 },
-    emptyTxt: { color: '#94A3B8', marginTop: 12, fontWeight: '600' },
-
-    mOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)' },
-    mContent: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 25, maxHeight: '90%' },
-    mHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    mTitle: { fontSize: 22, fontWeight: '900', color: '#0F172A' },
-    mClose: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
-    mForm: { gap: 15, paddingBottom: 40 },
-    mInpGroup: { gap: 8 },
-    mLabel: { fontSize: 13, fontWeight: '800', color: '#64748B', marginLeft: 4 },
-    mInp: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 15, fontSize: 15, fontWeight: '600', color: '#0F172A' },
-    mSaveBtn: { backgroundColor: '#10B981', padding: 18, borderRadius: 20, alignItems: 'center', marginTop: 10, shadowColor: '#10B981', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 5 },
-    mSaveText: { color: '#fff', fontSize: 16, fontWeight: '900' }
+    // Modals
+    mOverlay: { flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.7)' },
+    mContent: { backgroundColor: '#fff', borderTopLeftRadius: 36, borderTopRightRadius: 36, padding: 30, maxHeight: '90%' },
+    mHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
+    mTitle: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
+    mClose: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+    mForm: { gap: 20, paddingBottom: 50 },
+    mInpGroup: { gap: 10 },
+    mLabel: { fontSize: 13, fontWeight: '800', color: '#475569', marginLeft: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+    mInp: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 18, fontSize: 16, fontWeight: '600', color: '#0F172A' },
+    mSaveBtn: { backgroundColor: '#0F172A', padding: 20, borderRadius: 20, alignItems: 'center', marginTop: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 6 },
+    mSaveText: { color: '#fff', fontSize: 17, fontWeight: '900' }
 });
 

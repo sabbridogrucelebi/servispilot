@@ -13,12 +13,18 @@ import HomeScreen from './src/screens/HomeScreen';
 import MenuScreen from './src/screens/MenuScreen';
 import VehiclesScreen from './src/screens/VehiclesScreen';
 import PersonnelScreen from './src/screens/PersonnelScreen';
+import PersonnelDetailScreen from './src/screens/PersonnelDetailScreen';
 import CustomersScreen from './src/screens/CustomersScreen';
+import CustomerDetailScreen from './src/screens/CustomerDetailScreen';
 import TripsScreen from './src/screens/TripsScreen';
+import TripDetailScreen from './src/screens/TripDetailScreen';
 import PilotChatScreen from './src/screens/PilotChatScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ActivityScreen from './src/screens/ActivityScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
+import PayrollScreen from './src/screens/PayrollScreen';
+import PayrollDetailScreen from './src/screens/PayrollDetailScreen';
+import FinanceScreen from './src/screens/FinanceScreen';
 import VehicleDetailScreen from './src/screens/VehicleDetailScreen';
 import VehicleDocumentsScreen from './src/screens/VehicleDocumentsScreen';
 import VehicleFuelsScreen from './src/screens/VehicleFuelsScreen';
@@ -98,8 +104,8 @@ function MainTabs() {
 }
 
 function AppNavigation() {
-    const { userToken, isLoading } = useContext(AuthContext);
-    if (isLoading && !userToken) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}><ActivityIndicator size="large" color={theme.primary} /></View>;
+    const { userToken, isInitializing } = useContext(AuthContext);
+    if (isInitializing) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}><ActivityIndicator size="large" color={theme.primary} /></View>;
     return (
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -109,9 +115,15 @@ function AppNavigation() {
                         <Stack.Screen name="Vehicles" component={VehiclesScreen} />
                         <Stack.Screen name="VehicleDetail" component={VehicleDetailScreen} />
                         <Stack.Screen name="Personnel" component={PersonnelScreen} />
+                        <Stack.Screen name="PersonnelDetail" component={PersonnelDetailScreen} />
                         <Stack.Screen name="Customers" component={CustomersScreen} />
+                        <Stack.Screen name="CustomerDetail" component={CustomerDetailScreen} />
                         <Stack.Screen name="Trips" component={TripsScreen} />
+                        <Stack.Screen name="TripDetail" component={TripDetailScreen} />
                         <Stack.Screen name="Reports" component={ReportsScreen} />
+                        <Stack.Screen name="Payrolls" component={PayrollScreen} />
+                        <Stack.Screen name="PayrollDetail" component={PayrollDetailScreen} />
+                        <Stack.Screen name="Finance" component={FinanceScreen} />
                         <Stack.Screen name="Activity" component={ActivityScreen} />
                         <Stack.Screen name="VehicleDocuments" component={VehicleDocumentsScreen} />
                         <Stack.Screen name="VehicleFuels" component={VehicleFuelsScreen} />

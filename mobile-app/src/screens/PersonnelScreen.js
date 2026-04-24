@@ -10,20 +10,35 @@ export default function PersonnelScreen({ navigation }) {
     const [personnel, setPersonnel] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState(null);
 
     const fetchPersonnel = async () => {
         try {
-            const response = await api.get('/personnel');
-            setPersonnel(response.data);
-        } catch (error) { console.error(error); }
-        finally { setLoading(false); setRefreshing(false); }
+            setError(null);
+            const response = await api.get('/v1/personnel');
+            if (response.data.success) {
+                setPersonnel(response.data.data);
+            } else {
+                setError(response.data.message || 'Personel verileri alınamadı.');
+            }
+        } catch (err) { 
+            console.error(err);
+            setError('Bağlantı hatası oluştu.');
+        } finally { 
+            setLoading(false); 
+            setRefreshing(false); 
+        }
     };
 
     useEffect(() => { fetchPersonnel(); }, []);
     const onRefresh = () => { setRefreshing(true); fetchPersonnel(); };
 
     const renderPerson = ({ item }) => (
-        <TouchableOpacity style={styles.card} activeOpacity={0.85}>
+        <TouchableOpacity 
+            style={styles.card} 
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('PersonnelDetail', { driverId: item.id, driverName: item.full_name })}
+        >
             <View style={styles.cardTop}>
                 <View style={styles.iconWrapper}>
                     <Icon name="account-tie-outline" size={40} color="#6366F1" />
@@ -46,7 +61,7 @@ export default function PersonnelScreen({ navigation }) {
                 </View>
                 <View style={styles.footerItem}>
                     <Icon name="car-outline" size={20} color="#94A3B8" />
-                    <Text style={styles.footerText}>{item.vehicle_plate}</Text>
+                    <Text style={styles.footerText}>{item.vehicle?.plate || 'Atanmamış'}</Text>
                 </View>
             </View>
         </TouchableOpacity>
@@ -71,6 +86,14 @@ export default function PersonnelScreen({ navigation }) {
 
             {loading ? (
                 <View style={styles.centerContent}><ActivityIndicator size="large" color="#3B82F6" /></View>
+            ) : error ? (
+                <View style={styles.centerContent}>
+                    <Icon name="alert-circle-outline" size={48} color="#ef4444" />
+                    <Text style={[styles.emptyText, {color: '#ef4444', marginTop: 12}]}>{error}</Text>
+                    <TouchableOpacity onPress={fetchPersonnel} style={{ marginTop: 24, padding: 12, backgroundColor: '#3B82F6', borderRadius: 8 }}>
+                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Tekrar Dene</Text>
+                    </TouchableOpacity>
+                </View>
             ) : (
                 <FlatList
                     data={personnel}

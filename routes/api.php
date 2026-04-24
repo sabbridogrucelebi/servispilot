@@ -30,3 +30,32 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::get('/trips', [TripController::class, 'index']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| V1 API ROUTES (New Standard)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Api\V1\DashboardApiController::class, 'index']);
+    Route::get('/personnel', [\App\Http\Controllers\Api\V1\PersonnelApiController::class, 'index']);
+    Route::get('/personnel/{id}', [\App\Http\Controllers\Api\V1\PersonnelApiController::class, 'show']);
+    Route::get('/customers', [\App\Http\Controllers\Api\V1\CustomerApiController::class, 'index']);
+    Route::get('/customers/{id}', [\App\Http\Controllers\Api\V1\CustomerApiController::class, 'show']);
+    Route::get('/trips', [\App\Http\Controllers\Api\V1\TripApiController::class, 'index']);
+    Route::get('/trips/{id}', [\App\Http\Controllers\Api\V1\TripApiController::class, 'show']);
+    Route::get('/activity-logs', [\App\Http\Controllers\Api\V1\ActivityLogApiController::class, 'index']);
+    Route::get('/finance/summary', [\App\Http\Controllers\Api\V1\FinanceApiController::class, 'summary']);
+    Route::get('/payrolls', [\App\Http\Controllers\Api\V1\PayrollApiController::class, 'index']);
+    Route::get('/payrolls/{id}', [\App\Http\Controllers\Api\V1\PayrollApiController::class, 'show']);
+    
+    // Vehicles (Read-Only)
+    Route::get('/vehicles', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'index']);
+    Route::get('/vehicles/{id}', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'show']);
+    Route::get('/vehicles/{id}/documents', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'documents']);
+    Route::get('/vehicles/{id}/fuels', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'fuels']);
+    Route::get('/vehicles/{id}/maintenances', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'maintenances']);
+    Route::get('/vehicles/{id}/penalties', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'penalties']);
+    Route::get('/vehicles/{id}/gallery', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'gallery']);
+    Route::get('/vehicles/{id}/reports', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'reports']);
+});

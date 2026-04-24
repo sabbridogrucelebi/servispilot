@@ -6,8 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import api from '../api/axios';
 
-export default function ActivityScreen({ navigation }) {
-    const [logs, setLogs] = useState([]);
+export default function PayrollScreen({ navigation }) {
+    const [payrolls, setPayrolls] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
@@ -15,23 +15,23 @@ export default function ActivityScreen({ navigation }) {
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
 
-    const fetchLogs = async (pageNumber = 1, isRefresh = false) => {
+    const fetchPayrolls = async (pageNumber = 1, isRefresh = false) => {
         try {
             if (isRefresh) setRefreshing(true);
             else if (pageNumber === 1) setLoading(true);
             else setLoadingMore(true);
 
             setError(null);
-            const response = await api.get(`/v1/activity-logs?page=${pageNumber}&per_page=20`);
+            const response = await api.get(`/v1/payrolls?page=${pageNumber}&per_page=20`);
 
             if (response.data.success) {
-                const newLogs = response.data.data;
+                const newPayrolls = response.data.data;
                 const meta = response.data.meta;
                 
                 if (pageNumber === 1) {
-                    setLogs(newLogs);
+                    setPayrolls(newPayrolls);
                 } else {
-                    setLogs(prev => [...prev, ...newLogs]);
+                    setPayrolls(prev => [...prev, ...newPayrolls]);
                 }
 
                 setHasMore(meta.current_page < meta.last_page);
@@ -54,64 +54,55 @@ export default function ActivityScreen({ navigation }) {
     };
 
     useEffect(() => {
-        fetchLogs(1);
+        fetchPayrolls(1);
     }, []);
 
     const onRefresh = () => {
         setHasMore(true);
-        fetchLogs(1, true);
+        fetchPayrolls(1, true);
     };
 
     const loadMore = () => {
         if (!loadingMore && hasMore && !loading) {
-            fetchLogs(page + 1);
+            fetchPayrolls(page + 1);
         }
     };
 
-    const getIconDetails = (module) => {
-        switch (module) {
-            case 'vehicles': return { icon: 'car-outline', color: '#F59E0B' };
-            case 'drivers': return { icon: 'account-tie-outline', color: '#6366F1' };
-            case 'trips': return { icon: 'map-marker-path', color: '#10B981' };
-            case 'fuels': return { icon: 'gas-station-outline', color: '#3B82F6' };
-            case 'customers': return { icon: 'office-building-outline', color: '#8B5CF6' };
-            case 'maintenances': return { icon: 'wrench-outline', color: '#EF4444' };
-            case 'penalties': return { icon: 'file-document-outline', color: '#EC4899' };
-            case 'users': return { icon: 'account-group-outline', color: '#14B8A6' };
-            default: return { icon: 'bell-outline', color: '#94A3B8' };
-        }
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
     };
 
-    const renderItem = ({ item, index }) => {
-        const { icon, color } = getIconDetails(item.module);
-        
-        return (
-            <View style={s.itemRow}>
-                <View style={s.timeline}>
-                    <View style={[s.dot, { backgroundColor: color }]} />
-                    {index !== logs.length - 1 && <View style={s.line} />}
+    const renderItem = ({ item }) => (
+        <TouchableOpacity 
+            style={s.card} 
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('PayrollDetail', { payrollId: item.id })}
+        >
+            <View style={s.cardTop}>
+                <View style={s.badge}>
+                    <Icon name="calendar-month-outline" size={20} color="#3B82F6" />
+                    <Text style={s.badgeText}>{item.period_human}</Text>
                 </View>
-                <View style={s.card}>
-                    <View style={s.cardHeader}>
-                        <View style={s.badge}>
-                            <Icon name={icon} size={16} color={color} />
-                            <Text style={[s.badgeText, { color: color }]}>{item.module.toUpperCase()}</Text>
-                        </View>
-                        <Text style={s.time}>{item.created_at_human}</Text>
+                {item.is_locked && (
+                    <View style={s.lockBadge}>
+                        <Icon name="lock" size={16} color="#EF4444" />
+                        <Text style={s.lockText}>Kilitli</Text>
                     </View>
-                    <Text style={s.title}>{item.title}</Text>
-                    <Text style={s.sub}>{item.description}</Text>
-                    <View style={s.footer}>
-                        <Icon name="account-outline" size={14} color="#94A3B8" />
-                        <Text style={s.footerText}>{item.user_name}</Text>
-                        {item.ip_address && (
-                            <Text style={s.ipText}> • {item.ip_address}</Text>
-                        )}
-                    </View>
+                )}
+            </View>
+            <Text style={s.driverText}>{item.driver_name}</Text>
+            <View style={s.amountRow}>
+                <View>
+                    <Text style={s.amountLabel}>Ana Maaş</Text>
+                    <Text style={s.amountValueBase}>{formatCurrency(item.base_salary)}</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={s.amountLabel}>Net Ödenen</Text>
+                    <Text style={s.amountValueNet}>{formatCurrency(item.net_salary)}</Text>
                 </View>
             </View>
-        );
-    };
+        </TouchableOpacity>
+    );
 
     return (
         <View style={s.container}>
@@ -119,8 +110,10 @@ export default function ActivityScreen({ navigation }) {
                 <SpaceWaves />
                 <SafeAreaView>
                     <View style={s.hRow}>
-                        <Icon name="bell-outline" size={28} color="#fff" />
-                        <Text style={s.hTitle}>Aktivite</Text>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.hBtn}>
+                            <Icon name="chevron-left" size={28} color="#fff" />
+                        </TouchableOpacity>
+                        <Text style={s.hTitle}>Bordrolar</Text>
                         <View style={{ width: 28 }} />
                     </View>
                 </SafeAreaView>
@@ -132,13 +125,13 @@ export default function ActivityScreen({ navigation }) {
                 <View style={s.centerContent}>
                     <Icon name="alert-circle-outline" size={48} color="#ef4444" />
                     <Text style={[s.emptyT, {color: '#ef4444', marginTop: 12}]}>{error}</Text>
-                    <TouchableOpacity onPress={() => fetchLogs(1)} style={s.retryBtn}>
+                    <TouchableOpacity onPress={() => fetchPayrolls(1)} style={s.retryBtn}>
                         <Text style={{ color: '#fff', fontWeight: 'bold' }}>Tekrar Dene</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
                 <FlatList
-                    data={logs}
+                    data={payrolls}
                     keyExtractor={(i) => i.id.toString()}
                     renderItem={renderItem}
                     contentContainerStyle={s.content}
@@ -148,8 +141,8 @@ export default function ActivityScreen({ navigation }) {
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />}
                     ListEmptyComponent={
                         <View style={s.empty}>
-                            <Icon name="bell-off-outline" size={64} color="#CBD5E1" />
-                            <Text style={s.emptyT}>Henüz aktivite kaydı yok.</Text>
+                            <Icon name="cash-multiple" size={64} color="#CBD5E1" />
+                            <Text style={s.emptyT}>Kayıtlı bordro bulunamadı.</Text>
                         </View>
                     }
                     ListFooterComponent={
@@ -163,24 +156,22 @@ export default function ActivityScreen({ navigation }) {
 
 const s = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8FAFC' },
-    header: { paddingBottom: 32, paddingHorizontal: 24, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
+    header: { paddingBottom: 24, paddingHorizontal: 24, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
     hRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16 },
+    hBtn: { alignItems: 'center', justifyContent: 'center' },
     hTitle: { fontSize: 24, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
     content: { padding: 20, paddingTop: 30, paddingBottom: 100 },
-    itemRow: { flexDirection: 'row', marginBottom: 16 },
-    timeline: { width: 24, alignItems: 'center', marginRight: 12 },
-    dot: { width: 12, height: 12, borderRadius: 6, marginTop: 24, zIndex: 10, borderWidth: 2, borderColor: '#fff' },
-    line: { position: 'absolute', top: 32, bottom: -20, width: 2, backgroundColor: '#E2E8F0', zIndex: 1 },
-    card: { flex: 1, backgroundColor: '#fff', borderRadius: 20, padding: 16, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2 },
-    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-    badge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F8FAFC', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#F1F5F9' },
-    badgeText: { fontSize: 12, fontWeight: '800' },
-    time: { fontSize: 12, color: '#94A3B8', fontWeight: '600' },
-    title: { fontSize: 16, fontWeight: '800', color: '#0F172A', marginBottom: 4 },
-    sub: { fontSize: 14, color: '#64748B', fontWeight: '500', marginBottom: 8 },
-    footer: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
-    footerText: { fontSize: 12, color: '#94A3B8', fontWeight: '600' },
-    ipText: { fontSize: 11, color: '#CBD5E1', fontWeight: '500' },
+    card: { backgroundColor: '#fff', borderRadius: 20, padding: 20, marginBottom: 16, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 },
+    cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, gap: 6 },
+    badgeText: { color: '#3B82F6', fontWeight: '800', fontSize: 13 },
+    lockBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF2F2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, gap: 4 },
+    lockText: { color: '#EF4444', fontWeight: '700', fontSize: 11 },
+    driverText: { fontSize: 18, fontWeight: '800', color: '#0F172A', marginBottom: 16 },
+    amountRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 16 },
+    amountLabel: { fontSize: 12, color: '#64748B', fontWeight: '600', marginBottom: 4 },
+    amountValueBase: { fontSize: 16, fontWeight: '700', color: '#475569' },
+    amountValueNet: { fontSize: 18, fontWeight: '900', color: '#10B981' },
     centerContent: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     empty: { alignItems: 'center', paddingVertical: 64 },
     emptyT: { color: '#94A3B8', fontSize: 16, marginTop: 16, fontWeight: '600' },

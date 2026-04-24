@@ -10,20 +10,35 @@ export default function CustomersScreen({ navigation }) {
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState(null);
 
     const fetchCustomers = async () => {
         try {
-            const response = await api.get('/customers');
-            setCustomers(response.data);
-        } catch (error) { console.error(error); }
-        finally { setLoading(false); setRefreshing(false); }
+            setError(null);
+            const response = await api.get('/v1/customers');
+            if (response.data.success) {
+                setCustomers(response.data.data);
+            } else {
+                setError(response.data.message || 'Müşteri verileri alınamadı.');
+            }
+        } catch (err) {
+            console.error(err);
+            setError('Bağlantı hatası oluştu.');
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
     };
 
     useEffect(() => { fetchCustomers(); }, []);
     const onRefresh = () => { setRefreshing(true); fetchCustomers(); };
 
     const renderCustomer = ({ item }) => (
-        <TouchableOpacity style={styles.card} activeOpacity={0.85}>
+        <TouchableOpacity 
+            style={styles.card} 
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('CustomerDetail', { customerId: item.id, customerName: item.company_name })}
+        >
             <View style={styles.cardTop}>
                 <View style={styles.iconWrapper}>
                     <Icon name="office-building-outline" size={40} color="#F59E0B" />
@@ -36,12 +51,12 @@ export default function CustomersScreen({ navigation }) {
                 </View>
             </View>
             
-            <Text style={styles.nameText}>{item.name}</Text>
+            <Text style={styles.nameText}>{item.company_name || 'İsimsiz Müşteri'}</Text>
 
             <View style={styles.cardFooter}>
                 <View style={styles.footerItem}>
                     <Icon name="account-tie-outline" size={20} color="#94A3B8" />
-                    <Text style={styles.footerText}>{item.contact_person || 'Yetkili Yok'}</Text>
+                    <Text style={styles.footerText}>{item.authorized_person || 'Yetkili Yok'}</Text>
                 </View>
                 <View style={styles.footerItem}>
                     <Icon name="phone-outline" size={20} color="#94A3B8" />
@@ -70,6 +85,14 @@ export default function CustomersScreen({ navigation }) {
 
             {loading ? (
                 <View style={styles.centerContent}><ActivityIndicator size="large" color="#3B82F6" /></View>
+            ) : error ? (
+                <View style={styles.centerContent}>
+                    <Icon name="alert-circle-outline" size={48} color="#ef4444" />
+                    <Text style={[styles.emptyText, {color: '#ef4444', marginTop: 12}]}>{error}</Text>
+                    <TouchableOpacity onPress={fetchCustomers} style={{ marginTop: 24, padding: 12, backgroundColor: '#3B82F6', borderRadius: 8 }}>
+                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Tekrar Dene</Text>
+                    </TouchableOpacity>
+                </View>
             ) : (
                 <FlatList
                     data={customers}

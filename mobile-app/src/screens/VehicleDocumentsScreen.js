@@ -47,46 +47,96 @@ export default function VehicleDocumentsScreen({ route, navigation }) {
         } catch (error) { console.error(error.message); }
     };
 
+    const getDocStyle = (title) => {
+        const t = title.toLowerCase();
+        if (t.includes('egzoz')) return { bg: '#F3E8FF', icon: '#A855F7', glow: 'rgba(168,85,247,0.2)' };
+        if (t.includes('muayene')) return { bg: '#DBEAFE', icon: '#3B82F6', glow: 'rgba(59,130,246,0.2)' };
+        if (t.includes('ruhsat')) return { bg: '#D1FAE5', icon: '#10B981', glow: 'rgba(16,185,129,0.2)' };
+        if (t.includes('sigorta') || t.includes('kasko')) return { bg: '#FEF3C7', icon: '#F59E0B', glow: 'rgba(245,158,11,0.2)' };
+        return { bg: '#F1F5F9', icon: '#64748B', glow: 'rgba(100,116,139,0.2)' };
+    };
+
     const renderItem = ({ item }) => {
         const days = getDaysRemaining(item.end_date);
         const isExpired = item.is_expired;
+        const style = getDocStyle(item.title);
 
         return (
             <View style={s.card}>
-                <View style={s.cardHeader}>
-                    <View style={s.titleGroup}>
-                        <Text style={s.docTitle}>{item.title}</Text>
-                        <View style={s.typeBadge}>
-                            <Text style={s.typeText}>{item.type || 'Belge'}</Text>
+                <View style={s.cardTop}>
+                    {/* Left Icon Box */}
+                    <View style={[s.docIconBox, { backgroundColor: style.bg, shadowColor: style.icon }]}>
+                        <LinearGradient colors={[style.bg, '#fff']} style={StyleSheet.absoluteFillObject} borderRadius={16} />
+                        <Icon name="file-document-outline" size={30} color={style.icon} />
+                        {item.title.toLowerCase().includes('muayene') && !item.title.toLowerCase().includes('egzoz') && (
+                            <View style={{position: 'absolute', bottom: -5, right: -5, backgroundColor: '#fff', borderRadius: 10, padding: 2}}>
+                                <Icon name="shield-check" size={16} color={style.icon} />
+                            </View>
+                        )}
+                        {item.title.toLowerCase().includes('ruhsat') && (
+                            <View style={{position: 'absolute', bottom: -5, right: -5, backgroundColor: '#fff', borderRadius: 10, padding: 2}}>
+                                <Icon name="car-shield" size={16} color={style.icon} />
+                            </View>
+                        )}
+                        {item.title.toLowerCase().includes('sigorta') && (
+                            <View style={{position: 'absolute', bottom: -5, right: -5, backgroundColor: '#fff', borderRadius: 10, padding: 2}}>
+                                <Icon name="umbrella" size={16} color={style.icon} />
+                            </View>
+                        )}
+                    </View>
+
+                    {/* Middle Info */}
+                    <View style={s.cardInfo}>
+                        <View style={s.titleRow}>
+                            <Text style={s.docTitle}>{item.title}</Text>
+                            <Icon name="check-decagram-outline" size={16} color="#94A3B8" />
+                        </View>
+                        <View style={[s.typeBadge, { backgroundColor: style.bg }]}>
+                            <Text style={[s.typeText, { color: style.icon }]}>{item.type || 'RESMİ RAPOR'}</Text>
+                        </View>
+
+                        <View style={s.datesRow}>
+                            <View style={s.dateCol}>
+                                <View style={s.dateLabelRow}><Icon name="calendar-outline" size={12} color="#94A3B8" /><Text style={s.dateLabel}>Başlangıç</Text></View>
+                                <Text style={s.dateValue}>{item.start_date ? new Date(item.start_date).toLocaleDateString('tr-TR') : '-'}</Text>
+                            </View>
+                            <View style={s.dateCol}>
+                                <View style={s.dateLabelRow}><Icon name="calendar-outline" size={12} color="#94A3B8" /><Text style={s.dateLabel}>Bitiş</Text></View>
+                                <Text style={s.dateValue}>{item.end_date ? new Date(item.end_date).toLocaleDateString('tr-TR') : 'Süresiz'}</Text>
+                            </View>
+                            
+                            <View style={s.remainingWrap}>
+                                <View style={[s.remainingBadge, isExpired ? s.expiredBadge : (days !== null ? s.activeBadge : s.permanentBadge)]}>
+                                    <Text style={[s.remainingText, isExpired ? s.expiredText : (days !== null ? s.activeText : s.permanentText)]}>
+                                        {days === null ? 'Süresiz' : (isExpired ? `${Math.abs(days)} Gün Geçti` : `${days} Gün Kaldı`)}
+                                    </Text>
+                                </View>
+                            </View>
                         </View>
                     </View>
-                    <View style={{flexDirection:'row', gap: 8}}>
-                        <TouchableOpacity onPress={() => Linking.openURL(item.file_url)} style={s.viewBtn}>
-                            <Icon name="eye-outline" size={18} color="#3B82F6" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleShare(item.file_url)} style={[s.viewBtn, {backgroundColor:'#ECFDF5'}]}>
-                            <Icon name="share-variant" size={18} color="#10B981" />
-                        </TouchableOpacity>
-                    </View>
+
+                    {/* Options Dot */}
+                    <TouchableOpacity style={s.optionsBtn}><Icon name="dots-horizontal" size={24} color="#94A3B8" /></TouchableOpacity>
                 </View>
 
-                <View style={s.detailsRow}>
-                    <View style={s.detailItem}>
-                        <Text style={s.detailLabel}>BAŞLANGIÇ</Text>
-                        <Text style={s.detailValue}>{item.start_date ? new Date(item.start_date).toLocaleDateString('tr-TR') : '-'}</Text>
-                    </View>
-                    <View style={s.detailItem}>
-                        <Text style={s.detailLabel}>BİTİŞ</Text>
-                        <Text style={s.detailValue}>{item.end_date ? new Date(item.end_date).toLocaleDateString('tr-TR') : 'Süresiz'}</Text>
-                    </View>
-                    <View style={s.detailItem}>
-                        <Text style={s.detailLabel}>KALAN SÜRE</Text>
-                        <View style={[s.remainingBadge, isExpired ? s.expiredBadge : (days !== null ? s.activeBadge : s.permanentBadge)]}>
-                            <Text style={[s.remainingText, isExpired ? s.expiredText : (days !== null ? s.activeText : s.permanentText)]}>
-                                {days === null ? '-' : (isExpired ? `${Math.abs(days)} GÜN GEÇTİ` : `${days} GÜN KALDI`)}
-                            </Text>
-                        </View>
-                    </View>
+                <View style={s.cardDivider} />
+
+                {/* Actions Bottom */}
+                <View style={s.cardActions}>
+                    <TouchableOpacity onPress={() => Linking.openURL(item.file_url)} style={s.actionBtn}>
+                        <Icon name="eye-outline" size={18} color="#94A3B8" />
+                        <Text style={s.actionTxt}>Görüntüle</Text>
+                    </TouchableOpacity>
+                    <View style={s.actionDivider} />
+                    <TouchableOpacity onPress={() => handleShare(item.file_url)} style={s.actionBtn}>
+                        <Icon name="share-variant-outline" size={18} color="#94A3B8" />
+                        <Text style={s.actionTxt}>Paylaş</Text>
+                    </TouchableOpacity>
+                    <View style={s.actionDivider} />
+                    <TouchableOpacity style={s.actionBtn}>
+                        <Icon name="download-outline" size={18} color="#94A3B8" />
+                        <Text style={s.actionTxt}>İndir</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         );
@@ -94,30 +144,80 @@ export default function VehicleDocumentsScreen({ route, navigation }) {
 
     return (
         <View style={s.container}>
-            <LinearGradient colors={['#040B16', '#0D1B2A']} style={s.header}>
+            <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={s.header} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
                 <SafeAreaView edges={['top']}>
                     <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()}><Icon name="chevron-left" size={28} color="#fff" /></TouchableOpacity>
-                        <View style={{flex:1, alignItems:'center'}}><Text style={s.headerTitle}>{plate} - Belgeler</Text></View>
-                        <View style={{width:28}} />
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+                            <Icon name="arrow-left" size={20} color="#fff" />
+                        </TouchableOpacity>
+                        <View style={s.headerTitleWrap}>
+                            <Text style={s.headerTitle}>{plate} · Belgeler</Text>
+                            <View style={s.headerSubWrap}>
+                                <View style={s.statusDotSmall} />
+                                <Text style={s.headerSubTxt}>Aktif • OTOBÜS SULTAN - 2014 MODEL</Text>
+                            </View>
+                        </View>
+                        <TouchableOpacity style={s.topAddBtn} onPress={() => setModalVisible(true)}>
+                            <Icon name="plus" size={22} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* KPI Cards inside header */}
+                    <View style={s.kpiRow}>
+                        <View style={[s.kpiCard, { borderColor: 'rgba(56, 189, 248, 0.4)' }]}>
+                            <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
+                            <View style={s.kpiCardInner}>
+                                <View style={[s.kpiIconWrap, { shadowColor: '#38BDF8', elevation: 8, shadowOffset: {width:0, height:4}, shadowOpacity: 0.5, shadowRadius: 10 }]}>
+                                    <LinearGradient colors={['#1E3A8A', '#1E40AF']} style={StyleSheet.absoluteFillObject} borderRadius={16} />
+                                    <Icon name="file-document-outline" size={24} color="#fff" />
+                                </View>
+                                <View>
+                                    <Text style={s.kpiLabel}>Aktif Belge</Text>
+                                    <Text style={s.kpiVal}>{activeDocs.length}</Text>
+                                </View>
+                            </View>
+                            <View style={s.kpiStatusRow}>
+                                <Icon name="check-circle" size={12} color="#10B981" />
+                                <Text style={s.kpiStatusTxt}>Tümü güncel durumda</Text>
+                            </View>
+                        </View>
+
+                        <View style={[s.kpiCard, { borderColor: 'rgba(251, 146, 60, 0.4)' }]}>
+                            <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
+                            <View style={s.kpiCardInner}>
+                                <View style={[s.kpiIconWrap, { shadowColor: '#FB923C', elevation: 8, shadowOffset: {width:0, height:4}, shadowOpacity: 0.5, shadowRadius: 10 }]}>
+                                    <LinearGradient colors={['#9A3412', '#C2410C']} style={StyleSheet.absoluteFillObject} borderRadius={16} />
+                                    <Icon name="hourglass" size={24} color="#fff" />
+                                </View>
+                                <View>
+                                    <Text style={s.kpiLabel}>Yaklaşan Süre</Text>
+                                    <Text style={s.kpiVal}>27 <Text style={{fontSize: 14}}>Gün</Text></Text>
+                                </View>
+                            </View>
+                            <View style={s.kpiStatusRow}>
+                                <Icon name="circle" size={10} color="#F59E0B" />
+                                <Text style={s.kpiStatusTxt}>Muayene Raporu</Text>
+                            </View>
+                        </View>
                     </View>
                 </SafeAreaView>
             </LinearGradient>
 
-            <View style={s.pageSubHeader}>
-                <View style={s.subHeaderLeft}>
-                    <Text style={s.pageTitle}>{viewArchived ? 'Arşiv Belgeler' : 'Araç Belgeleri'}</Text>
-                    <Text style={s.pageDesc}>{viewArchived ? 'Süresi dolmuş veya arşivlenmiş belgeler' : 'Aktif belgeler ve kalan süre takibi'}</Text>
-                </View>
-                <View style={{flexDirection:'row', gap:8}}>
-                    <TouchableOpacity 
-                        style={[s.archiveBtn, viewArchived && s.archiveBtnActive]} 
-                        onPress={() => setViewArchived(!viewArchived)}
-                    >
-                        <Text style={[s.archiveBtnTxt, viewArchived && s.archiveBtnTxtActive]}>Arşiv {viewArchived ? 'X' : ''}</Text>
+            {/* Floating Action Bar */}
+            <View style={s.actionBarWrap}>
+                <View style={s.actionBar}>
+                    <TouchableOpacity style={s.actionPillBtn} onPress={() => setViewArchived(!viewArchived)}>
+                        <Icon name="folder-outline" size={18} color="#64748B" />
+                        <Text style={s.actionPillTxt}>Arşiv</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={s.addBtn} onPress={() => setModalVisible(true)}>
-                        <Icon name="plus" size={20} color="#fff" />
+                    <View style={s.actionPillDivider} />
+                    <TouchableOpacity style={s.actionPillBtn}>
+                        <Icon name="download-outline" size={18} color="#64748B" />
+                        <Text style={s.actionPillTxt}>Toplu İndir</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={s.newDocBtn} onPress={() => setModalVisible(true)}>
+                        <Icon name="plus" size={18} color="#fff" />
+                        <Text style={s.newDocTxt}>Yeni Belge</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -128,7 +228,14 @@ export default function VehicleDocumentsScreen({ route, navigation }) {
                     renderItem={renderItem}
                     keyExtractor={item => item.id.toString()}
                     contentContainerStyle={s.list}
-                    ListEmptyComponent={<View style={s.empty}><Icon name="folder-open-outline" size={48} color="#CBD5E1" /><Text style={s.emptyTxt}>{viewArchived ? 'Arşivlenmiş belge bulunamadı.' : 'Aktif belge bulunamadı.'}</Text></View>}
+                    ListEmptyComponent={
+                        <View style={s.empty}>
+                            <View style={s.emptyIconWrap}>
+                                <Icon name="folder-open-outline" size={56} color="#CBD5E1" />
+                            </View>
+                            <Text style={s.emptyTxt}>{viewArchived ? 'Arşivlenmiş belge bulunamadı.' : 'Aktif belge bulunamadı.'}</Text>
+                        </View>
+                    }
                 />
             )}
 
@@ -170,32 +277,51 @@ export default function VehicleDocumentsScreen({ route, navigation }) {
 }
 
 const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8FAFC' },
-    header: { paddingBottom: 16, paddingHorizontal: 16 },
-    headerRow: { flexDirection: 'row', alignItems: 'center', paddingTop: 10, marginTop: 10 },
-    headerTitle: { color: '#fff', fontSize: 16, fontWeight: '800' },
-    
-    pageSubHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-    subHeaderLeft: { flex: 1 },
-    pageTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginBottom: 4 },
-    pageDesc: { fontSize: 12, color: '#64748B', fontWeight: '500' },
-    addBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center', shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+    container: { flex: 1, backgroundColor: '#F4F7FA' },
+    header: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
+    headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 10, marginBottom: 20 },
+    backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', shadowColor: '#fff', shadowOffset: {width:0, height:4}, shadowOpacity: 0.1, shadowRadius: 10 },
+    headerTitleWrap: { alignItems: 'center' },
+    headerTitle: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
+    headerSubWrap: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
+    statusDotSmall: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981' },
+    headerSubTxt: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
+    topAddBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(59, 130, 246, 0.4)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#3B82F6', shadowColor: '#3B82F6', shadowOffset: {width:0, height:4}, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8 },
 
-    list: { padding: 16, paddingBottom: 40 },
-    card: { backgroundColor: '#fff', borderRadius: 20, padding: 20, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 3, borderWidth: 1, borderColor: '#F1F5F9' },
-    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
-    titleGroup: { flex: 1 },
-    docTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginBottom: 6 },
-    typeBadge: { alignSelf: 'flex-start', backgroundColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-    typeText: { fontSize: 10, fontWeight: '700', color: '#64748B', textTransform: 'uppercase' },
-    viewBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center' },
+    kpiRow: { flexDirection: 'row', gap: 16, paddingHorizontal: 24, paddingBottom: 60 },
+    kpiCard: { flex: 1, backgroundColor: 'rgba(30,41,59,0.4)', borderRadius: 24, padding: 16, borderWidth: 1 },
+    kpiCardInner: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+    kpiIconWrap: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+    kpiLabel: { fontSize: 11, fontWeight: '600', color: '#CBD5E1', marginBottom: 2 },
+    kpiVal: { fontSize: 24, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
+    kpiStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    kpiStatusTxt: { fontSize: 10, fontWeight: '600', color: '#CBD5E1' },
+
+    actionBarWrap: { marginTop: -35, zIndex: 20, paddingHorizontal: 24, marginBottom: 16 },
+    actionBar: { backgroundColor: '#fff', borderRadius: 24, paddingHorizontal: 8, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', shadowColor: '#0A1A3A', shadowOffset: {width:0, height:12}, shadowOpacity: 0.08, shadowRadius: 24, elevation: 8, borderWidth: 1, borderColor: '#F1F5F9' },
+    actionPillBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12 },
+    actionPillTxt: { fontSize: 13, fontWeight: '700', color: '#334155' },
+    actionPillDivider: { width: 1, height: 24, backgroundColor: '#E2E8F0' },
+    newDocBtn: { backgroundColor: '#3B82F6', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16, shadowColor: '#3B82F6', shadowOffset: {width:0, height:4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+    newDocTxt: { color: '#fff', fontSize: 13, fontWeight: '800' },
+
+    list: { paddingHorizontal: 20, paddingBottom: 100 },
+    card: { backgroundColor: '#fff', borderRadius: 24, padding: 16, marginBottom: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4, borderWidth: 1, borderColor: '#F1F5F9' },
+    cardTop: { flexDirection: 'row' },
+    docIconBox: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 16, shadowOffset: {width:0,height:6}, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6 },
+    cardInfo: { flex: 1, justifyContent: 'center' },
+    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+    docTitle: { fontSize: 16, fontWeight: '800', color: '#0F172A', letterSpacing: -0.5 },
+    typeBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, marginBottom: 10 },
+    typeText: { fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.5 },
     
-    detailsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-    detailItem: { flex: 1 },
-    detailLabel: { fontSize: 9, fontWeight: '800', color: '#94A3B8', marginBottom: 6, letterSpacing: 0.5 },
-    detailValue: { fontSize: 12, fontWeight: '700', color: '#334155' },
-    
-    remainingBadge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start' },
+    datesRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
+    dateCol: { gap: 4 },
+    dateLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    dateLabel: { fontSize: 10, fontWeight: '600', color: '#94A3B8' },
+    dateValue: { fontSize: 11, fontWeight: '800', color: '#334155' },
+    remainingWrap: { alignItems: 'flex-end', paddingBottom: 2 },
+    remainingBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
     remainingText: { fontSize: 10, fontWeight: '800' },
     activeBadge: { backgroundColor: '#ECFDF5' },
     activeText: { color: '#10B981' },
@@ -204,29 +330,33 @@ const s = StyleSheet.create({
     permanentBadge: { backgroundColor: '#F8FAFC' },
     permanentText: { color: '#94A3B8' },
 
-    empty: { alignItems: 'center', marginTop: 100 },
-    emptyTxt: { color: '#94A3B8', marginTop: 12, fontWeight: '600' },
+    optionsBtn: { padding: 4 },
+
+    cardDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 16 },
+    cardActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 },
+    actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+    actionTxt: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+    actionDivider: { width: 1, height: 16, backgroundColor: '#E2E8F0' },
+
+    empty: { alignItems: 'center', marginTop: 80 },
+    emptyIconWrap: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', marginBottom: 20, shadowColor: '#000', shadowOffset: {width:0, height:8}, shadowOpacity: 0.05, shadowRadius: 15, elevation: 4 },
+    emptyTxt: { color: '#64748B', fontSize: 16, fontWeight: '600' },
     
-    archiveBtn: { backgroundColor: '#F1F5F9', paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-    archiveBtnActive: { backgroundColor: '#4F46E5' },
-    archiveBtnTxt: { fontSize: 12, fontWeight: '700', color: '#64748B' },
-    archiveBtnTxtActive: { color: '#fff' },
-    
-    mOverlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.6)', justifyContent: 'flex-end' },
-    mContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%' },
-    mHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    mTitle: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
-    mDesc: { fontSize: 12, color: '#64748B', fontWeight: '500', marginTop: 2 },
-    closeBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
-    ig: { marginBottom: 16 },
-    il: { fontSize: 11, fontWeight: '700', color: '#64748B', marginBottom: 6 },
-    inp: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, padding: 14, fontSize: 14, color: '#0F172A' },
-    fileBtn: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, padding: 10, gap: 10 },
-    fileBtnTxt: { backgroundColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, fontSize: 12, fontWeight: '600', color: '#334155', borderWidth: 1, borderColor: '#CBD5E1' },
-    fileDesc: { fontSize: 13, color: '#64748B' },
-    mActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 10, marginBottom: 20 },
-    cancelBtn: { paddingHorizontal: 20, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0' },
-    cancelTxt: { fontSize: 14, fontWeight: '700', color: '#64748B' },
-    saveBtn: { backgroundColor: '#4F46E5', paddingHorizontal: 20, paddingVertical: 14, borderRadius: 12 },
-    saveTxt: { fontSize: 14, fontWeight: '700', color: '#fff' }
+    mOverlay: { flex: 1, backgroundColor: 'rgba(2,6,23,0.6)', justifyContent: 'flex-end' },
+    mContent: { backgroundColor: '#fff', borderTopLeftRadius: 36, borderTopRightRadius: 36, padding: 24, maxHeight: '90%' },
+    mHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
+    mTitle: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
+    mDesc: { fontSize: 13, color: '#64748B', fontWeight: '600', marginTop: 4 },
+    closeBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+    ig: { marginBottom: 20 },
+    il: { fontSize: 13, fontWeight: '800', color: '#475569', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
+    inp: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 18, fontSize: 15, color: '#0F172A', fontWeight: '600' },
+    fileBtn: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 14, gap: 12, backgroundColor: '#F8FAFC' },
+    fileBtnTxt: { backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, fontSize: 13, fontWeight: '700', color: '#334155', borderWidth: 1, borderColor: '#E2E8F0', shadowColor: '#0A1A3A', shadowOffset: {width:0, height:2}, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+    fileDesc: { fontSize: 14, color: '#64748B', fontWeight: '500' },
+    mActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 16, marginBottom: 30 },
+    cancelBtn: { paddingHorizontal: 24, paddingVertical: 18, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', backgroundColor: '#fff' },
+    cancelTxt: { fontSize: 16, fontWeight: '800', color: '#64748B' },
+    saveBtn: { backgroundColor: '#3B82F6', paddingHorizontal: 24, paddingVertical: 18, borderRadius: 16, shadowColor: '#3B82F6', shadowOffset: {width:0, height:6}, shadowOpacity: 0.3, shadowRadius: 10, elevation: 4 },
+    saveTxt: { fontSize: 16, fontWeight: '800', color: '#fff' }
 });

@@ -1,13 +1,17 @@
-import React, { useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import SpaceWaves from '../components/SpaceWaves';
 import { AuthContext } from '../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import api from '../api/axios';
 
 export default function DashboardScreen({ navigation }) {
     const { userInfo, logout } = useContext(AuthContext);
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const modules = [
         { id: 1, title: 'Araçlar', icon: 'car', route: 'Vehicles' },
@@ -15,6 +19,48 @@ export default function DashboardScreen({ navigation }) {
         { id: 3, title: 'Müşteriler', icon: 'office-building', route: 'Customers' },
         { id: 4, title: 'Seferler', icon: 'map-marker-path', route: 'Trips' },
     ];
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, []);
+
+    const fetchDashboardData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await api.get('/v1/dashboard');
+            if (response.data.success) {
+                setData(response.data.data);
+            } else {
+                setError(response.data.message || 'Veriler alınamadı.');
+            }
+        } catch (err) {
+            setError('Veriler yüklenirken bir sorun oluştu.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#4f46e5" />
+                <Text style={{ marginTop: 16, color: '#64748b' }}>Dashboard Yükleniyor...</Text>
+            </SafeAreaView>
+        );
+    }
+
+    if (error) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Icon name="alert-circle-outline" size={48} color="#ef4444" />
+                <Text style={{ marginTop: 16, color: '#ef4444', fontWeight: 'bold' }}>{error}</Text>
+                <TouchableOpacity onPress={fetchDashboardData} style={{ marginTop: 24, padding: 12, backgroundColor: '#4f46e5', borderRadius: 8 }}>
+                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Tekrar Dene</Text>
+                </TouchableOpacity>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>

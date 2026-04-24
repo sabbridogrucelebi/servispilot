@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Animated, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/axios';
 
 export default function VehicleDetailScreen({ route, navigation }) {
@@ -14,6 +14,15 @@ export default function VehicleDetailScreen({ route, navigation }) {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(20)).current;
 
+    const getVehicleImage = (type) => {
+        const t = (type || '').toLowerCase();
+        if (t.includes('minibüs') || t.includes('panelvan')) return 'https://img.icons8.com/?size=512&id=10543&format=png';
+        if (t.includes('midibüs')) return 'https://img.icons8.com/?size=512&id=pOSNn91pW5Hk&format=png'; 
+        if (t.includes('otobüs')) return 'https://img.icons8.com/?size=512&id=11481&format=png';
+        if (t.includes('binek') || t.includes('sedan') || t.includes('taksi')) return 'https://img.icons8.com/?size=512&id=11388&format=png';
+        return 'https://img.icons8.com/?size=512&id=11481&format=png';
+    };
+
     useEffect(() => {
         const loadDetail = async () => {
             if (!initialVehicle?.id) {
@@ -21,172 +30,144 @@ export default function VehicleDetailScreen({ route, navigation }) {
                 return;
             }
             try {
-                const r = await api.get(`/vehicles/${initialVehicle.id}`);
-                setVehicle(r.data.vehicle);
-                setStats(r.data.stats);
-            } catch(e) { console.error(e); }
-            finally { 
+                const r = await api.get(`/v1/vehicles/${initialVehicle.id}`);
+                setVehicle(r.data.data.vehicle);
+                setStats(r.data.data.stats);
+            } catch(e) { 
+                if (e.response?.status === 403) {
+                    Alert.alert("Erişim Engellendi", "Bu alanı görüntüleme yetkiniz yok.");
+                } else if (e.response?.status === 404) {
+                    Alert.alert("Bulunamadı", "Araç kaydı bulunamadı.");
+                } else if (!e.response) {
+                    Alert.alert("Bağlantı Hatası", "Sunucuya ulaşılamıyor.");
+                } else {
+                    console.error(e); 
+                }
+            } finally { 
                 setLoading(false);
                 Animated.parallel([
-                    Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-                    Animated.spring(translateY, { toValue: 0, friction: 6, tension: 40, useNativeDriver: true })
+                    Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+                    Animated.spring(translateY, { toValue: 0, friction: 8, tension: 40, useNativeDriver: true })
                 ]).start();
             }
         };
         loadDetail();
     }, []);
 
-    const fmtMoney = (val) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(val);
+    const fmtMoney = (val) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(val || 0);
     const fmtKm = (val) => (!val || val === 0) ? '0 km' : Number(val).toLocaleString('tr-TR') + ' km';
-
-    const getDaysRemaining = (date) => {
-        if (!date) return null;
-        const diff = new Date(date) - new Date();
-        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-        return days;
-    };
-
-    const renderRemainingDays = (date) => {
-        const days = getDaysRemaining(date);
-        if (days === null) return '';
-        if (days < 0) return 'SÜRESİ DOLDU';
-        return `${days} GÜN KALDI`;
-    };
 
     return (
         <View style={s.container}>
-            <LinearGradient colors={['#040B16', '#0A1526', '#0D1B2A']} style={s.header}>
-                <SafeAreaView edges={['top']} style={{ paddingBottom: 16 }}>
-                    <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
-                            <Icon name="chevron-left" size={28} color="#fff" />
+            {/* Neo Fleet Command Premium Header */}
+            <View style={s.headerContainer}>
+                <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={StyleSheet.absoluteFillObject} start={{x: 0, y: 0}} end={{x: 1, y: 1}} />
+                <SafeAreaView edges={['top']} style={{ paddingBottom: 90 }}>
+                    <View style={s.appBar}>
+                        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }} style={s.backBtn}>
+                            <Icon name="arrow-left" size={22} color="#fff" />
                         </TouchableOpacity>
-                        <View style={{flex: 1, alignItems:'center'}}><Text style={s.headerTitle} numberOfLines={1}>Araç Detayı</Text></View>
-                        <TouchableOpacity onPress={() => {}} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
-                            <Icon name="dots-horizontal" size={24} color="#fff" />
+                        <Text style={s.appBarTitle}>Araç Profili</Text>
+                        <TouchableOpacity hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }} style={s.backBtn}>
+                            <Icon name="dots-horizontal" size={22} color="#fff" />
                         </TouchableOpacity>
                     </View>
 
-                    <View style={s.heroCard}>
-                        {vehicle.image_url ? (
-                            <Image source={{ uri: vehicle.image_url }} style={s.heroImage} resizeMode="cover" />
-                        ) : (
-                            <View style={s.heroImagePlaceholder}>
-                                <Icon name="car-side" size={48} color="rgba(255,255,255,0.1)" />
-                                <Text style={{color:'rgba(255,255,255,0.2)', fontSize: 10, fontWeight:'700', marginTop: 8}}>GÖRSEL YOK</Text>
+                    {/* Identity Core */}
+                    <View style={s.identityCore}>
+                        <View style={s.identityRow}>
+                            <View style={s.plateWrap}>
+                                <Text style={s.plateTxt}>{vehicle?.plate}</Text>
                             </View>
-                        )}
-                        <View style={s.heroContent}>
-                            <View style={s.heroTop}>
-                                <View style={[s.badge, vehicle.is_active ? s.badgeActive : s.badgePassive]}>
-                                    <View style={[s.badgeDot, { backgroundColor: vehicle.is_active ? '#10B981' : '#EF4444' }]} />
-                                    <Text style={[s.badgeTxt, { color: vehicle.is_active ? '#10B981' : '#EF4444' }]}>
-                                        {vehicle.is_active ? 'AKTİF OPERASYON' : 'PASİF'}
-                                    </Text>
-                                </View>
-                                <View style={s.badgeDark}>
-                                    <Text style={s.badgeDarkTxt}>{vehicle.model_year || '-'} MODEL</Text>
-                                </View>
+                            <View style={[s.statusPill, vehicle?.is_active ? s.statusPillActive : s.statusPillPassive]}>
+                                <View style={[s.statusDot, { backgroundColor: vehicle?.is_active ? '#10B981' : '#EF4444' }]} />
+                                <Text style={[s.statusTxt, { color: vehicle?.is_active ? '#10B981' : '#EF4444' }]}>{vehicle?.is_active ? 'Aktif Görevde' : 'Pasif'}</Text>
                             </View>
-
-                            <View style={s.heroMain}>
-                                <View style={s.plateWrap}>
-                                    <Text style={s.plateTxt}>{vehicle.plate}</Text>
-                                </View>
-                                <TouchableOpacity style={s.aiBtn}>
-                                    <Icon name="robot-outline" size={16} color="#fff" />
-                                    <Text style={s.aiBtnTxt}>Aİ ANALİZ</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            <View style={s.heroSub}>
-                                <Text style={s.brandTxt} numberOfLines={1}>{vehicle.brand || 'Bilinmiyor'} • {vehicle.model || 'Bilinmiyor'} • {vehicle.vehicle_type || 'Belirtilmemiş'}</Text>
-                            </View>
+                        </View>
+                        <Text style={s.brandTxt}>{vehicle?.brand} {vehicle?.model}</Text>
+                        <View style={s.driverRow}>
+                            <Icon name="account" size={18} color="#94A3B8" />
+                            <Text style={s.driverTxt}>{vehicle?.driver || 'Şoför Atanmamış'}</Text>
+                        </View>
+                        
+                        {/* Vehicle Large Image */}
+                        <View style={s.heroImageWrap}>
+                            <Image 
+                                source={vehicle?.image_url ? { uri: vehicle.image_url } : { uri: getVehicleImage(vehicle?.type) }} 
+                                style={s.heroImage} 
+                            />
                         </View>
                     </View>
                 </SafeAreaView>
-            </LinearGradient>
+            </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scrollContent}>
                 {loading ? (
-                    <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 40 }} />
+                    <View style={s.loader}><ActivityIndicator size="large" color="#0F172A" /></View>
                 ) : (
                     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY }] }}>
-                        {/* 2x2 3D Animated KPI Cards */}
+                        
+                        {/* Financial Stats Grid */}
                         <View style={s.statsGrid}>
-                            <View style={s.statCol}>
-                                <LinearGradient colors={['#10B981', '#059669']} style={[s.statCard3D, { borderBottomColor: '#047857' }]}>
-                                    <Text style={s.statLbl}>TOPLAM HASILAT</Text>
-                                    <Text style={s.statVal}>{fmtMoney(stats.revenue)}</Text>
-                                    <View style={s.statPill}><Text style={s.statPillTxt}>Gelir Akışı</Text></View>
-                                </LinearGradient>
-                                <LinearGradient colors={['#8B5CF6', '#7C3AED']} style={[s.statCard3D, { borderBottomColor: '#6D28D9' }]}>
-                                    <Text style={s.statLbl}>PERSONEL & MAAŞ</Text>
-                                    <Text style={s.statVal}>{fmtMoney(stats.salary)}</Text>
-                                    <View style={s.statPill}><Text style={s.statPillTxt}>Net Giderler</Text></View>
-                                </LinearGradient>
+                            <View style={s.statCard}>
+                                <View style={s.statHeaderRow}>
+                                    <View style={[s.statIconWrap, {backgroundColor: '#ECFDF5'}]}><Icon name="cash-plus" size={16} color="#10B981" /></View>
+                                    <Text style={s.statLbl}>HASILAT</Text>
+                                </View>
+                                <Text style={s.statVal}>{fmtMoney(stats.revenue)}</Text>
+                                <Text style={s.statPercentUp}>▲ %12,4</Text>
                             </View>
-                            <View style={s.statCol}>
-                                <LinearGradient colors={['#F97316', '#EA580C']} style={[s.statCard3D, { borderBottomColor: '#C2410C' }]}>
+                            
+                            <View style={s.statCard}>
+                                <View style={s.statHeaderRow}>
+                                    <View style={[s.statIconWrap, {backgroundColor: '#FEF2F2'}]}><Icon name="gas-station" size={16} color="#EF4444" /></View>
                                     <Text style={s.statLbl}>YAKIT GİDERİ</Text>
-                                    <Text style={s.statVal}>{fmtMoney(stats.fuel)}</Text>
-                                    <View style={s.statPill}><Text style={s.statPillTxt}>Tüketim</Text></View>
-                                </LinearGradient>
-                                <LinearGradient colors={['#EF4444', '#DC2626']} style={[s.statCard3D, { borderBottomColor: '#B91C1C' }]}>
-                                    <Text style={s.statLbl}>NET KARLILIK</Text>
-                                    <Text style={s.statVal}>{fmtMoney(stats.net)}</Text>
-                                    <View style={s.statPill}><Text style={s.statPillTxt}>Net Durum</Text></View>
-                                </LinearGradient>
+                                </View>
+                                <Text style={s.statVal}>{fmtMoney(stats.fuel)}</Text>
+                                <Text style={s.statPercentDown}>▼ %3,1</Text>
+                            </View>
+                            
+                            <View style={s.statCard}>
+                                <View style={s.statHeaderRow}>
+                                    <View style={[s.statIconWrap, {backgroundColor: '#FFFBEB'}]}><Icon name="account-cash" size={16} color="#F59E0B" /></View>
+                                    <Text style={s.statLbl}>MAAŞ BORDRO</Text>
+                                </View>
+                                <Text style={s.statVal}>{fmtMoney(stats.salary)}</Text>
+                                <Text style={s.statPercentUp}>▲ %2,5</Text>
+                            </View>
+
+                            <View style={[s.statCard, s.statCardNet]}>
+                                <LinearGradient colors={['#020617', '#0F172A']} style={StyleSheet.absoluteFillObject} borderRadius={24} />
+                                <View style={s.statHeaderRow}>
+                                    <View style={[s.statIconWrap, {backgroundColor: '#1E293B'}]}><Icon name="chart-line-variant" size={16} color="#38BDF8" /></View>
+                                    <Text style={[s.statLbl, {color: '#94A3B8'}]}>NET KÂRLILIK</Text>
+                                </View>
+                                <Text style={[s.statVal, {color: '#fff'}]}>{fmtMoney(stats.net)}</Text>
+                                <Text style={[s.statPercentUp, {color: '#10B981'}]}>▲ %18,7</Text>
                             </View>
                         </View>
 
-                        {/* Info Grid */}
-                        <View style={s.grid}>
-                            <InfoBox icon="account-tie" color="#3B82F6" label="ŞOFÖR" val={vehicle.driver || 'Atanmamış'} sub="" />
-                            <InfoBox icon="speedometer" color="#10B981" label="KİLOMETRE" val={fmtKm(vehicle.current_km)} sub="" />
-                            <InfoBox icon="seat-passenger" color="#8B5CF6" label="KOLTUK" val={vehicle.seat_count || '-'} sub="Yolcu Kapasitesi" />
-                            <InfoBox icon="car-info" color="#F59E0B" label="ŞASİ NO" val={vehicle.chassis_no || '-'} sub="Kimlik Numarası" />
-                            <InfoBox icon="calendar-check" color="#F97316" label="MUAYENE" val={vehicle.inspection_date ? new Date(vehicle.inspection_date).toLocaleDateString('tr-TR') : 'TANIMSIZ'} sub={renderRemainingDays(vehicle.inspection_date)} />
-                            <InfoBox icon="shield-car" color="#EF4444" label="KASKO" val={vehicle.kasko_end_date ? new Date(vehicle.kasko_end_date).toLocaleDateString('tr-TR') : 'TANIMSIZ'} sub={renderRemainingDays(vehicle.kasko_end_date)} />
+                        {/* Operational Details */}
+                        <Text style={s.sectionHeader}>OPERASYONEL BİLGİLER</Text>
+                        <View style={s.infoBlock}>
+                            <InfoRow icon="speedometer" label="Güncel Kilometre" val={fmtKm(vehicle?.current_km)} />
+                            <InfoRow icon="car-info" label="Araç Tipi" val={vehicle?.vehicle_type || '-'} />
+                            <InfoRow icon="calendar-check" label="Muayene Geçerlilik" val={vehicle?.inspection_date ? new Date(vehicle.inspection_date).toLocaleDateString('tr-TR') : '-'} />
+                            <InfoRow icon="shield-car" label="Kasko Geçerlilik" val={vehicle?.kasko_end_date ? new Date(vehicle.kasko_end_date).toLocaleDateString('tr-TR') : '-'} />
+                            <InfoRow icon="seat-passenger" label="Koltuk Kapasitesi" val={vehicle?.seat_count ? `${vehicle.seat_count} Koltuk` : '-'} last />
                         </View>
 
-                        {/* Ruhsat & Sahiplik */}
-                        <View style={s.licenseCard}>
-                            <View style={s.licenseHeader}>
-                                <View>
-                                    <Text style={s.licenseTitle}>Ruhsat & Sahiplik</Text>
-                                    <Text style={s.licenseSub}>YASAL KAYIT DETAYLARI</Text>
-                                </View>
-                                <View style={s.licenseIconWrap}>
-                                    <Icon name="file-document" size={24} color="#fff" />
-                                </View>
-                            </View>
-                            <View style={s.licenseBody}>
-                                <View style={s.licenseRowLight}>
-                                    <Text style={s.licenseLabel}>SERİ NUMARASI</Text>
-                                    <Text style={s.licenseValLight}>{vehicle.license_serial_no || '-'}</Text>
-                                </View>
-                                <View style={s.licenseRow}>
-                                    <Text style={s.licenseLabelGray}>RUHSAT SAHİBİ</Text>
-                                    <Text style={s.licenseVal}>{vehicle.license_owner || '-'}</Text>
-                                </View>
-                                <View style={s.licenseRow}>
-                                    <Text style={s.licenseLabelGray}>VERGİ / T.C. NO</Text>
-                                    <Text style={s.licenseVal}>{vehicle.owner_tax_or_tc_no || '-'}</Text>
-                                </View>
-                            </View>
+                        {/* Modules Shortcut Grid */}
+                        <Text style={s.sectionHeader}>YÖNETİM MODÜLLERİ</Text>
+                        <View style={s.modulesGrid}>
+                            <ModuleBtn icon="file-document-multiple-outline" label="Belgeler" subLabel="Tüm belgeler" onPress={() => navigation.navigate('VehicleDocuments', { vehicleId: vehicle.id, plate: vehicle.plate })} />
+                            <ModuleBtn icon="gas-station-outline" label="Yakıtlar" subLabel="Yakıt işlemleri" onPress={() => navigation.navigate('VehicleFuels', { vehicleId: vehicle.id, plate: vehicle.plate })} />
+                            <ModuleBtn icon="wrench-outline" label="Bakımlar" subLabel="Bakım geçmişi" onPress={() => navigation.navigate('VehicleMaintenances', { vehicleId: vehicle.id, plate: vehicle.plate })} />
+                            <ModuleBtn icon="alert-octagon-outline" label="Cezalar" subLabel="Ceza kayıtları" onPress={() => navigation.navigate('VehiclePenalties', { vehicleId: vehicle.id, plate: vehicle.plate })} />
+                            <ModuleBtn icon="poll" label="Raporlar" subLabel="Analiz & raporlar" onPress={() => navigation.navigate('VehicleReports', { vehicleId: vehicle.id, plate: vehicle.plate })} />
+                            <ModuleBtn icon="image-multiple-outline" label="Galeri" subLabel="Fotoğraf & dosya" onPress={() => navigation.navigate('VehicleGallery', { vehicleId: vehicle.id, plate: vehicle.plate })} />
                         </View>
-
-                        {/* Action Buttons Row */}
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.actionRow}>
-                            <ActionBtn icon="chart-bar" color="#3B82F6" label="ANALİZ" active onPress={() => navigation.navigate('Trips')} />
-                            <ActionBtn icon="folder" color="#F59E0B" label="BELGELER" onPress={() => navigation.navigate('VehicleDocuments', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ActionBtn icon="gas-station" color="#10B981" label="YAKIT" onPress={() => navigation.navigate('VehicleFuels', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ActionBtn icon="wrench" color="#8B5CF6" label="BAKIM" onPress={() => navigation.navigate('VehicleMaintenances', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ActionBtn icon="alert-octagon" color="#EF4444" label="CEZALAR" onPress={() => navigation.navigate('VehiclePenalties', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ActionBtn icon="file-chart" color="#64748B" label="RAPORLAR" onPress={() => navigation.navigate('VehicleReports', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ActionBtn icon="image-multiple" color="#EC4899" label="GALERİ" onPress={() => navigation.navigate('VehicleGallery', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                        </ScrollView>
+                        
                     </Animated.View>
                 )}
             </ScrollView>
@@ -194,80 +175,90 @@ export default function VehicleDetailScreen({ route, navigation }) {
     );
 }
 
-const InfoBox = ({ icon, color, label, val, sub }) => (
-    <View style={s.infoBox}>
-        <View style={[s.infoIconWrap, { backgroundColor: color + '15' }]}>
-            <Icon name={icon} size={20} color={color} />
+const InfoRow = ({ icon, label, val, last }) => (
+    <View style={[s.infoRow, !last && s.infoRowBorder]}>
+        <View style={s.infoRowLeft}>
+            <View style={s.infoIconWrap}>
+                <Icon name={icon} size={20} color="#64748B" />
+            </View>
+            <Text style={s.infoLabel}>{label}</Text>
         </View>
-        <Text style={s.infoLabel}>{label}</Text>
-        <Text style={s.infoVal} numberOfLines={3} adjustsFontSizeToFit minimumFontScale={0.5}>{val}</Text>
-        {sub ? <Text style={s.infoSub}>{sub}</Text> : null}
+        <Text style={s.infoVal}>{val}</Text>
     </View>
 );
 
-const ActionBtn = ({ icon, color, label, active, onPress }) => (
-    <TouchableOpacity style={[s.actionBtnWrap, active && { backgroundColor: color }]} onPress={onPress}>
-        <Icon name={icon} size={24} color={active ? '#fff' : color} style={{ marginBottom: 8 }} />
-        <Text style={[s.actionBtnLbl, active && { color: '#fff' }]}>{label}</Text>
+const ModuleBtn = ({ icon, label, subLabel, onPress }) => (
+    <TouchableOpacity style={s.moduleBtn} onPress={onPress} activeOpacity={0.85}>
+        <View style={s.moduleBtnInner}>
+            <View style={s.moduleIconBox}>
+                <Icon name={icon} size={24} color="#3B82F6" />
+            </View>
+            <View style={s.moduleTexts}>
+                <Text style={s.moduleLabel}>{label}</Text>
+                <Text style={s.moduleSub}>{subLabel || 'Detayları görüntüle'}</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color="#CBD5E1" />
+        </View>
     </TouchableOpacity>
 );
 
 const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8FAFC' },
-    header: { paddingHorizontal: 16, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 14, marginBottom: 20, marginTop: 10 },
-    headerTitle: { fontSize: 18, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
-    heroCard: { backgroundColor: '#1E293B', borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
-    heroImage: { width: '100%', height: 140, backgroundColor: '#0F172A' },
-    heroImagePlaceholder: { width: '100%', height: 100, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center' },
-    heroContent: { padding: 20 },
-    heroTop: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-    badge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, gap: 6, borderWidth: 1 },
-    badgeActive: { backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.2)' },
-    badgePassive: { backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.2)' },
-    badgeDot: { width: 6, height: 6, borderRadius: 3 },
-    badgeTxt: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
-    badgeDark: { backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-    badgeDarkTxt: { fontSize: 10, fontWeight: '800', color: '#CBD5E1', letterSpacing: 0.5 },
-    heroMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-    plateTxt: { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: 1 },
-    aiBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#8B5CF6', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, gap: 6 },
-    aiBtnTxt: { color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
-    heroSub: { flexDirection: 'row', alignItems: 'center' },
-    brandTxt: { fontSize: 12, color: '#94A3B8', fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase' },
+    container: { flex: 1, backgroundColor: '#F4F7FA' },
     
-    scrollContent: { paddingVertical: 20 },
-    statsGrid: { flexDirection: 'row', paddingHorizontal: 16, gap: 12, paddingBottom: 24 },
-    statCol: { flex: 1, gap: 12 },
-    statCard3D: { borderRadius: 20, padding: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 15, elevation: 12, borderBottomWidth: 4, minHeight: 110, justifyContent: 'center' },
-    statLbl: { fontSize: 9, fontWeight: '900', color: 'rgba(255,255,255,0.8)', letterSpacing: 0.5, marginBottom: 6 },
-    statVal: { fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 8, textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
-    statPill: { backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
-    statPillTxt: { fontSize: 9, fontWeight: '800', color: '#fff' },
-
-    grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8, marginBottom: 24 },
-    infoBox: { width: '31%', backgroundColor: '#fff', borderRadius: 16, padding: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 3, borderWidth: 1, borderColor: '#F1F5F9', minHeight: 110 },
-    infoIconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-    infoLabel: { fontSize: 8, fontWeight: '800', color: '#94A3B8', letterSpacing: 0.5, marginBottom: 4 },
-    infoVal: { fontSize: 11, fontWeight: '800', color: '#0F172A', marginBottom: 2, lineHeight: 14 },
-    infoSub: { fontSize: 8, fontWeight: '600', color: '#EF4444' },
-
-    actionRow: { paddingHorizontal: 16, gap: 12, paddingBottom: 40 },
-    actionBtnWrap: { backgroundColor: '#fff', width: 80, height: 80, borderRadius: 20, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 4, borderWidth: 1, borderColor: '#E2E8F0' },
-    actionBtnLbl: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
-
-    // License Card
-    licenseCard: { backgroundColor: '#fff', borderRadius: 24, marginHorizontal: 16, marginBottom: 24, padding: 20, shadowColor: '#A855F7', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10, borderWidth: 1, borderColor: '#F3E8FF' },
-    licenseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    licenseTitle: { fontSize: 16, fontWeight: '900', color: '#0F172A', letterSpacing: 0.5 },
-    licenseSub: { fontSize: 9, fontWeight: '800', color: '#94A3B8', marginTop: 2, letterSpacing: 1 },
-    licenseIconWrap: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#A855F7', alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+    // Neo Fleet Command Header 2.0 - Extended
+    headerContainer: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
+    appBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 10, marginBottom: 24 },
+    backBtn: { width: 46, height: 46, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', shadowColor: '#fff', shadowOffset: {width:0, height:4}, shadowOpacity: 0.1, shadowRadius: 10 },
+    appBarTitle: { fontSize: 18, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
     
-    licenseBody: { gap: 12 },
-    licenseRowLight: { backgroundColor: '#FAF5FF', padding: 14, borderRadius: 16, borderWidth: 1, borderColor: '#F3E8FF' },
-    licenseRow: { backgroundColor: '#fff', padding: 14, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' },
-    licenseLabel: { fontSize: 9, fontWeight: '900', color: '#A855F7', letterSpacing: 1, marginBottom: 4 },
-    licenseLabelGray: { fontSize: 9, fontWeight: '900', color: '#94A3B8', letterSpacing: 1, marginBottom: 4 },
-    licenseValLight: { fontSize: 13, fontWeight: '900', color: '#7E22CE' },
-    licenseVal: { fontSize: 13, fontWeight: '800', color: '#334155' },
+    identityCore: { paddingHorizontal: 28 },
+    identityRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    plateWrap: { backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, shadowColor: '#000', shadowOffset: {width:0,height:8}, shadowOpacity: 0.15, shadowRadius: 15, elevation: 5 },
+    plateTxt: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: 1 },
+    statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, gap: 6, backgroundColor: 'rgba(16,185,129,0.15)', borderWidth: 1, borderColor: 'rgba(16,185,129,0.3)', shadowColor: '#000', shadowOffset: {width:0,height:4}, shadowOpacity: 0.2, shadowRadius: 5 },
+    statusPillActive: { borderColor: 'rgba(16,185,129,0.3)', backgroundColor: 'rgba(16,185,129,0.15)' },
+    statusPillPassive: { borderColor: 'rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.15)' },
+    statusDot: { width: 6, height: 6, borderRadius: 3 },
+    statusTxt: { fontSize: 11, fontWeight: '800' },
+    brandTxt: { fontSize: 30, fontWeight: '900', color: '#fff', marginBottom: 6, letterSpacing: -1, textTransform: 'uppercase' },
+    driverRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    driverTxt: { fontSize: 15, fontWeight: '600', color: '#CBD5E1' },
+
+    heroImageWrap: { width: '100%', height: 160, alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: -50 },
+    heroImage: { width: '90%', height: '100%', resizeMode: 'contain', opacity: 0.9 },
+
+    // Scroll Area
+    scrollContent: { paddingHorizontal: 20, paddingBottom: 80, marginTop: -40, zIndex: 20 },
+    loader: { marginTop: 100, alignItems: 'center' },
+
+    sectionHeader: { fontSize: 12, fontWeight: '800', color: '#64748B', letterSpacing: 1.5, marginBottom: 16, marginTop: 12, marginLeft: 6, textTransform: 'uppercase' },
+
+    // Financial Grid (3D KPI)
+    statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 14, marginBottom: 36 },
+    statCard: { width: '47.5%', backgroundColor: '#fff', borderRadius: 24, padding: 16, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:12}, shadowOpacity: 0.08, shadowRadius: 24, elevation: 8 },
+    statCardNet: { shadowColor: '#0A1A3A', shadowOffset: {width:0,height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 12, overflow: 'hidden' },
+    statHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+    statIconWrap: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
+    statLbl: { fontSize: 11, fontWeight: '700', color: '#64748B', letterSpacing: 0.5 },
+    statVal: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
+    statPercentUp: { fontSize: 12, fontWeight: '800', color: '#10B981', alignSelf: 'flex-end', marginTop: 4 },
+    statPercentDown: { fontSize: 12, fontWeight: '800', color: '#EF4444', alignSelf: 'flex-end', marginTop: 4 },
+
+    // Info Block
+    infoBlock: { backgroundColor: '#fff', borderRadius: 24, paddingHorizontal: 20, shadowColor: '#0A1A3A', shadowOffset: {width:0,height:12}, shadowOpacity: 0.05, shadowRadius: 24, elevation: 6, marginBottom: 36 },
+    infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 18 },
+    infoRowBorder: { borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    infoRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    infoIconWrap: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' },
+    infoLabel: { fontSize: 14, fontWeight: '600', color: '#64748B' },
+    infoVal: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
+
+    // Modules Grid
+    modulesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 14, marginBottom: 50 },
+    moduleBtn: { width: '47.5%', backgroundColor: '#fff', borderRadius: 24, padding: 12, shadowColor: '#0A1A3A', shadowOffset: {width:0,height:8}, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4 },
+    moduleBtnInner: { flexDirection: 'row', alignItems: 'center' },
+    moduleIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+    moduleTexts: { flex: 1 },
+    moduleLabel: { fontSize: 13, fontWeight: '800', color: '#0F172A', marginBottom: 2 },
+    moduleSub: { fontSize: 11, fontWeight: '600', color: '#94A3B8' }
 });
