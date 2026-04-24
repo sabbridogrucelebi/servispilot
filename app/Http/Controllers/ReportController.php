@@ -17,6 +17,8 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('reports.view'), 403);
+
         $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
 
@@ -71,6 +73,8 @@ class ReportController extends Controller
 
     public function exportTripsCsv(Request $request): StreamedResponse
     {
+        abort_unless(auth()->user()->hasPermission('reports.view'), 403);
+
         $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
 
@@ -111,6 +115,8 @@ class ReportController extends Controller
 
     public function exportPayrollsCsv(Request $request): StreamedResponse
     {
+        abort_unless(auth()->user()->hasPermission('reports.view'), 403);
+
         $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
 
@@ -154,6 +160,8 @@ class ReportController extends Controller
 
     public function exportFuelsCsv(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('reports.view'), 403);
+
         $filters = $request->all();
 
         $vehicleId = $request->input('vehicle_id');
@@ -220,6 +228,8 @@ class ReportController extends Controller
 
     public function exportDocumentsCsv(Request $request): StreamedResponse
     {
+        abort_unless(auth()->user()->hasPermission('reports.view'), 403);
+
         $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
 

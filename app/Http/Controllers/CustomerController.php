@@ -11,6 +11,8 @@ class CustomerController extends Controller
 {
     public function index()
     {
+        abort_unless(auth()->user()->hasPermission('customers.view'), 403);
+
         $customers = Customer::latest()->get();
 
         return view('customers.index', compact('customers'));
@@ -18,11 +20,15 @@ class CustomerController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('customers.create'), 403);
+        
         return view('customers.create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('customers.create'), 403);
+
         $validated = $request->validate([
             'customer_type' => 'required|string|max:100',
             'company_name' => 'required|string|max:255',
@@ -49,6 +55,8 @@ class CustomerController extends Controller
 
     public function show(Request $request, Customer $customer)
     {
+        abort_unless(auth()->user()->hasPermission('customers.view'), 403);
+
         $contracts = $customer->contracts()->get();
 
         $activeContract = $contracts->first(function ($contract) {
@@ -138,11 +146,15 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        abort_unless(auth()->user()->hasPermission('customers.edit'), 403);
+
         return view('customers.edit', compact('customer'));
     }
 
     public function update(Request $request, Customer $customer)
     {
+        abort_unless(auth()->user()->hasPermission('customers.edit'), 403);
+
         $validated = $request->validate([
             'customer_type' => 'required|string|max:100',
             'company_name' => 'required|string|max:255',
@@ -169,6 +181,8 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
+        abort_unless(auth()->user()->hasPermission('customers.delete'), 403);
+
         $customer->delete();
 
         return redirect()

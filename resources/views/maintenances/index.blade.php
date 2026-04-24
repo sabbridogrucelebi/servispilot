@@ -33,11 +33,13 @@
                 <span>PDF İndir</span>
             </a>
 
+            @if(auth()->user()->hasPermission('maintenances.create'))
             <a href="{{ route('maintenances.create') }}"
                class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-slate-700 to-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-500/20 transition hover:scale-[1.02]">
                 <span class="text-base">+</span>
                 <span>Yeni Bakım Ekle</span>
             </a>
+            @endif
         </div>
     </div>
 
@@ -153,7 +155,28 @@
         </form>
     </div>
 
-    <div class="overflow-hidden rounded-[30px] border border-slate-200/60 bg-white/90 shadow-xl backdrop-blur">
+    <div class="overflow-hidden rounded-[30px] border border-slate-200/60 bg-white/90 shadow-xl backdrop-blur"
+         x-data="{
+             selectedIds: [],
+             allIds: [{{ $maintenances->pluck('id')->implode(',') }}],
+             get allSelected() { return this.allIds.length > 0 && this.selectedIds.length === this.allIds.length },
+             get someSelected() { return this.selectedIds.length > 0 },
+             toggleAll() {
+                 if (this.allSelected) {
+                     this.selectedIds = [];
+                 } else {
+                     this.selectedIds = [...this.allIds];
+                 }
+             },
+             toggleId(id) {
+                 const idx = this.selectedIds.indexOf(id);
+                 if (idx > -1) {
+                     this.selectedIds.splice(idx, 1);
+                 } else {
+                     this.selectedIds.push(id);
+                 }
+             }
+         }">
         <div class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
             <div>
                 <h3 class="text-lg font-bold text-slate-800">Bakım Kayıt Listesi</h3>
@@ -275,10 +298,41 @@
             </div>
         </div>
 
+        {{-- Toplu Silme Aksiyonu --}}
+        <div x-show="someSelected"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             style="display: none;"
+             class="border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50 px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white text-xs font-bold" x-text="selectedIds.length"></span>
+                <span class="text-sm font-semibold text-rose-800">kayıt seçildi</span>
+            </div>
+            <form action="{{ route('maintenances.bulk-delete') }}" method="POST" onsubmit="return confirm('Seçilen bakım kayıtlarını silmek istediğine emin misin?')">
+                @csrf
+                <template x-for="id in selectedIds" :key="id">
+                    <input type="hidden" name="ids[]" :value="id">
+                </template>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-200 transition hover:scale-[1.02]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Seçilenleri Sil
+                </button>
+            </form>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full min-w-[1320px]">
                 <thead class="border-b border-slate-100 bg-slate-50">
                     <tr>
+                        <th class="w-12 px-4 py-4">
+                            <input type="checkbox"
+                                   @click="toggleAll()"
+                                   :checked="allSelected"
+                                   :indeterminate="someSelected && !allSelected"
+                                   class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        </th>
                         <th class="col-arac px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Araç</th>
                         <th class="col-bakim px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Bakım</th>
                         <th class="col-tur px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Tür</th>
@@ -293,7 +347,15 @@
 
                 <tbody class="divide-y divide-slate-100">
                     @forelse($maintenances as $maintenance)
-                        <tr class="transition duration-200 hover:bg-indigo-50/40">
+                        <tr class="transition duration-200 hover:bg-indigo-50/40"
+                            :class="selectedIds.includes({{ $maintenance->id }}) ? 'bg-indigo-50/60' : ''">
+                            <td class="w-12 px-4 py-5">
+                                <input type="checkbox"
+                                       value="{{ $maintenance->id }}"
+                                       @click="toggleId({{ $maintenance->id }})"
+                                       :checked="selectedIds.includes({{ $maintenance->id }})"
+                                       class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                            </td>
                             <td class="col-arac px-6 py-5">
                                 <div class="flex items-center gap-4">
                                     <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 text-lg text-white shadow">
@@ -366,11 +428,14 @@
 
                             <td class="col-islemler px-6 py-5">
                                 <div class="flex items-center justify-center gap-2">
+                                @if(auth()->user()->hasPermission('maintenances.edit'))
                                     <a href="{{ route('maintenances.edit', $maintenance) }}"
                                        class="rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
                                         Düzenle
                                     </a>
+                                @endif
 
+                                @if(auth()->user()->hasPermission('maintenances.delete'))
                                     <form action="{{ route('maintenances.destroy', $maintenance) }}" method="POST" onsubmit="return confirm('Bu bakım kaydını silmek istediğine emin misin?')">
                                         @csrf
                                         @method('DELETE')
@@ -379,12 +444,13 @@
                                             Sil
                                         </button>
                                     </form>
+                                @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-10">
+                            <td colspan="10" class="px-6 py-10">
                                 <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
                                     <div class="mb-3 text-4xl">🛠️</div>
                                     <div class="text-base font-semibold text-slate-700">Henüz bakım kaydı bulunmuyor</div>

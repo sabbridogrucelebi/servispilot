@@ -1,8 +1,8 @@
 {{-- AI Fleet Assistant Floating Window --}}
 <div id="ai-assistant-container" 
-     class="fixed bottom-10 right-10 z-[9999] w-[400px] max-w-[calc(100vw-40px)] pointer-events-none opacity-0 scale-95 translate-y-10 transition-all duration-500 ease-out">
+     class="fixed bottom-10 right-10 z-[9999] w-[400px] max-w-[calc(100vw-40px)] pointer-events-none opacity-0 scale-95 translate-y-10 transition-all duration-500 ease-out hidden">
     
-    <div class="glass-card rounded-[40px] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.4)] border border-white/20 flex flex-col h-[600px] bg-slate-900/95 backdrop-blur-3xl pointer-events-auto">
+    <div class="glass-card rounded-[40px] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.4)] border border-white/20 flex flex-col h-[600px] bg-slate-900/95 backdrop-blur-3xl">
         
         {{-- Header --}}
         <div class="p-6 bg-gradient-to-r from-indigo-600 via-indigo-500 to-blue-600 flex items-center justify-between relative overflow-hidden">

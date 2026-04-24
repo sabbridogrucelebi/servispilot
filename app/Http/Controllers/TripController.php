@@ -15,6 +15,8 @@ class TripController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('trips.view'), 403);
+
         $now = now();
 
         $customers = Customer::query()
@@ -274,6 +276,8 @@ class TripController extends Controller
 
     public function upsertCell(Request $request): JsonResponse
     {
+        abort_unless(auth()->user()->hasPermission('trips.edit') || auth()->user()->hasPermission('trips.create'), 403);
+
         $validated = $request->validate([
             'service_route_id' => ['required', 'exists:customer_service_routes,id'],
             'trip_date' => ['required', 'date'],
@@ -421,6 +425,8 @@ class TripController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('trips.create'), 403);
+
         $serviceRoutes = CustomerServiceRoute::query()
             ->orderBy('route_name')
             ->get();
@@ -439,6 +445,8 @@ class TripController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('trips.create'), 403);
+
         $validated = $request->validate([
             'service_route_id' => 'required|exists:customer_service_routes,id',
             'vehicle_id' => 'nullable|exists:vehicles,id',
@@ -458,6 +466,8 @@ class TripController extends Controller
 
     public function show(Trip $trip)
     {
+        abort_unless(auth()->user()->hasPermission('trips.view'), 403);
+
         $trip->load(['serviceRoute', 'vehicle', 'driver', 'morningVehicle', 'eveningVehicle']);
 
         return view('trips.show', compact('trip'));
@@ -465,6 +475,8 @@ class TripController extends Controller
 
     public function edit(Trip $trip)
     {
+        abort_unless(auth()->user()->hasPermission('trips.edit'), 403);
+
         $serviceRoutes = CustomerServiceRoute::query()
             ->orderBy('route_name')
             ->get();
@@ -483,6 +495,8 @@ class TripController extends Controller
 
     public function update(Request $request, Trip $trip)
     {
+        abort_unless(auth()->user()->hasPermission('trips.edit'), 403);
+
         $validated = $request->validate([
             'service_route_id' => 'required|exists:customer_service_routes,id',
             'vehicle_id' => 'nullable|exists:vehicles,id',
@@ -502,6 +516,8 @@ class TripController extends Controller
 
     public function destroy(Trip $trip)
     {
+        abort_unless(auth()->user()->hasPermission('trips.delete'), 403);
+
         $trip->delete();
 
         return redirect()->route('trips.index')->with('success', 'Sefer silindi.');

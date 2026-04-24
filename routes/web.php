@@ -149,6 +149,19 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | CHAT (MESSAGING)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/conversations', [\App\Http\Controllers\ChatController::class, 'fetchConversations'])->name('chat.conversations');
+    Route::get('/chat/messages', [\App\Http\Controllers\ChatController::class, 'fetchMessages'])->name('chat.messages');
+    Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/chat/group', [\App\Http\Controllers\ChatController::class, 'createGroup'])->name('chat.group.create');
+    Route::get('/chat/users', [\App\Http\Controllers\ChatController::class, 'fetchAllUsers'])->name('chat.users');
+    Route::get('/chat/unread-count', [\App\Http\Controllers\ChatController::class, 'fetchUnreadCount'])->name('chat.unread');
+
+    /*
+    |--------------------------------------------------------------------------
     | CUSTOMER PORTAL
     |--------------------------------------------------------------------------
     */
@@ -166,6 +179,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehicles/export/excel', [VehicleController::class, 'exportExcel'])
         ->middleware('permission:vehicles.view')
         ->name('vehicles.export.excel');
+
+    Route::get('/vehicles/import/template', [VehicleController::class, 'downloadTemplate'])
+        ->middleware('permission:vehicles.create')
+        ->name('vehicles.import.template');
+
+    Route::post('/vehicles/import', [VehicleController::class, 'import'])
+        ->middleware('permission:vehicles.create')
+        ->name('vehicles.import');
 
     Route::post('/vehicles/{vehicle}/images', [VehicleController::class, 'uploadImage'])
         ->middleware('permission:vehicles.view')
@@ -228,6 +249,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/maintenances/settings', [MaintenanceController::class, 'saveSettings'])
         ->middleware('permission:vehicles.view')
         ->name('maintenances.settings.store');
+
+    Route::get('/maintenances/import/template', [MaintenanceController::class, 'downloadImportTemplate'])
+        ->middleware('permission:vehicles.view')
+        ->name('maintenances.import.template');
+
+    Route::post('/maintenances/import', [MaintenanceController::class, 'importMaintenances'])
+        ->middleware('permission:vehicles.view')
+        ->name('maintenances.import');
+
+    Route::post('/maintenances/bulk-delete', [MaintenanceController::class, 'bulkDelete'])
+        ->middleware('permission:vehicles.view')
+        ->name('maintenances.bulk-delete');
 
     Route::resource('maintenances', MaintenanceController::class)
         ->parameters(['maintenances' => 'maintenance'])
@@ -317,6 +350,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/vehicles/ai-assistant', [VehicleController::class, 'aiAssistant'])
         ->middleware('permission:vehicles.view')
         ->name('vehicles.ai.assistant');
+
+    Route::post('/vehicles/bulk-delete', [VehicleController::class, 'bulkDelete'])
+        ->middleware('permission:vehicles.delete')
+        ->name('vehicles.bulk-delete');
 
     Route::resource('vehicles', VehicleController::class)
         ->middleware('permission:vehicles.view');

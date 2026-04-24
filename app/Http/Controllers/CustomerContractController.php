@@ -10,6 +10,8 @@ class CustomerContractController extends Controller
 {
     public function store(Request $request, Customer $customer)
     {
+        abort_unless(auth()->user()->hasPermission('customers.edit'), 403);
+
         $validated = $request->validate([
             'year' => 'required|integer|min:2000|max:2100',
             'start_date' => 'required|date',
@@ -39,6 +41,8 @@ class CustomerContractController extends Controller
 
     public function destroy(Customer $customer, int $contract)
     {
+        abort_unless(auth()->user()->hasPermission('customers.edit'), 403);
+
         $contractModel = $customer->contracts()->findOrFail($contract);
 
         if ($contractModel->file_path && Storage::disk('public')->exists($contractModel->file_path)) {

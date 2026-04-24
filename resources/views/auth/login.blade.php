@@ -31,10 +31,20 @@
 
         <form method="POST" action="{{ route('login') }}" class="space-y-6">
             @csrf
-            <input type="hidden" name="login_type" x-model="loginType">
+            <input type="hidden" name="login_type" value="staff" x-model="loginType">
+
+            @if ($errors->any())
+                <div class="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 mb-4">
+                    <ul class="list-disc list-inside text-xs text-rose-400">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div class="space-y-2">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1" x-text="loginType === 'customer' ? 'Kullanıcı Adı' : 'E-Posta Adresi'"></label>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1" x-text="loginType === 'customer' ? 'Kullanıcı Adı' : 'E-Posta Adresi'">E-Posta Adresi</label>
                 <input id="login"
                        name="login"
                        type="text"

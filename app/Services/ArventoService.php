@@ -22,29 +22,35 @@ class ArventoService
     protected function call($method, $params = [])
     {
         try {
+            // Güvenlik: Method adı whitelist dışı olamaz ve XML güvenli olmalı
+            $safeMethod = preg_replace('/[^A-Za-z0-9]/', '', (string) $method);
+
             $xmlParams = "";
             foreach ($params as $key => $value) {
-                $xmlParams .= "<$key>$value</$key>";
+                // XML Injection, CRLF Injection ve özel karakter kaçırma
+                $safeKey = preg_replace('/[^A-Za-z0-9_]/', '', (string) $key);
+                $safeValue = htmlspecialchars((string) $value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+                $xmlParams .= "<{$safeKey}>{$safeValue}</{$safeKey}>";
             }
 
             $envelope = '<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
-    <' . $method . ' xmlns="http://www.arvento.com/">
+    <' . $safeMethod . ' xmlns="http://www.arvento.com/">
       ' . $xmlParams . '
-    </' . $method . '>
+    </' . $safeMethod . '>
   </soap:Body>
 </soap:Envelope>';
 
-            $response = Http::withHeaders([
+            $response = Http::timeout(15)->withHeaders([
                 'Content-Type' => 'text/xml; charset=utf-8',
-                'SOAPAction' => 'http://www.arvento.com/' . $method,
+                'SOAPAction'   => 'http://www.arvento.com/' . $safeMethod,
             ])->withBody($envelope, 'text/xml')->post($this->url);
 
             if ($response->successful()) {
                 $body = $response->body();
-                
-                $resultNode = $method . "Result";
+
+                $resultNode = $safeMethod . "Result";
                 if (preg_match('/<' . $resultNode . '[^>]*>(.*?)<\/' . $resultNode . '>/s', $body, $matches)) {
                     return html_entity_decode($matches[1]);
                 }
@@ -53,7 +59,7 @@ class ArventoService
 
             return null;
         } catch (Exception $e) {
-            \Log::error("Arvento API Error ($method): " . $e->getMessage());
+            \Log::error("Arvento API Error ({$safeMethod}): " . $e->getMessage());
             return null;
         }
     }

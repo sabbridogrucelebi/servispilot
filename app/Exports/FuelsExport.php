@@ -46,7 +46,11 @@ class FuelsExport implements FromCollection, WithHeadings, WithMapping, ShouldAu
         }
 
         if (empty($startDate) && empty($endDate) && !empty($month)) {
-            $query->whereRaw("strftime('%Y-%m', date) = ?", [$month]);
+            // Güvenlik + DB-bağımsız: whereRaw yerine Eloquent ile ay/yıl filtreleme
+            if (preg_match('/^(\d{4})-(\d{1,2})$/', (string) $month, $parts)) {
+                $query->whereYear('date', (int) $parts[1])
+                      ->whereMonth('date', (int) $parts[2]);
+            }
         }
 
         if (!empty($fuelType)) {

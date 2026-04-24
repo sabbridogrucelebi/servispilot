@@ -19,20 +19,154 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\ArventoService;
 use App\Models\VehicleTrackingSetting;
+use App\Models\Fleet\Driver;
 
 class VehicleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $vehicles = Vehicle::with(['fuels' => function($q) {
-            $q->latest('date')->latest('id');
-        }])->latest()->get();
+        // Güvenlik: Route middleware'de permission:vehicles.view kontrolü var
+        // ama burada ikinci bir güvenlik halkası ekliyoruz (defense-in-depth)
+        if (!auth()->user()->hasPermission('vehicles.view')) {
+            abort(403, 'Bu sayfayı görüntüleme yetkiniz yok.');
+        }
 
-        return view('vehicles.index', compact('vehicles'));
+        // Filtre girdilerini whitelist ile temizle (XSS / SQLi karşıtı)
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'type'   => ['nullable', 'string', 'max:50'],
+            'status' => ['nullable', 'in:active,passive,all'],
+            'filter' => ['nullable', 'in:upcoming_inspection,upcoming_insurance'],
+        ]);
+
+        $search = trim((string) ($filters['search'] ?? ''));
+        $type   = trim((string) ($filters['type'] ?? ''));
+        $status = $filters['status'] ?? 'all';
+        $specialFilter = $filters['filter'] ?? null;
+
+        $vehicles = Vehicle::query()
+            ->with([
+                'fuels' => fn ($q) => $q->latest('date')->latest('id')->limit(3),
+                'drivers' => fn ($q) => $q->latest()->limit(3),
+                'images' => fn ($q) => $q->orderByDesc('is_featured')->orderBy('sort_order')->limit(1),
+                'maintenanceSetting',
+                'documents' => fn ($q) => $q->whereNull('archived_at')->latest(),
+            ])
+            ->withCount(['maintenances', 'fuels', 'trafficPenalties'])
+            ->when($search !== '', function ($q) use ($search) {
+                // like için % ve _ kaçırma
+                $needle = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
+                $q->where(function ($qq) use ($needle) {
+                    $qq->where('plate', 'like', $needle)
+                       ->orWhere('brand', 'like', $needle)
+                       ->orWhere('model', 'like', $needle)
+                       ->orWhere('chassis_no', 'like', $needle)
+                       ->orWhere('engine_no', 'like', $needle);
+                });
+            })
+            ->when($type !== '', fn ($q) => $q->where('vehicle_type', $type))
+            ->when($status === 'active', fn ($q) => $q->where('is_active', true))
+            ->when($status === 'passive', fn ($q) => $q->where('is_active', false))
+            ->when($specialFilter === 'upcoming_inspection', fn ($q) => $q->whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30)))
+            ->when($specialFilter === 'upcoming_insurance', fn ($q) => $q->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(30)))
+            ->latest()
+            ->paginate(24)
+            ->withQueryString();
+
+        // KPI İstatistikleri
+        $kpi = [
+            'total' => Vehicle::count(),
+            'upcoming_inspection' => Vehicle::whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30))->count(),
+            'upcoming_insurance' => Vehicle::whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(30))->count(),
+            'types' => Vehicle::selectRaw('vehicle_type, count(*) as count')->groupBy('vehicle_type')->pluck('count', 'vehicle_type')->toArray(),
+        ];
+
+        // Şoför ataması yapılmamış araçlar için "hızlı atama" modalında gösterilecek
+        // aktif personel listesi. BelongsToCompany global scope sayesinde sadece
+        // mevcut firmanın aktif personelleri listelenir.
+        $availableDrivers = Driver::query()
+            ->where('is_active', true)
+            ->orderBy('full_name')
+            ->get(['id', 'full_name', 'phone', 'vehicle_id']);
+
+        return view('vehicles.index', compact('vehicles', 'filters', 'availableDrivers', 'kpi'));
+    }
+
+    /**
+     * Toplu araç ekleme için Excel şablonu indir.
+     */
+    public function downloadTemplate()
+    {
+        if (!auth()->user()->hasPermission('vehicles.create')) {
+            abort(403, 'Bu işlemi yapma yetkiniz yok.');
+        }
+
+        return Excel::download(new \App\Exports\VehicleTemplateExport, 'arac_ekleme_sablonu.xlsx');
+    }
+
+    /**
+     * Toplu araç ekleme Excel içe aktarımı.
+     */
+    public function import(Request $request)
+    {
+        if (!auth()->user()->hasPermission('vehicles.create')) {
+            abort(403, 'Bu işlemi yapma yetkiniz yok.');
+        }
+
+        $request->validate([
+            'excel_file' => ['required', 'file', 'max:10240'],
+        ]);
+
+        try {
+            Excel::import(new \App\Imports\VehiclesImport, $request->file('excel_file'));
+            return redirect()->route('vehicles.index')->with('success', 'Toplu araç ekleme işlemi başarıyla tamamlandı.');
+        } catch (\Exception $e) {
+            return redirect()->route('vehicles.index')->with('error', 'Dosya yüklenirken bir hata oluştu: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bir araca tek tıkla şoför atar. Driver modelindeki vehicle_id güncellenir.
+     *
+     * Güvenlik:
+     *  - Route middleware: permission:vehicles.edit + throttle
+     *  - Driver aynı firmada olmalı (BelongsToCompany global scope zaten
+     *    garanti eder, yine de validation "exists" kuralı kullanılır).
+     *  - Araç ve şoför company_id eşleşmesi ekstra kontrolle doğrulanır.
+     */
+    public function assignDriver(Request $request, Vehicle $vehicle)
+    {
+        if (!auth()->user()->hasPermission('vehicles.edit')) {
+            abort(403, 'Bu işlemi yapma yetkiniz yok.');
+        }
+
+        $validated = $request->validate([
+            'driver_id' => ['required', 'integer', 'exists:drivers,id'],
+        ]);
+
+        $driver = Driver::findOrFail($validated['driver_id']);
+
+        // Çifte kilit: Şoförün ve aracın aynı firmaya ait olduğunu doğrula.
+        if ($driver->company_id !== $vehicle->company_id
+            || $driver->company_id !== auth()->user()->company_id) {
+            abort(403, 'Bu şoförü bu araca atama yetkiniz yok.');
+        }
+
+        $driver->update([
+            'vehicle_id' => $vehicle->id,
+            'is_active'  => true,
+        ]);
+
+        return redirect()
+            ->route('vehicles.index')
+            ->with('success', $driver->full_name . ' isimli personel ' . $vehicle->plate . ' plakalı araca başarıyla atandı.');
     }
 
     public function exportExcel()
     {
+        if (!auth()->user()->hasPermission('vehicles.view')) {
+            abort(403, 'Bu işlemi yapma yetkiniz yok.');
+        }
         $fileName = 'Araclar_' . now()->format('d-m-Y_H-i') . '.xlsx';
 
         // Aktivite Kaydı
@@ -148,6 +282,74 @@ class VehicleController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        $featuredImage = $vehicleImages->where('is_featured', true)->first() ?? $vehicleImages->first();
+
+        // Raporlar Sekmesi Verisi: Ay Ay Müşteri Bazlı Puantaj (Çalışma)
+        $reportsMonth = request('reports_month', now()->format('Y-m'));
+        $reportsStartDate = \Carbon\Carbon::parse($reportsMonth . '-01')->startOfMonth();
+        $reportsEndDate = $reportsStartDate->copy()->endOfMonth();
+
+        $vehicleTrips = Trip::with(['serviceRoute.customer'])
+            ->where(function ($q) use ($vehicle) {
+                $q->where('vehicle_id', $vehicle->id)
+                  ->orWhere('morning_vehicle_id', $vehicle->id)
+                  ->orWhere('evening_vehicle_id', $vehicle->id);
+            })
+            ->whereBetween('trip_date', [$reportsStartDate, $reportsEndDate])
+            ->get();
+
+        $monthlyReports = [];
+        $reportTotals = ['morning' => 0, 'evening' => 0, 'income' => 0];
+
+        foreach ($vehicleTrips as $trip) {
+            $route = $trip->serviceRoute;
+            if (!$route) continue;
+            $customer = $route->customer;
+            $customerId = $customer ? $customer->id : 0;
+            $customerName = $customer ? $customer->company_name : 'Diğer Seferler';
+
+            if (!isset($monthlyReports[$customerId])) {
+                $monthlyReports[$customerId] = [
+                    'customer_name' => $customerName,
+                    'morning_count' => 0,
+                    'evening_count' => 0,
+                    'total_price' => 0,
+                ];
+            }
+
+            $didMorning = false;
+            if ($trip->morning_vehicle_id == $vehicle->id) {
+                $didMorning = true;
+            } elseif ($trip->vehicle_id == $vehicle->id && !$trip->morning_vehicle_id && ($route->service_type == 'morning' || $route->service_type == 'both')) {
+                $didMorning = true;
+            }
+
+            $didEvening = false;
+            if ($trip->evening_vehicle_id == $vehicle->id) {
+                $didEvening = true;
+            } elseif ($trip->vehicle_id == $vehicle->id && !$trip->evening_vehicle_id && ($route->service_type == 'evening' || $route->service_type == 'both')) {
+                $didEvening = true;
+            }
+
+            if ($didMorning) {
+                $monthlyReports[$customerId]['morning_count']++;
+                $reportTotals['morning']++;
+            }
+            if ($didEvening) {
+                $monthlyReports[$customerId]['evening_count']++;
+                $reportTotals['evening']++;
+            }
+
+            // Aracın asıl trip'i ise trip_price'ı da ekleyelim (ya da sabah/akşam fiyatını)
+            if ($trip->vehicle_id == $vehicle->id) {
+                $price = $trip->trip_price ?? 0;
+                $monthlyReports[$customerId]['total_price'] += $price;
+                $reportTotals['income'] += $price;
+            }
+        }
+
+        $monthlyReports = collect($monthlyReports)->values();
+
         $latestFuelRecord = $recentFuels
             ->sortByDesc(function ($item) {
                 return sprintf(
@@ -205,17 +407,31 @@ class VehicleController extends Controller
             'vehiclePenalties',
             'vehicleImages',
             'publicImageUploadUrl',
-            'arventoStats'
+            'arventoStats',
+            'reportsMonth',
+            'monthlyReports',
+            'reportTotals'
         ));
     }
 
     public function create()
     {
+        if (!auth()->user()->hasPermission('vehicles.create')) {
+            abort(403, 'Araç ekleme yetkiniz bulunmuyor.');
+        }
+
         return view('vehicles.create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('vehicles.create'), 403);
+
+        $company = auth()->user()->company;
+        if (!is_null($company->max_vehicles) && $company->vehicles()->count() >= $company->max_vehicles) {
+            return redirect()->back()->with('error', 'Araç ekleme limitinize ulaştınız. (' . $company->max_vehicles . ' Araç). Daha fazla araç eklemek için sistem yöneticisi ile iletişime geçin.')->withInput();
+        }
+
         $data = $request->validate([
             'plate' => 'required|string|max:20|unique:vehicles,plate',
             'brand' => 'nullable|string|max:100',
@@ -252,7 +468,22 @@ class VehicleController extends Controller
         $data['is_active'] = $request->boolean('is_active');
         $data['public_image_upload_token'] = Str::random(40);
 
-        Vehicle::create($data);
+        $vehicle = Vehicle::create($data);
+
+        // Aktivite Kaydı
+        \App\Models\ActivityLog::create([
+            'company_id'   => auth()->user()->company_id,
+            'user_id'      => auth()->id(),
+            'module'       => 'vehicles',
+            'action'       => 'created',
+            'subject_type' => Vehicle::class,
+            'subject_id'   => $vehicle->id,
+            'title'        => 'Yeni Araç Eklendi',
+            'description'  => "{$vehicle->plate} plakalı yeni araç sisteme tanımlandı.",
+            'new_values'   => $data,
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
+        ]);
 
         return redirect()
             ->route('vehicles.index')
@@ -261,11 +492,14 @@ class VehicleController extends Controller
 
     public function edit(Vehicle $vehicle)
     {
+        abort_unless(auth()->user()->hasPermission('vehicles.edit'), 403);
         return view('vehicles.edit', compact('vehicle'));
     }
 
     public function update(Request $request, Vehicle $vehicle)
     {
+        abort_unless(auth()->user()->hasPermission('vehicles.edit'), 403);
+
         $data = $request->validate([
             'plate' => 'required|string|max:20|unique:vehicles,plate,' . $vehicle->id,
             'brand' => 'nullable|string|max:100',
@@ -304,7 +538,24 @@ class VehicleController extends Controller
             $data['public_image_upload_token'] = Str::random(40);
         }
 
+        $oldData = $vehicle->toArray();
         $vehicle->update($data);
+
+        // Aktivite Kaydı
+        \App\Models\ActivityLog::create([
+            'company_id'   => auth()->user()->company_id,
+            'user_id'      => auth()->id(),
+            'module'       => 'vehicles',
+            'action'       => 'updated',
+            'subject_type' => Vehicle::class,
+            'subject_id'   => $vehicle->id,
+            'title'        => 'Araç Güncellendi',
+            'description'  => "{$vehicle->plate} plakalı araç bilgileri güncellendi.",
+            'old_values'   => $oldData,
+            'new_values'   => $data,
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
+        ]);
 
         return redirect()
             ->route('vehicles.index')
@@ -331,13 +582,26 @@ class VehicleController extends Controller
 
         $imageType = $data['image_type'] ?? 'other';
 
-        $vehicle->images()->create([
+        $image = $vehicle->images()->create([
             'title' => $data['title'] ?? $this->resolveImageTypeLabel($imageType),
             'file_path' => $path,
             'is_featured' => $isFeatured,
             'sort_order' => 0,
             'image_type' => $imageType,
             'upload_source' => 'panel',
+        ]);
+
+        \App\Models\ActivityLog::create([
+            'company_id'   => auth()->user()->company_id,
+            'user_id'      => auth()->id(),
+            'module'       => 'vehicles',
+            'action'       => 'image_uploaded',
+            'subject_type' => Vehicle::class,
+            'subject_id'   => $vehicle->id,
+            'title'        => 'Araç Resmi Yüklendi',
+            'description'  => "{$vehicle->plate} plakalı araca yeni bir resim eklendi.",
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
         ]);
 
         return redirect()
@@ -432,6 +696,19 @@ class VehicleController extends Controller
             }
         }
 
+        \App\Models\ActivityLog::create([
+            'company_id'   => auth()->user()->company_id,
+            'user_id'      => auth()->id(),
+            'module'       => 'vehicles',
+            'action'       => 'image_deleted',
+            'subject_type' => Vehicle::class,
+            'subject_id'   => $vehicle->id,
+            'title'        => 'Araç Resmi Silindi',
+            'description'  => "{$vehicle->plate} plakalı aracın bir resmi silindi.",
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
+        ]);
+
         return redirect()
             ->route('vehicles.show', ['vehicle' => $vehicle->id, 'tab' => 'images'])
             ->with('success', 'Araç resmi silindi.');
@@ -472,6 +749,19 @@ class VehicleController extends Controller
             'notes' => $data['notes'] ?? null,
         ]);
 
+        \App\Models\ActivityLog::create([
+            'company_id'   => auth()->user()->company_id,
+            'user_id'      => auth()->id(),
+            'module'       => 'vehicles',
+            'action'       => 'document_uploaded',
+            'subject_type' => Vehicle::class,
+            'subject_id'   => $vehicle->id,
+            'title'        => 'Araç Belgesi Eklendi',
+            'description'  => "{$vehicle->plate} plakalı araca '{$data['document_name']}' belgesi eklendi.",
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
+        ]);
+
         return redirect()
             ->route('vehicles.show', ['vehicle' => $vehicle->id, 'tab' => 'documents'])
             ->with('success', 'Belge başarıyla kaydedildi.');
@@ -479,10 +769,7 @@ class VehicleController extends Controller
 
     public function deleteDocument(Vehicle $vehicle, Document $document)
     {
-        if (
-            $document->documentable_type !== Vehicle::class ||
-            (int) $document->documentable_id !== (int) $vehicle->id
-        ) {
+        if ((int) $document->documentable_id !== (int) $vehicle->id) {
             abort(404);
         }
 
@@ -491,6 +778,19 @@ class VehicleController extends Controller
         }
 
         $document->delete();
+
+        \App\Models\ActivityLog::create([
+            'company_id'   => auth()->user()->company_id,
+            'user_id'      => auth()->id(),
+            'module'       => 'vehicles',
+            'action'       => 'document_deleted',
+            'subject_type' => Vehicle::class,
+            'subject_id'   => $vehicle->id,
+            'title'        => 'Araç Belgesi Silindi',
+            'description'  => "{$vehicle->plate} plakalı aracın bir belgesi silindi.",
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
+        ]);
 
         return redirect()
             ->route('vehicles.show', ['vehicle' => $vehicle->id, 'tab' => 'documents'])
@@ -535,6 +835,10 @@ class VehicleController extends Controller
 
     public function destroy(Vehicle $vehicle)
     {
+        abort_unless(auth()->user()->hasPermission('vehicles.delete'), 403);
+
+        $plate = $vehicle->plate;
+
         foreach ($vehicle->images as $image) {
             if ($image->file_path && Storage::disk('public')->exists($image->file_path)) {
                 Storage::disk('public')->delete($image->file_path);
@@ -548,6 +852,19 @@ class VehicleController extends Controller
         }
 
         $vehicle->delete();
+
+        // Aktivite Kaydı
+        \App\Models\ActivityLog::create([
+            'company_id'   => auth()->user()->company_id,
+            'user_id'      => auth()->id(),
+            'module'       => 'vehicles',
+            'action'       => 'deleted',
+            'subject_type' => Vehicle::class,
+            'title'        => 'Araç Silindi',
+            'description'  => "{$plate} plakalı araç ve bağlı tüm verileri sistemden silindi.",
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
+        ]);
 
         return back()->with('success', 'Araç silindi.');
     }
@@ -624,5 +941,23 @@ class VehicleController extends Controller
         }
 
         return response()->json(['answer' => $answer]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('vehicles.delete'), 403);
+
+        $request->validate([
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'integer|exists:vehicles,id',
+        ]);
+
+        $deleted = Vehicle::whereIn('id', $request->ids)
+            ->where('company_id', auth()->user()->company_id)
+            ->delete();
+
+        return redirect()
+            ->route('vehicles.index')
+            ->with('success', $deleted . ' adet araç başarıyla silindi.');
     }
 }

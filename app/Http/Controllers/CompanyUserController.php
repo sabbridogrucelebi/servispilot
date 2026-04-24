@@ -27,6 +27,20 @@ class CompanyUserController extends Controller
         // Sidebar'daki öğelerin permission'larını al
         $navItems = config('navigation.items', []);
         $activePermissionKeys = collect($navItems)->pluck('permission')->filter()->unique()->toArray();
+        
+        $activePermissionKeys = array_merge($activePermissionKeys, [
+            'vehicles.create', 'vehicles.edit', 'vehicles.delete',
+            'drivers.create',  'drivers.edit',  'drivers.delete',
+            'customers.create', 'customers.edit', 'customers.delete',
+            'trips.create', 'trips.edit', 'trips.delete',
+            'fuels.create', 'fuels.edit', 'fuels.delete',
+            'fuel_stations.create', 'fuel_stations.edit', 'fuel_stations.delete',
+            'maintenances.create', 'maintenances.edit', 'maintenances.delete',
+            'penalties.create', 'penalties.edit', 'penalties.delete',
+            'documents.create', 'documents.edit', 'documents.delete',
+            'payrolls.create', 'payrolls.edit', 'payrolls.delete',
+            'company_users.create', 'company_users.edit', 'company_users.delete',
+        ]);
 
         $permissions = Permission::whereIn('key', $activePermissionKeys)
             ->orderBy('label')
@@ -38,6 +52,11 @@ class CompanyUserController extends Controller
     public function store(Request $request)
     {
         abort_unless(auth()->user()->isCompanyAdmin(), 403);
+
+        $company = auth()->user()->company;
+        if (!is_null($company->max_users) && $company->users()->count() >= $company->max_users) {
+            return redirect()->back()->with('error', 'Kullanıcı ekleme limitinize ulaştınız. (' . $company->max_users . ' Kullanıcı). Daha fazla kullanıcı eklemek için sistem yöneticisi ile iletişime geçin.')->withInput();
+        }
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -91,6 +110,20 @@ class CompanyUserController extends Controller
         // Sidebar'daki öğelerin permission'larını al
         $navItems = config('navigation.items', []);
         $activePermissionKeys = collect($navItems)->pluck('permission')->filter()->unique()->toArray();
+        
+        $activePermissionKeys = array_merge($activePermissionKeys, [
+            'vehicles.create', 'vehicles.edit', 'vehicles.delete',
+            'drivers.create',  'drivers.edit',  'drivers.delete',
+            'customers.create', 'customers.edit', 'customers.delete',
+            'trips.create', 'trips.edit', 'trips.delete',
+            'fuels.create', 'fuels.edit', 'fuels.delete',
+            'fuel_stations.create', 'fuel_stations.edit', 'fuel_stations.delete',
+            'maintenances.create', 'maintenances.edit', 'maintenances.delete',
+            'penalties.create', 'penalties.edit', 'penalties.delete',
+            'documents.create', 'documents.edit', 'documents.delete',
+            'payrolls.create', 'payrolls.edit', 'payrolls.delete',
+            'company_users.create', 'company_users.edit', 'company_users.delete',
+        ]);
 
         $permissions = Permission::whereIn('key', $activePermissionKeys)
             ->orderBy('label')

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ServisPilot</title>
+
+    <link rel="preload" as="style" href="http://localhost/build/assets/app-B9DbLseL.css" /><link rel="modulepreload" as="script" href="http://localhost/build/assets/app-CWNHUZev.js" /><link rel="stylesheet" href="http://localhost/build/assets/app-B9DbLseL.css" /><script type="module" src="http://localhost/build/assets/app-CWNHUZev.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&display=swap');
+
+        :root {
+            --sidebar-bg: #0f172a; /* Biraz daha derin lacivert */
+            --sidebar-hover: rgba(255, 255, 255, 0.08);
+            --accent-primary: #818cf8; /* Daha parlak indigo */
+            --accent-secondary: #c084fc; /* Daha parlak mor */
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .sidebar-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .mesh-gradient {
+            background-color: var(--sidebar-bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.25) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(79, 70, 229, 0.1) 0px, transparent 50%);
+        }
+
+        .nav-item-active {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, transparent 100%);
+            border-left: 4px solid var(--accent-primary);
+            box-shadow: inset 4px 0 10px -2px rgba(99, 102, 241, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased overflow-x-hidden">
+
+
+<div class="min-h-screen">
+    <div class="flex">
+
+        <!-- SIDEBAR -->
+        <aside class="fixed left-0 top-0 z-40 h-screen w-72 mesh-gradient text-slate-400 shadow-[20px_0_40px_rgba(0,0,0,0.2)] transition-all duration-500 overflow-hidden border-r border-white/5">
+            <div class="flex h-full flex-col">
+
+                <!-- Brand Area -->
+                <div class="shrink-0 px-8 py-10">
+                    <div class="flex items-center gap-4">
+                        <div class="relative group">
+                            <div class="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 opacity-40 blur-sm group-hover:opacity-100 transition duration-500"></div>
+                            <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 border border-white/10 text-2xl">
+                                🚀
+                            </div>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <div class="text-2xl font-black tracking-tighter text-white leading-none">
+                                Servis<span class="text-indigo-500">Pilot</span>
+                            </div>
+                            <div class="mt-2 text-[9px] font-bold uppercase tracking-[0.3em] text-slate-500 whitespace-nowrap">
+                                IRMAK TURİZM
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-12">
+                    <div class="space-y-6">
+
+                        
+                        <div class="pt-2">
+                            <div class="px-4 mb-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-slate-600">Ana Menü</div>
+                            <div class="space-y-1">
+
+                                
+                                                                    
+                                                                            <a href="http://localhost/dashboard"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Ana Sayfa</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Genel Bakış</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/vehicles"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Araçlar</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Filo Yönetimi</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/vehicle-tracking"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Araç Takip</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Canlı İzleme</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/drivers"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Personeller</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Personel Yönetimi</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/maintenances"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Bakım / Tamir</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Servis ve Bakım</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/fuels"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Yakıt</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Yakıt Takibi</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/traffic-penalties"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Trafik Cezaları</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Yasal ve Uyumluluk</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/trips"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Puantaj / Sefer</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Operasyon Kayıtları</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/payrolls"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Maaşlar</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Finansal Kayıtlar</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/customers"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Müşteriler</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Müşteri Yönetimi</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/reports"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Raporlar</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Analiz Merkezi</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/activity-logs"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">LOGLAR</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Aktivite Kayıtları</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/company-users"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Kullanıcılar</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Erişim Kontrolü</span>
+                                            </div>
+                                                                                    </a>
+                                                                                                        
+                                                                            <a href="http://localhost/company-settings"
+                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                           text-slate-300 hover:bg-white/[0.05] hover:text-white">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300 group-hover:scale-110">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-[13px] font-bold tracking-tight truncate">Ayarlar</span>
+                                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Sistem Yapılandırması</span>
+                                            </div>
+                                                                                    </a>
+                                                                    
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <style>
+        [x-cloak] { display: none !important; }
+        
+        /* GLOBAL YAZDIRMA AYARLARI - SADECE BELGE KALSIN */
+        @media print {
+            aside, header, nav, footer, .no-print, button, .sidebar-wrapper, .top-nav {
+                display: none !important;
+            }
+            main, .content-wrapper, #app {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                display: block !important;
+            }
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .mx-auto {
+                max-width: 100% !important;
+            }
+        }
+    </style>
+                </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="ml-72 flex-1 min-w-0 min-h-screen flex flex-col bg-slate-50">
+            <main class="flex-1 p-6 lg:p-8">
+                <div class="h-full rounded-[40px] border border-white bg-white/60 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] backdrop-blur-xl overflow-hidden flex flex-col">
+                    
+                    <!-- GLASS HEADER -->
+                    <div class="glass-header border-b border-slate-200/40 px-8 py-6 shrink-0">
+                        <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                            <!-- Left: Title & Subtitle -->
+                            <div class="flex items-center gap-6">
+                                <div class="hidden h-12 w-1.5 shadow-lg rounded-full bg-gradient-to-b from-indigo-500 to-purple-600 md:block"></div>
+                                <div>
+                                    <h1 class="text-3xl font-black tracking-tight text-slate-900">
+                                        Yönetim Paneli                                    </h1>
+                                    <p class="mt-1 text-[11px] font-bold text-slate-400 flex items-center gap-2 uppercase tracking-widest">
+                                        <span class="relative flex h-2 w-2">
+                                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                        </span>
+                                        Operasyonel ve Finansal Genel Bakış                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Right: Actions & Profile -->
+                            <div class="flex items-center gap-4 sm:gap-6">
+                                <!-- Destek Butonu -->
+                                <a href="http://localhost/support" 
+                                   class="group relative hidden lg:flex items-center gap-3 overflow-hidden rounded-2xl bg-slate-900 px-5 py-2.5 transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-200 border border-white/10">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 opacity-0 transition-opacity group-hover:opacity-10"></div>
+                                    <div class="relative flex flex-col items-start leading-none">
+                                        <span class="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-emerald-400 transition-colors">Yazılım Mimarı</span>
+                                        <span class="text-[10px] font-black text-white mt-1">DESTEK AL</span>
+                                    </div>
+                                    <div class="relative flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                    </div>
+                                </a>
+
+                                <!-- Canlı Sistem Saati & Çıkış -->
+                                <div class="hidden items-center gap-4 md:flex">
+                                    <div class="flex flex-col items-end">
+                                        <div class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 leading-none">Canlı Sistem Saati</div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100/50 shadow-sm group hover:scale-105 transition-all">
+                                                <span class="text-[11px] font-black text-indigo-600" id="clock-date">23.04.2026</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 shadow-lg group hover:scale-105 transition-all">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                <span class="text-[11px] font-black text-white tracking-wider" id="clock-time">13:42:43</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hızlı Çıkış -->
+                                    <form method="POST" action="http://localhost/logout" class="inline">
+                                        <input type="hidden" name="_token" value="YU7xiy8J8ugytMHjLl96tCWZaHWx2m0K0C8qY76j" autocomplete="off">                                        <button type="submit" class="group relative flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white transition-all shadow-sm hover:shadow-rose-200 active:scale-90" title="Güvenli Çıkış">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div class="relative group" x-data="{ open: false }">
+                                    <button @click="open = !open" class="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-md font-black text-indigo-600 shadow-lg border border-white hover:scale-105 transition-all active:scale-95">
+                                        <div class="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 opacity-20 blur group-hover:opacity-100 transition duration-500"></div>
+                                        <span class="relative text-sm">R</span>
+                                        <div class="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-lg"></div>
+                                    </button>
+
+                                    <!-- User Dropdown -->
+                                    <div x-show="open" @click.away="open = false" 
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 translate-y-4"
+                                         x-transition:enter-end="opacity-100 translate-y-0"
+                                         class="absolute right-0 mt-4 w-64 origin-top-right rounded-[32px] bg-white p-4 shadow-2xl ring-1 ring-black/5 z-50" x-cloak>
+                                        <div class="px-4 py-3 border-b border-slate-50">
+                                            <div class="text-sm font-black text-slate-900 leading-tight">RAMAZAN IRMAK</div>
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">aa@gmail.com</div>
+                                        </div>
+                                        <div class="p-2 space-y-1">
+                                            <a href="http://localhost/profile" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-2xl transition-all">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                                Profilim
+                                            </a>
+                                            <form method="POST" action="http://localhost/logout">
+                                                <input type="hidden" name="_token" value="YU7xiy8J8ugytMHjLl96tCWZaHWx2m0K0C8qY76j" autocomplete="off">                                                <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-2xl transition-all text-left">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                                    Güvenli Çıkış
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MAIN SCROLLABLE CONTENT -->
+                    <div class="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-50/50">
+                        
+
+<div class="space-y-8 animate-in fade-in duration-700">
+    
+    <!-- Üst Hoş Geldiniz ve Hızlı Aksiyonlar -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+            <h2 class="text-3xl font-black text-slate-800 tracking-tight">Tünaydın, RAMAZAN! 👋</h2>
+            <p class="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">Sistem durumu şu an stabil. İşte bugünün özeti.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-slate-100 shadow-sm">
+                <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sistem Aktif</span>
+            </div>
+            <a href="http://localhost/trips/create" class="group relative flex items-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
+                <svg class="relative w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                <span class="relative">YENİ SEFER EKLE</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Ana İstatistik Kartları -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Kart 1: Araçlar -->
+        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-blue-500/5 transition-transform group-hover:scale-150 duration-700"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Toplam Araç</p>
+                    <h3 class="text-4xl font-black text-slate-900 leading-none">0</h3>
+                </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                </div>
+            </div>
+            <div class="mt-6 flex items-center gap-2">
+                <span class="flex items-center gap-1 text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    FİLO AKTİF
+                </span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sistemde Kayıtlı</span>
+            </div>
+        </div>
+
+        <!-- Kart 2: Gelir -->
+        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-500/5 transition-transform group-hover:scale-150 duration-700"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Aylık Gelir</p>
+                    <h3 class="text-3xl font-black text-slate-900 leading-none">0 ₺</h3>
+                </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+            <div class="mt-6 flex items-center gap-2">
+                <span class="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">OPERASYONEL</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bu Ayın Toplamı</span>
+            </div>
+        </div>
+
+        <!-- Kart 3: Şoförler -->
+        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-violet-500/5 transition-transform group-hover:scale-150 duration-700"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Toplam Şoför</p>
+                    <h3 class="text-4xl font-black text-slate-900 leading-none">0</h3>
+                </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-all shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+            </div>
+            <div class="mt-6 flex items-center gap-2">
+                <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">KADRO</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ekipler Hazır</span>
+            </div>
+        </div>
+
+        <!-- Kart 4: Müşteriler -->
+        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
+            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-500/5 transition-transform group-hover:scale-150 duration-700"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Müşteriler</p>
+                    <h3 class="text-4xl font-black text-slate-900 leading-none">0</h3>
+                </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                </div>
+            </div>
+            <div class="mt-6 flex items-center gap-2">
+                <span class="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">KURUMSAL</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Partner Sayısı</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafik ve Operasyon Bölümü -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        
+        <!-- Sol Kolon: Grafik ve Önemli Tablolar -->
+        <div class="xl:col-span-8 space-y-8">
+            
+            <!-- Gelir ve Operasyon Grafiği -->
+            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
+                <div class="p-8 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800">Performans Analitiği</h3>
+                        <p class="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Gelir ve Sefer Verimliliği</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 text-[10px] font-black text-indigo-600">
+                            <span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span> GELİR
+                        </div>
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-[10px] font-black text-emerald-600">
+                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> SEFER
+                        </div>
+                    </div>
+                </div>
+                <div class="p-8 h-[400px]">
+                    <canvas id="dashboardRevenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Son Seferler -->
+                <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 flex flex-col">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800">Son Seferler</h3>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filo Hareketliliği</p>
+                        </div>
+                        <a href="http://localhost/trips" class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition-all">TÜMÜ</a>
+                    </div>
+
+                    <div class="space-y-4 flex-1">
+                                                    <p class="text-sm font-bold text-slate-400 text-center py-8">Kayıt yok.</p>
+                                            </div>
+                </div>
+
+                <!-- Yaklaşan Belgeler -->
+                <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 flex flex-col">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800">Kritik Belgeler</h3>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Yasal Hatırlatmalar</p>
+                        </div>
+                        <a href="http://localhost/documents" class="text-[10px] font-black text-rose-600 bg-rose-50 px-3 py-1.5 rounded-xl hover:bg-rose-100 transition-all">YÖNET</a>
+                    </div>
+
+                    <div class="space-y-4 flex-1">
+                                                    <p class="text-sm font-bold text-slate-400 text-center py-8">Kayıt yok.</p>
+                                            </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Kolon: Durum ve Finans -->
+        <div class="xl:col-span-4 space-y-8">
+            
+            <!-- Operasyonel Sağlık (Mini Kartlar) -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-indigo-600 rounded-[35px] p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/10 rounded-full"></div>
+                    <p class="text-[9px] font-black uppercase tracking-widest text-indigo-200">Bugünkü Sefer</p>
+                    <h4 class="text-3xl font-black mt-2">0</h4>
+                    <p class="text-[10px] font-bold text-indigo-300 mt-2">Aktif Planlanan</p>
+                </div>
+                <div class="bg-slate-900 rounded-[35px] p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/10 rounded-full"></div>
+                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Bakımda Olan</p>
+                    <h4 class="text-3xl font-black mt-2 text-amber-400">0</h4>
+                    <p class="text-[10px] font-bold text-slate-500 mt-2">Servis Bekleyen: 0</p>
+                </div>
+            </div>
+
+            <!-- Finansal Özet -->
+            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-32 h-32 bg-indigo-50/50 rounded-full blur-3xl"></div>
+                <h3 class="text-xl font-black text-slate-800 mb-8 tracking-tight">Finansal Akış</h3>
+                
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-100/50">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aylık Gelir</p>
+                                <p class="text-sm font-black text-slate-800">0 ₺</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-100/50">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Yakıt Gideri</p>
+                                <p class="text-sm font-black text-slate-800">0 ₺</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-100/50">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trafik Cezası</p>
+                                <p class="text-sm font-black text-slate-800">0 ₺</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Net Karlılık</p>
+                            <p class="text-3xl font-black mt-1 text-emerald-500">
+                                0 <span class="text-lg font-medium">₺</span>
+                            </p>
+                        </div>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-2xl">
+                            💰
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sistem Günlüğü -->
+            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 flex flex-col">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800">Sistem Günlüğü</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Son Aktiviteler</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6 flex-1">
+                                            <p class="text-xs font-bold text-slate-400 text-center py-4 uppercase">Kayıt yok.</p>
+                                    </div>
+                <a href="http://localhost/activity-logs" class="block w-full text-center mt-8 py-3 rounded-2xl bg-slate-50 text-[10px] font-black text-slate-500 hover:bg-slate-900 hover:text-white transition-all uppercase tracking-widest">TÜM KAYITLAR</a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('dashboardRevenueChart').getContext('2d');
+        
+        const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientBlue.addColorStop(0, 'rgba(99, 102, 241, 0.3)');
+        gradientBlue.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["Oca","\u015eub","Mar","Nis","May","Haz","Tem","A\u011fu"],
+                datasets: [
+                    {
+                        label: 'Gelir',
+                        data: [12000,18000,22000,26000,31000,37000,43000,0],
+                        borderColor: '#6366f1',
+                        backgroundColor: gradientBlue,
+                        fill: true,
+                        tension: 0.45,
+                        borderWidth: 4,
+                        pointRadius: 0,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: '#6366f1',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 4
+                    },
+                    {
+                        label: 'Sefer',
+                        data: [8,11,13,16,18,21,24,12],
+                        borderColor: '#10b981',
+                        backgroundColor: gradientGreen,
+                        fill: true,
+                        tension: 0.45,
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#10b981',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#cbd5e1',
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13, weight: 'bold' },
+                        padding: 16,
+                        cornerRadius: 16,
+                        displayColors: true,
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 11, weight: 'bold' } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(226, 232, 240, 0.5)', borderDash: [5, 5] },
+                        ticks: { 
+                            color: '#94a3b8', 
+                            font: { size: 11, weight: 'bold' },
+                            callback: value => value.toLocaleString() + ' ₺'
+                        }
+                    },
+                    y1: {
+                        display: false,
+                        beginAtZero: true,
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+                    </div>
+                </div>
+            </main>
+        </div>
+
+    </div>
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function updateGlobalClock() {
+            const now = new Date();
+            const dateEl = document.getElementById('clock-date');
+            const timeEl = document.getElementById('clock-time');
+            if (dateEl && timeEl) {
+                dateEl.innerText = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                timeEl.innerText = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+        }
+        setInterval(updateGlobalClock, 1000);
+        updateGlobalClock();
+
+        const vehicleModal = document.getElementById('expiredVehicleDocumentsGlobalModal');
+        const vehicleCloseBtn = document.getElementById('closeExpiredVehicleDocumentsGlobalModal');
+
+        if (vehicleModal && vehicleCloseBtn) {
+            vehicleCloseBtn.addEventListener('click', function () {
+                vehicleModal.style.display = 'none';
+            });
+
+            vehicleModal.addEventListener('click', function (e) {
+                if (e.target === vehicleModal) {
+                    vehicleModal.style.display = 'none';
+                }
+            });
+        }
+
+        const driverModal = document.getElementById('driverDocumentsGlobalModal');
+        const driverCloseBtn = document.getElementById('closeDriverDocumentsGlobalModal');
+
+        if (driverModal && driverCloseBtn) {
+            driverCloseBtn.addEventListener('click', function () {
+                driverModal.style.display = 'none';
+            });
+
+            driverModal.addEventListener('click', function (e) {
+                if (e.target === driverModal) {
+                    driverModal.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

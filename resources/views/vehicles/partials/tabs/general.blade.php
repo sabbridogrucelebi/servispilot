@@ -98,6 +98,10 @@
                         </div>
                     </div>
                     <div class="rounded-2xl border border-slate-100 bg-white p-5">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Motor Numarası</div>
+                        <div class="mt-1 text-xs font-bold text-slate-800 break-all">{{ $vehicle->engine_no ?: '-' }}</div>
+                    </div>
+                    <div class="rounded-2xl border border-slate-100 bg-white p-5">
                         <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Şasi Numarası</div>
                         <div class="mt-1 text-xs font-bold text-slate-800 break-all">{{ $vehicle->chassis_no ?: '-' }}</div>
                     </div>
@@ -145,6 +149,7 @@
                         ['label' => 'Egzoz Emisyon', 'info' => $exhaustInfo, 'icon' => '💨'],
                         ['label' => 'Trafik Sigortası', 'info' => $insuranceInfo, 'icon' => '📄'],
                         ['label' => 'Kasko Poliçesi', 'info' => $kaskoInfo, 'icon' => '🛡️'],
+                        ['label' => 'İMM Poliçesi', 'info' => $immInfo, 'icon' => '💼'],
                     ];
                 @endphp
 
@@ -177,27 +182,35 @@
                 @php $mStatus = $vehicle->maintenance_status; @endphp
 
                 @if($mStatus['has_setting'])
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Yağ Değişimi</span>
-                            <span class="text-sm font-black text-indigo-600">{{ number_format($mStatus['oil_remaining'], 0, ',', '.') }} KM KALDI</span>
+                    @if($mStatus['has_oil_setting'])
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Yağ Değişimi</span>
+                                <span class="text-sm font-black {{ $mStatus['oil_remaining'] < 1000 ? 'text-rose-600' : 'text-indigo-600' }}">
+                                    {{ $mStatus['oil_remaining'] !== null ? number_format($mStatus['oil_remaining'], 0, ',', '.') . ' KM KALDI' : 'KAYIT BEKLENİYOR' }}
+                                </span>
+                            </div>
+                            <div class="h-4 w-full rounded-full bg-slate-100 shadow-inner overflow-hidden p-1">
+                                <div class="h-full rounded-full transition-all duration-1000 {{ $mStatus['oil_remaining'] < 1000 ? 'bg-gradient-to-r from-rose-500 to-pink-500' : 'bg-gradient-to-r from-indigo-500 to-blue-500' }}" 
+                                     style="width: {{ $mStatus['oil_percent'] }}%"></div>
+                            </div>
                         </div>
-                        <div class="h-4 w-full rounded-full bg-slate-100 shadow-inner overflow-hidden p-1">
-                            <div class="h-full rounded-full transition-all duration-1000 {{ $mStatus['oil_remaining'] < 1000 ? 'bg-gradient-to-r from-rose-500 to-pink-500' : 'bg-gradient-to-r from-indigo-500 to-blue-500' }}" 
-                                 style="width: {{ $mStatus['oil_percent'] }}%"></div>
-                        </div>
-                    </div>
+                    @endif
 
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Alt Yağlama</span>
-                            <span class="text-sm font-black text-emerald-600">{{ number_format($mStatus['lube_remaining'], 0, ',', '.') }} KM KALDI</span>
+                    @if($mStatus['has_lube_setting'])
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Alt Yağlama</span>
+                                <span class="text-sm font-black {{ $mStatus['lube_remaining'] < 500 ? 'text-rose-600' : 'text-emerald-600' }}">
+                                    {{ $mStatus['lube_remaining'] !== null ? number_format($mStatus['lube_remaining'], 0, ',', '.') . ' KM KALDI' : 'KAYIT BEKLENİYOR' }}
+                                </span>
+                            </div>
+                            <div class="h-4 w-full rounded-full bg-slate-100 shadow-inner overflow-hidden p-1">
+                                <div class="h-full rounded-full transition-all duration-1000 {{ $mStatus['lube_remaining'] < 500 ? 'bg-gradient-to-r from-orange-500 to-rose-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500' }}" 
+                                     style="width: {{ $mStatus['lube_percent'] }}%"></div>
+                            </div>
                         </div>
-                        <div class="h-4 w-full rounded-full bg-slate-100 shadow-inner overflow-hidden p-1">
-                            <div class="h-full rounded-full transition-all duration-1000 {{ $mStatus['lube_remaining'] < 500 ? 'bg-gradient-to-r from-orange-500 to-rose-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500' }}" 
-                                 style="width: {{ $mStatus['lube_percent'] }}%"></div>
-                        </div>
-                    </div>
+                    @endif
                 @else
                     <div class="py-10 text-center">
                         <div class="text-5xl mb-6">⚙️</div>

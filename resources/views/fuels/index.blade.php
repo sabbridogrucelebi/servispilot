@@ -303,10 +303,12 @@
                         Excel İndir
                     </a>
 
+                    @if(auth()->user()->hasPermission('fuels.create'))
                     <a href="{{ route('fuels.create') }}"
                        class="inline-flex items-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200/60 transition hover:scale-[1.01]">
                         + Yeni Yakıt Kaydı Ekle
                     </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -518,11 +520,14 @@
 
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-end gap-2">
+                                            @if(auth()->user()->hasPermission('fuels.edit'))
                                             <a href="{{ route('fuels.edit', $fuel) }}"
                                                class="rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
                                                 Düzenle
                                             </a>
+                                            @endif
 
+                                            @if(auth()->user()->hasPermission('fuels.delete'))
                                             <form action="{{ route('fuels.destroy', $fuel) }}" method="POST" class="inline" onsubmit="return confirm('Bu yakıt kaydını silmek istediğine emin misin?')">
                                                 @csrf
                                                 @method('DELETE')
@@ -530,6 +535,7 @@
                                                     Sil
                                                 </button>
                                             </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

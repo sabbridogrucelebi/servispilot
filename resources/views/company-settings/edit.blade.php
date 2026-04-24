@@ -176,6 +176,65 @@
                     </div>
                 </div>
 
+                <!-- Section: Lisans ve Kotalar -->
+                <div class="rounded-[35px] border border-white bg-white/60 backdrop-blur-xl shadow-2xl shadow-slate-200/50 overflow-hidden transition-all hover:shadow-indigo-100/40 mt-6">
+                    <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-black text-slate-800 tracking-tight">Lisans ve Kotalar</h4>
+                        </div>
+                    </div>
+
+                    <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Lisans Süresi</label>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3.5 text-sm font-bold text-slate-600 shadow-sm flex items-center justify-between">
+                                <span>{{ $company->license_expires_at ? $company->license_expires_at->format('d.m.Y') : 'Süresiz' }}</span>
+                                @if($company->license_expires_at)
+                                    @php $days = $company->licenseDaysRemaining(); @endphp
+                                    @if($days !== null && $days <= 7)
+                                        <span class="text-[10px] bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full font-black animate-pulse">Son {{ $days }} Gün!</span>
+                                    @else
+                                        <span class="text-[10px] bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-black">{{ $days }} Gün</span>
+                                    @endif
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Araç Kotası</label>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3.5 text-sm font-bold shadow-sm flex items-center justify-between">
+                                @php
+                                    $currentVehicles = $company->vehicles()->count();
+                                    $maxVehicles = $company->max_vehicles ?: 'Sınırsız';
+                                    $vehicleWarning = is_numeric($maxVehicles) && $currentVehicles >= $maxVehicles;
+                                @endphp
+                                <span class="{{ $vehicleWarning ? 'text-rose-600' : 'text-slate-600' }}">{{ $currentVehicles }} / {{ $maxVehicles }}</span>
+                                <div class="w-1/2 bg-slate-200 rounded-full h-1.5 ml-3">
+                                    <div class="{{ $vehicleWarning ? 'bg-rose-500' : 'bg-indigo-500' }} h-1.5 rounded-full" style="width: {{ is_numeric($maxVehicles) && $maxVehicles > 0 ? min(100, ($currentVehicles / $maxVehicles) * 100) : 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Kullanıcı Kotası</label>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3.5 text-sm font-bold shadow-sm flex items-center justify-between">
+                                @php
+                                    $currentUsers = $company->users()->count();
+                                    $maxUsers = $company->max_users ?: 'Sınırsız';
+                                    $userWarning = is_numeric($maxUsers) && $currentUsers >= $maxUsers;
+                                @endphp
+                                <span class="{{ $userWarning ? 'text-rose-600' : 'text-slate-600' }}">{{ $currentUsers }} / {{ $maxUsers }}</span>
+                                <div class="w-1/2 bg-slate-200 rounded-full h-1.5 ml-3">
+                                    <div class="{{ $userWarning ? 'bg-rose-500' : 'bg-indigo-500' }} h-1.5 rounded-full" style="width: {{ is_numeric($maxUsers) && $maxUsers > 0 ? min(100, ($currentUsers / $maxUsers) * 100) : 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Action Button -->
                 <div class="flex items-center justify-end gap-4 pt-4">
                     <button type="submit" 

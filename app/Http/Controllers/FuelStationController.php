@@ -11,6 +11,8 @@ class FuelStationController extends Controller
 {
     public function index()
     {
+        abort_unless(auth()->user()->hasPermission('fuel_stations.view'), 403);
+
         $stations = FuelStation::with([
                 'fuels.vehicle',
                 'payments' => function ($query) {
@@ -45,6 +47,8 @@ class FuelStationController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('fuel_stations.create'), 403);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'legal_name' => 'nullable|string|max:255',
@@ -77,6 +81,8 @@ class FuelStationController extends Controller
 
     public function storePayment(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('fuel_stations.create'), 403);
+
         $validated = $request->validate([
             'fuel_station_id' => 'required|exists:fuel_stations,id',
             'payment_date' => 'required|date',
@@ -114,6 +120,8 @@ class FuelStationController extends Controller
 
     public function showPayment(FuelStationPayment $payment)
     {
+        abort_unless(auth()->user()->hasPermission('fuel_stations.view'), 403);
+
         return response()->json([
             'id' => $payment->id,
             'fuel_station_id' => $payment->fuel_station_id,
@@ -128,6 +136,8 @@ class FuelStationController extends Controller
 
     public function updatePayment(Request $request, FuelStationPayment $payment)
     {
+        abort_unless(auth()->user()->hasPermission('fuel_stations.edit'), 403);
+
         $oldValues = $payment->toArray();
 
         $validated = $request->validate([
@@ -160,6 +170,8 @@ class FuelStationController extends Controller
 
     public function destroyPayment(FuelStationPayment $payment)
     {
+        abort_unless(auth()->user()->hasPermission('fuel_stations.delete'), 403);
+
         $payment->load('station');
         $oldValues = $payment->toArray();
 
@@ -181,6 +193,8 @@ class FuelStationController extends Controller
 
     public function storeBulkPayment(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('fuel_stations.create'), 403);
+
         $validated = $request->validate([
             'payments' => 'required|array|min:1',
             'payments.*.fuel_station_id' => 'nullable|exists:fuel_stations,id',
@@ -233,6 +247,8 @@ class FuelStationController extends Controller
 
     public function statement(Request $request, FuelStation $station)
     {
+        abort_unless(auth()->user()->hasPermission('fuel_stations.view'), 403);
+
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 

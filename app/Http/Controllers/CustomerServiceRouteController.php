@@ -11,6 +11,8 @@ class CustomerServiceRouteController extends Controller
 {
     public function store(Request $request, Customer $customer)
     {
+        abort_unless(auth()->user()->hasPermission('customers.edit'), 403);
+
         $validated = $this->validateRoute($request);
 
         $customer->serviceRoutes()->create($this->preparePayload($validated));
@@ -25,6 +27,8 @@ class CustomerServiceRouteController extends Controller
 
     public function update(Request $request, Customer $customer, int $serviceRoute)
     {
+        abort_unless(auth()->user()->hasPermission('customers.edit'), 403);
+
         $route = $customer->serviceRoutes()->findOrFail($serviceRoute);
 
         $validated = $this->validateRoute($request);
@@ -41,6 +45,8 @@ class CustomerServiceRouteController extends Controller
 
     public function toggleStatus(Customer $customer, int $serviceRoute)
     {
+        abort_unless(auth()->user()->hasPermission('customers.edit'), 403);
+
         $route = $customer->serviceRoutes()->findOrFail($serviceRoute);
 
         $route->is_active = !$route->is_active;
@@ -58,6 +64,8 @@ class CustomerServiceRouteController extends Controller
 
     public function destroy(Customer $customer, int $serviceRoute)
     {
+        abort_unless(auth()->user()->hasPermission('customers.edit'), 403);
+
         $route = $customer->serviceRoutes()->findOrFail($serviceRoute);
         $route->delete();
 

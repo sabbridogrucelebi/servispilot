@@ -127,6 +127,7 @@
                         Ödeme Kayıtları
                     </a>
 
+                    @if(auth()->user()->hasPermission('fuels.create'))
                     <button
                         type="button"
                         @click="openBulkPayment = true"
@@ -150,6 +151,7 @@
                     >
                         Ödeme Gir
                     </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -293,6 +295,7 @@
                                                                 <p class="mt-1 text-xs text-slate-500">Tarih, yöntem ve dönem bazlı istasyon ödeme detayları</p>
                                                             </div>
 
+                                                            @if(auth()->user()->hasPermission('fuels.create'))
                                                             <button
                                                                 type="button"
                                                                 @click="openCreatePaymentModal('{{ $station->id }}')"
@@ -300,6 +303,7 @@
                                                             >
                                                                 + Bu istasyona ödeme gir
                                                             </button>
+                                                            @endif
                                                         </div>
                                                     </div>
 
@@ -348,6 +352,7 @@
 
                                                                             <td class="px-4 py-4">
                                                                                 <div class="flex items-center justify-end gap-2">
+                                                                                    @if(auth()->user()->hasPermission('fuels.edit'))
                                                                                     <button
                                                                                         type="button"
                                                                                         @click="editPayment('{{ $payment->id }}')"
@@ -355,7 +360,9 @@
                                                                                     >
                                                                                         Düzenle
                                                                                     </button>
+                                                                                    @endif
 
+                                                                                    @if(auth()->user()->hasPermission('fuels.delete'))
                                                                                     <form action="{{ route('fuel-stations.payments.destroy', $payment) }}" method="POST" onsubmit="return confirm('Bu ödeme kaydını silmek istediğine emin misin?')">
                                                                                         @csrf
                                                                                         @method('DELETE')
@@ -366,6 +373,7 @@
                                                                                             Sil
                                                                                         </button>
                                                                                     </form>
+                                                                                    @endif
                                                                                 </div>
                                                                             </td>
                                                                         </tr>

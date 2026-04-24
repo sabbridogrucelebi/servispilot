@@ -160,10 +160,12 @@
                     <p class="mt-1 text-sm text-slate-500">İndirim süresi, risk seviyesi ve ödeme durumları otomatik hesaplanır.</p>
                 </div>
 
+                @if(auth()->user()->hasPermission('penalties.create'))
                 <a href="{{ route('traffic-penalties.create') }}"
                    class="rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:scale-[1.01]">
                     + Yeni Ceza Ekle
                 </a>
+                @endif
             </div>
 
             @if($trafficPenalties->count())
@@ -328,7 +330,7 @@
 
                                     <td class="px-6 py-5">
                                         <div class="flex flex-wrap items-center gap-2">
-                                            @if($penalty->payment_status === 'unpaid')
+                                            @if($penalty->payment_status === 'unpaid' && auth()->user()->hasPermission('penalties.edit'))
                                                 <button type="button"
                                                         onclick="openQuickPayModal(
                                                             '{{ $penalty->id }}',
@@ -341,11 +343,14 @@
                                                 </button>
                                             @endif
 
+                                            @if(auth()->user()->hasPermission('penalties.edit'))
                                             <a href="{{ route('traffic-penalties.edit', $penalty) }}"
                                                class="rounded-xl bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-100">
                                                 Düzenle
                                             </a>
+                                            @endif
 
+                                            @if(auth()->user()->hasPermission('penalties.delete'))
                                             <form action="{{ route('traffic-penalties.destroy', $penalty) }}" method="POST" onsubmit="return confirm('Bu kaydı silmek istediğine emin misin?')">
                                                 @csrf
                                                 @method('DELETE')
@@ -354,6 +359,7 @@
                                                     Sil
                                                 </button>
                                             </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

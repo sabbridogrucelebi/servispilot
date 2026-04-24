@@ -63,11 +63,13 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
+            @if(auth()->user()->hasPermission('customers.create'))
             <a href="{{ route('customers.create') }}"
                class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition">
                 <span class="text-base">+</span>
                 <span>Yeni Müşteri Ekle</span>
             </a>
+            @endif
         </div>
     </div>
 
@@ -268,11 +270,14 @@
                                         Detay
                                     </a>
 
+                                    @if(auth()->user()->hasPermission('customers.edit'))
                                     <a href="{{ route('customers.edit', $customer) }}"
                                        class="rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
                                         Düzenle
                                     </a>
+                                    @endif
 
+                                    @if(auth()->user()->hasPermission('customers.delete'))
                                     <form action="{{ route('customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Bu müşteriyi silmek istediğine emin misin?')">
                                         @csrf
                                         @method('DELETE')
@@ -281,6 +286,7 @@
                                             Sil
                                         </button>
                                     </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -294,10 +300,12 @@
                                         İlk müşteri kaydını oluşturarak müşteri yönetimine başlayın.
                                     </div>
                                     <div class="mt-5">
+                                        @if(auth()->user()->hasPermission('customers.create'))
                                         <a href="{{ route('customers.create') }}"
                                            class="inline-flex items-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02]">
                                             Yeni Müşteri Ekle
                                         </a>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

@@ -41,77 +41,74 @@
     <!-- Ana İstatistik Kartları -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Kart 1: Araçlar -->
-        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
-            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-blue-500/5 transition-transform group-hover:scale-150 duration-700"></div>
-            <div class="relative flex items-center justify-between">
+        <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-8 text-white shadow-xl shadow-blue-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
+            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">🚌</div>
+            <div class="relative flex items-center justify-between z-10">
                 <div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Toplam Araç</p>
-                    <h3 class="text-4xl font-black text-slate-900 leading-none">{{ $vehicleCount }}</h3>
-                </div>
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    <p class="text-[11px] font-black text-blue-100/80 uppercase tracking-[0.2em] mb-2">Toplam Araç</p>
+                    <h3 class="text-4xl font-black text-white leading-none">{{ $vehicleCount }}</h3>
                 </div>
             </div>
-            <div class="mt-6 flex items-center gap-2">
-                <span class="flex items-center gap-1 text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            <div class="mt-6 flex items-center gap-2 relative z-10">
+                <span class="flex items-center gap-1 text-[10px] font-black text-white bg-white/15 backdrop-blur px-2 py-1 rounded-lg">
+                    <span class="h-1.5 w-1.5 rounded-full bg-white animate-pulse"></span>
                     FİLO AKTİF
                 </span>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sistemde Kayıtlı</span>
+                <span class="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Sistemde Kayıtlı</span>
             </div>
         </div>
 
         <!-- Kart 2: Gelir -->
-        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
-            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-500/5 transition-transform group-hover:scale-150 duration-700"></div>
-            <div class="relative flex items-center justify-between">
+        <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-8 text-white shadow-xl shadow-emerald-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
+            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">💰</div>
+            <div class="relative flex items-center justify-between z-10">
                 <div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Aylık Gelir</p>
-                    <h3 class="text-3xl font-black text-slate-900 leading-none">{{ number_format($monthlyIncome, 0, ',', '.') }} ₺</h3>
-                </div>
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-inner">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p class="text-[11px] font-black text-emerald-100/80 uppercase tracking-[0.2em] mb-2">Aylık Gelir</p>
+                    <h3 class="text-3xl font-black text-white leading-none">{{ number_format($monthlyIncome, 0, ',', '.') }} <span class="text-xl opacity-80">₺</span></h3>
                 </div>
             </div>
-            <div class="mt-6 flex items-center gap-2">
-                <span class="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">OPERASYONEL</span>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bu Ayın Toplamı</span>
+            <div class="mt-6 flex items-center gap-2 relative z-10">
+                <span class="flex items-center gap-1 text-[10px] font-black text-white bg-white/15 backdrop-blur px-2 py-1 rounded-lg">
+                    <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                    OPERASYONEL
+                </span>
+                <span class="text-[10px] font-bold text-emerald-100 uppercase tracking-widest">Bu Ayın Toplamı</span>
             </div>
         </div>
 
         <!-- Kart 3: Şoförler -->
-        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
-            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-violet-500/5 transition-transform group-hover:scale-150 duration-700"></div>
-            <div class="relative flex items-center justify-between">
+        <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-violet-500 via-purple-600 to-fuchsia-700 p-8 text-white shadow-xl shadow-violet-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
+            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">🧑‍✈️</div>
+            <div class="relative flex items-center justify-between z-10">
                 <div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Toplam Şoför</p>
-                    <h3 class="text-4xl font-black text-slate-900 leading-none">{{ $driverCount }}</h3>
-                </div>
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-all shadow-inner">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <p class="text-[11px] font-black text-violet-100/80 uppercase tracking-[0.2em] mb-2">Toplam Şoför</p>
+                    <h3 class="text-4xl font-black text-white leading-none">{{ $driverCount }}</h3>
                 </div>
             </div>
-            <div class="mt-6 flex items-center gap-2">
-                <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">KADRO</span>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ekipler Hazır</span>
+            <div class="mt-6 flex items-center gap-2 relative z-10">
+                <span class="flex items-center gap-1 text-[10px] font-black text-white bg-white/15 backdrop-blur px-2 py-1 rounded-lg">
+                    <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                    KADRO
+                </span>
+                <span class="text-[10px] font-bold text-violet-100 uppercase tracking-widest">Ekipler Hazır</span>
             </div>
         </div>
 
         <!-- Kart 4: Müşteriler -->
-        <div class="group relative overflow-hidden rounded-[40px] bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-1 border border-white">
-            <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-500/5 transition-transform group-hover:scale-150 duration-700"></div>
-            <div class="relative flex items-center justify-between">
+        <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 p-8 text-white shadow-xl shadow-amber-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
+            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">🏢</div>
+            <div class="relative flex items-center justify-between z-10">
                 <div>
-                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Müşteriler</p>
-                    <h3 class="text-4xl font-black text-slate-900 leading-none">{{ $customerCount }}</h3>
-                </div>
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-inner">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    <p class="text-[11px] font-black text-amber-100/80 uppercase tracking-[0.2em] mb-2">Müşteriler</p>
+                    <h3 class="text-4xl font-black text-white leading-none">{{ $customerCount }}</h3>
                 </div>
             </div>
-            <div class="mt-6 flex items-center gap-2">
-                <span class="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">KURUMSAL</span>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Partner Sayısı</span>
+            <div class="mt-6 flex items-center gap-2 relative z-10">
+                <span class="flex items-center gap-1 text-[10px] font-black text-white bg-white/15 backdrop-blur px-2 py-1 rounded-lg">
+                    <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                    KURUMSAL
+                </span>
+                <span class="text-[10px] font-bold text-amber-100 uppercase tracking-widest">Partner Sayısı</span>
             </div>
         </div>
     </div>

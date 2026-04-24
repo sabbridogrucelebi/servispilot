@@ -1,4 +1,28 @@
-<div class="space-y-6" x-data="{ archiveOpen: false }">
+<div class="space-y-6" x-data="{ 
+    archiveOpen: false,
+    docType: '{{ old('document_type') }}',
+    docName: '{{ old('document_name') }}',
+    docIssuer: '{{ old('issuer_name') }}',
+    handleTypeChange() {
+        if (this.docType === 'Ruhsat') {
+            this.docName = 'RUHSAT BELGESİ';
+        } else if (this.docType === 'Muayene') {
+            this.docName = 'MUAYENE RAPORU';
+            this.docIssuer = 'TÜVTÜRK';
+        } else if (this.docType === 'Sigorta') {
+            this.docName = 'SİGORTA POLİÇESİ';
+        } else if (this.docType === 'Kasko') {
+            this.docName = 'KASKO POLİÇESİ';
+        } else if (this.docType === 'Egzoz') {
+            this.docName = 'EGZOZ MUAYENE RAPORU';
+            this.docIssuer = 'ÇEV.ŞEH.BAKANLIĞI';
+        } else if (this.docType === 'Koltuk Sigortası') {
+            this.docName = 'KOLTUK SİGORTASI';
+        } else if (this.docType === 'İMM Poliçesi') {
+            this.docName = 'İMM POLİÇESİ';
+        }
+    }
+}">
 
     <div class="rounded-[30px] border border-slate-200/70 bg-white/95 backdrop-blur shadow-[0_18px_45px_rgba(15,23,42,0.07)] overflow-hidden">
         <div class="border-b border-slate-100 px-6 py-5 bg-gradient-to-r from-violet-50 via-white to-slate-50">
@@ -36,9 +60,8 @@
                 <table class="w-full table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
-                            <th class="w-[22%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Adı</th>
-                            <th class="w-[14%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Türü</th>
-                            <th class="w-[16%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Veren</th>
+                            <th class="w-[30%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Adı</th>
+                            <th class="w-[22%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Türü</th>
                             <th class="w-[12%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Başlangıç</th>
                             <th class="w-[12%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Bitiş</th>
                             <th class="w-[10%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Kalan Süre</th>
@@ -64,10 +87,6 @@
 
                                 <td class="px-4 py-4 align-top text-sm text-slate-600 break-words">
                                     {{ $document->document_type ?: '-' }}
-                                </td>
-
-                                <td class="px-4 py-4 align-top text-sm text-slate-600 break-words">
-                                    {{ $document->issuer_name ?: '-' }}
                                 </td>
 
                                 <td class="px-4 py-4 align-top text-sm text-slate-600">
@@ -96,6 +115,7 @@
 
                                         <form action="{{ route('vehicles.documents.destroy', [$vehicle, $document]) }}"
                                               method="POST"
+                                              class="relative z-50"
                                               onsubmit="return confirm('Bu belgeyi silmek istediğine emin misin?')">
                                             @csrf
                                             @method('DELETE')
@@ -153,9 +173,8 @@
                 <table class="w-full table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
-                            <th class="w-[24%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Adı</th>
-                            <th class="w-[16%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Türü</th>
-                            <th class="w-[18%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Veren</th>
+                            <th class="w-[32%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Adı</th>
+                            <th class="w-[26%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Belge Türü</th>
                             <th class="w-[14%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Bitiş</th>
                             <th class="w-[12%] px-4 py-4 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Durum</th>
                             <th class="w-[16%] px-4 py-4 text-right text-xs font-bold uppercase tracking-[0.12em] text-slate-500">İşlemler</th>
@@ -171,10 +190,6 @@
 
                                 <td class="px-4 py-4 align-top text-sm text-slate-600 break-words">
                                     {{ $document->document_type ?: '-' }}
-                                </td>
-
-                                <td class="px-4 py-4 align-top text-sm text-slate-600 break-words">
-                                    {{ $document->issuer_name ?: '-' }}
                                 </td>
 
                                 <td class="px-4 py-4 align-top text-sm text-slate-600">
@@ -199,6 +214,7 @@
 
                                         <form action="{{ route('vehicles.documents.destroy', [$vehicle, $document]) }}"
                                               method="POST"
+                                              class="relative z-50"
                                               onsubmit="return confirm('Arşivdeki bu belgeyi kalıcı olarak silmek istediğine emin misin?')">
                                             @csrf
                                             @method('DELETE')
@@ -245,35 +261,33 @@
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Belge Adı</label>
                     <input type="text"
                            name="document_name"
-                           value="{{ old('document_name') }}"
-                           class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 shadow-sm focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none"
+                           x-model="docName"
+                           class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 shadow-sm focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none transition-colors"
                            placeholder="Örn: Ruhsat Ön Yüz">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Belge Türü</label>
                         <select name="document_type"
-                                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 shadow-sm focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none">
+                                x-model="docType"
+                                @change="handleTypeChange()"
+                                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 shadow-sm focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none transition-colors">
                             <option value="">Belge türünü seçin</option>
-                            <option value="Ruhsat" {{ old('document_type') == 'Ruhsat' ? 'selected' : '' }}>Ruhsat</option>
-                            <option value="Muayene" {{ old('document_type') == 'Muayene' ? 'selected' : '' }}>Muayene</option>
-                            <option value="Sigorta" {{ old('document_type') == 'Sigorta' ? 'selected' : '' }}>Sigorta</option>
-                            <option value="Kasko" {{ old('document_type') == 'Kasko' ? 'selected' : '' }}>Kasko</option>
-                            <option value="Egzoz" {{ old('document_type') == 'Egzoz' ? 'selected' : '' }}>Egzoz</option>
-                            <option value="Vergi / Harç" {{ old('document_type') == 'Vergi / Harç' ? 'selected' : '' }}>Vergi / Harç</option>
-                            <option value="Diğer" {{ old('document_type') == 'Diğer' ? 'selected' : '' }}>Diğer</option>
+                            <option value="Ruhsat">Ruhsat</option>
+                            <option value="Muayene">Muayene</option>
+                            <option value="Sigorta">Sigorta</option>
+                            <option value="Kasko">Kasko</option>
+                            <option value="Egzoz">Egzoz</option>
+                            <option value="Koltuk Sigortası">Koltuk Sigortası</option>
+                            <option value="İMM Poliçesi">İMM Poliçesi</option>
+                            <option value="Vergi / Harç">Vergi / Harç</option>
+                            <option value="Diğer">Diğer</option>
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Belge Veren Kurum / Firma</label>
-                        <input type="text"
-                               name="issuer_name"
-                               value="{{ old('issuer_name') }}"
-                               class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 shadow-sm focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none"
-                               placeholder="Örn: ABC Sigorta / TÜVTÜRK">
-                    </div>
+                    {{-- Gizli: Belge Veren Kurum otomatik atanır --}}
+                    <input type="hidden" name="issuer_name" x-model="docIssuer">
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -43,10 +43,10 @@
         </div>
 
         {{-- Active Tab Content --}}
-        <div class="glass-card rounded-[50px] p-10 min-h-[600px] shadow-2xl relative overflow-hidden">
+        <div class="glass-card rounded-[50px] p-10 min-h-[600px] shadow-2xl relative">
             {{-- Decorative Background --}}
-            <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-slate-50/50 blur-3xl"></div>
-            <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-slate-50/50 blur-3xl"></div>
+            <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-slate-50/50 blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-slate-50/50 blur-3xl pointer-events-none"></div>
             
             <div class="relative z-10">
                 @if($currentTab === 'general')

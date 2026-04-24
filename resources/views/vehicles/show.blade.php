@@ -87,6 +87,9 @@
     $insuranceInfo = $dateCard($vehicle->insurance_end_date);
     $kaskoInfo = $dateCard($vehicle->kasko_end_date);
 
+    $immDoc = collect($activeVehicleDocuments ?? [])->firstWhere('document_type', 'İMM Poliçesi') ?? collect($activeVehicleDocuments ?? [])->firstWhere('document_type', 'İMM POLİÇESİ');
+    $immInfo = $dateCard($immDoc ? $immDoc->end_date : null);
+
     $tabClass = function ($key) use ($activeTab) {
         return $activeTab === $key
             ? 'inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-lg'

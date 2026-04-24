@@ -11,6 +11,8 @@ class FuelController extends Controller
 {
     public function index()
     {
+        abort_unless(auth()->user()->hasPermission('fuels.view'), 403);
+
         $fuels = Fuel::with(['vehicle', 'station'])
             ->orderByDesc('date')
             ->orderByDesc('id')
@@ -39,6 +41,8 @@ class FuelController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('fuels.create'), 403);
+
         $vehicles = Vehicle::orderBy('plate')->get();
         $stations = FuelStation::where('is_active', true)->orderBy('name')->get();
 
@@ -47,6 +51,8 @@ class FuelController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('fuels.create'), 403);
+
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'fuel_station_id' => 'nullable|exists:fuel_stations,id',
@@ -81,11 +87,15 @@ class FuelController extends Controller
 
     public function show(Fuel $fuel)
     {
+        abort_unless(auth()->user()->hasPermission('fuels.view'), 403);
+
         return view('fuels.show', compact('fuel'));
     }
 
     public function edit(Fuel $fuel)
     {
+        abort_unless(auth()->user()->hasPermission('fuels.edit'), 403);
+
         $vehicles = Vehicle::orderBy('plate')->get();
         $stations = FuelStation::where('is_active', true)->orderBy('name')->get();
 
@@ -94,6 +104,8 @@ class FuelController extends Controller
 
     public function update(Request $request, Fuel $fuel)
     {
+        abort_unless(auth()->user()->hasPermission('fuels.edit'), 403);
+
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'fuel_station_id' => 'nullable|exists:fuel_stations,id',
@@ -128,6 +140,8 @@ class FuelController extends Controller
 
     public function destroy(Fuel $fuel)
     {
+        abort_unless(auth()->user()->hasPermission('fuels.delete'), 403);
+
         $fuel->delete();
 
         return redirect()->route('fuels.index')->with('success', 'Yakıt kaydı silindi.');

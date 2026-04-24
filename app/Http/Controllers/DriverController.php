@@ -27,6 +27,9 @@ class DriverController extends Controller
 
     public function index(Request $request)
     {
+        if (!auth()->user()->hasPermission('drivers.view')) {
+            abort(403, 'Personel listesini görme yetkiniz yok.');
+        }
         $query = Driver::with(['vehicle', 'documents'])->latest();
 
         if ($request->filled('search')) {
@@ -56,23 +59,34 @@ class DriverController extends Controller
             }
         }
 
-        $drivers = $query->get()->map(function ($driver) {
+        if ($request->filled('document_status')) {
+            $query->whereHas('documents', function($q) use ($request) {
+                $today = now()->startOfDay();
+                $sevenDaysLater = now()->copy()->addDays(7)->endOfDay();
+                $thirtyDaysLater = now()->copy()->addDays(30)->endOfDay();
+
+                $q->where(function($sq) {
+                    $sq->where('file_path', 'not like', '%.jpg')
+                      ->where('file_path', 'not like', '%.jpeg')
+                      ->where('file_path', 'not like', '%.png')
+                      ->where('file_path', 'not like', '%.webp');
+                });
+
+                match ($request->document_status) {
+                    'expired' => $q->whereNotNull('end_date')->whereDate('end_date', '<', $today),
+                    'expiring' => $q->whereNotNull('end_date')->whereBetween('end_date', [$today, $thirtyDaysLater]),
+                    'ok' => $q->where(function($sq) use ($thirtyDaysLater) {
+                        $sq->whereNull('end_date')->orWhereDate('end_date', '>', $thirtyDaysLater);
+                    }),
+                    default => null
+                };
+            });
+        }
+
+        $drivers = $query->paginate(12)->through(function ($driver) {
             $driver->resolved_document_status = $this->resolveDriverDocumentStatus($driver);
             return $driver;
         });
-
-        if ($request->filled('document_status')) {
-            $drivers = $drivers->filter(function ($driver) use ($request) {
-                $priority = $driver->resolved_document_status['priority'] ?? 'ok';
-
-                return match ($request->document_status) {
-                    'expired' => $priority === 'expired',
-                    'expiring' => in_array($priority, ['soon7', 'expiring'], true),
-                    'ok' => $priority === 'ok',
-                    default => true,
-                };
-            })->values();
-        }
 
         $vehicles = Vehicle::orderBy('plate')->get();
         $allDrivers = Driver::with('documents')->get()->map(function ($driver) {
@@ -105,6 +119,9 @@ class DriverController extends Controller
 
     public function create()
     {
+        if (!auth()->user()->hasPermission('drivers.create')) {
+            abort(403, 'Personel ekleme yetkiniz yok.');
+        }
         $vehicles = Vehicle::orderBy('plate')->get();
 
         return view('drivers.create', compact('vehicles'));
@@ -112,6 +129,9 @@ class DriverController extends Controller
 
     public function store(Request $request)
     {
+        if (!auth()->user()->hasPermission('drivers.create')) {
+            abort(403, 'Personel ekleme yetkiniz yok.');
+        }
         $validated = $request->validate([
             'vehicle_id' => 'nullable|exists:vehicles,id',
             'full_name' => 'required|string|max:255',
@@ -139,6 +159,9 @@ class DriverController extends Controller
 
     public function show(Request $request, Driver $driver)
     {
+        if (!auth()->user()->hasPermission('drivers.view')) {
+            abort(403, 'Personel detaylarını görme yetkiniz yok.');
+        }
         $driver->load([
             'vehicle',
             'payrolls',
@@ -346,6 +369,9 @@ class DriverController extends Controller
 
     public function edit(Driver $driver)
     {
+        if (!auth()->user()->hasPermission('drivers.edit')) {
+            abort(403, 'Personel düzenleme yetkiniz yok.');
+        }
         $vehicles = Vehicle::orderBy('plate')->get();
 
         return view('drivers.edit', compact('driver', 'vehicles'));
@@ -353,6 +379,9 @@ class DriverController extends Controller
 
     public function update(Request $request, Driver $driver)
     {
+        if (!auth()->user()->hasPermission('drivers.edit')) {
+            abort(403, 'Personel düzenleme yetkiniz yok.');
+        }
         $validated = $request->validate([
             'vehicle_id' => 'nullable|exists:vehicles,id',
             'full_name' => 'required|string|max:255',
@@ -380,6 +409,9 @@ class DriverController extends Controller
 
     public function destroy(Driver $driver)
     {
+        if (!auth()->user()->hasPermission('drivers.delete')) {
+            abort(403, 'Personel silme yetkiniz yok.');
+        }
         $driver->delete();
 
         return redirect()

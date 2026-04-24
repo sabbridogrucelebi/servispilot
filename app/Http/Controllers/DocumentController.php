@@ -11,6 +11,8 @@ class DocumentController extends Controller
 {
     public function index()
     {
+        abort_unless(auth()->user()->hasPermission('documents.view'), 403);
+
         $documents = Document::latest()->get();
 
         return view('documents.index', compact('documents'));
@@ -18,6 +20,8 @@ class DocumentController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('documents.create'), 403);
+
         $vehicles = Vehicle::orderBy('plate')->get();
         $drivers = Driver::orderBy('full_name')->get();
 
@@ -26,6 +30,8 @@ class DocumentController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('documents.create'), 403);
+
         $validated = $request->validate([
             'owner_type' => 'required|in:vehicle,driver',
             'owner_id' => 'required|integer',
@@ -66,6 +72,8 @@ class DocumentController extends Controller
 
     public function edit(Document $document)
     {
+        abort_unless(auth()->user()->hasPermission('documents.edit'), 403);
+
         $vehicles = Vehicle::orderBy('plate')->get();
         $drivers = Driver::orderBy('full_name')->get();
 
@@ -76,6 +84,8 @@ class DocumentController extends Controller
 
     public function update(Request $request, Document $document)
     {
+        abort_unless(auth()->user()->hasPermission('documents.edit'), 403);
+
         $validated = $request->validate([
             'owner_type' => 'required|in:vehicle,driver',
             'owner_id' => 'required|integer',
@@ -114,6 +124,8 @@ class DocumentController extends Controller
 
     public function destroy(Document $document)
     {
+        abort_unless(auth()->user()->hasPermission('documents.delete'), 403);
+
         $document->delete();
 
         return redirect()->route('documents.index')->with('success', 'Belge silindi.');

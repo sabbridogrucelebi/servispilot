@@ -12,6 +12,8 @@ class PayrollController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.view'), 403);
+
         $period = $request->get('period', now()->format('Y-m'));
         [$year, $month] = explode('-', $period);
 
@@ -94,6 +96,8 @@ class PayrollController extends Controller
 
     public function bulkStore(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.create') || auth()->user()->hasPermission('payrolls.edit'), 403);
+
         $period = $request->get('period');
 
         // Kilit Kontrolü
@@ -144,6 +148,8 @@ class PayrollController extends Controller
 
     public function updateSingle(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.edit'), 403);
+
         try {
             $driverId = $request->input('driver_id');
             $period = $request->input('period');
@@ -187,6 +193,8 @@ class PayrollController extends Controller
 
     public function bulkReport(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.view'), 403);
+
         $driverIds = explode(',', $request->input('driver_ids'));
         $period = $request->input('period');
         
@@ -207,6 +215,8 @@ class PayrollController extends Controller
 
     public function showReport($driverId, $period)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.view'), 403);
+
         $driver = Driver::findOrFail($driverId);
         [$year, $month] = explode('-', $period);
         $payrollService = new PayrollService();
@@ -217,6 +227,8 @@ class PayrollController extends Controller
 
     public function printSingle($driverId, $period)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.view'), 403);
+
         $driver = Driver::findOrFail($driverId);
         [$year, $month] = explode('-', $period);
         $payrollService = new PayrollService();
@@ -227,6 +239,8 @@ class PayrollController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.create'), 403);
+
         $drivers = Driver::orderBy('full_name')->get();
 
         return view('payrolls.create', compact('drivers'));
@@ -234,6 +248,8 @@ class PayrollController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.create'), 403);
+
         $validated = $request->validate([
             'driver_id' => 'required|exists:drivers,id',
             'period_month' => 'required|string|max:7',
@@ -258,11 +274,15 @@ class PayrollController extends Controller
 
     public function show(Payroll $payroll)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.view'), 403);
+
         return view('payrolls.show', compact('payroll'));
     }
 
     public function edit(Payroll $payroll)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.edit'), 403);
+
         $drivers = Driver::orderBy('full_name')->get();
 
         return view('payrolls.edit', compact('payroll', 'drivers'));
@@ -270,6 +290,8 @@ class PayrollController extends Controller
 
     public function update(Request $request, Payroll $payroll)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.edit'), 403);
+
         $validated = $request->validate([
             'driver_id' => 'required|exists:drivers,id',
             'period_month' => 'required|string|max:7',
@@ -294,6 +316,8 @@ class PayrollController extends Controller
 
     public function destroy(Payroll $payroll)
     {
+        abort_unless(auth()->user()->hasPermission('payrolls.delete'), 403);
+
         $payroll->delete();
 
         return redirect()->route('payrolls.index')->with('success', 'Maaş kaydı silindi.');

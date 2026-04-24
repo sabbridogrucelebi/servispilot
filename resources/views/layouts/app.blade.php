@@ -72,6 +72,33 @@
             ->filter(fn ($doc) => $doc->documentable);
 
         $driverDocumentAlerts = collect(\App\Http\Controllers\DriverController::getDriverDocumentAlertsForLayout());
+
+        $criticalMaintenances = collect();
+        $vehiclesForMaint = \App\Models\Fleet\Vehicle::with(['maintenanceSetting', 'maintenances'])
+            ->where('company_id', $company->id)
+            ->get();
+            
+        foreach ($vehiclesForMaint as $v) {
+            $mStatus = $v->maintenance_status;
+            if ($mStatus['has_oil_setting'] && $mStatus['oil_remaining'] !== null && $mStatus['oil_remaining'] <= 200) {
+                $criticalMaintenances->push([
+                    'vehicle_id' => $v->id,
+                    'plate' => $v->plate,
+                    'type' => 'Yağ Değişimi',
+                    'remaining' => $mStatus['oil_remaining'],
+                    'critical' => $mStatus['oil_remaining'] < 0
+                ]);
+            }
+            if ($mStatus['has_lube_setting'] && $mStatus['lube_remaining'] !== null && $mStatus['lube_remaining'] <= 200) {
+                $criticalMaintenances->push([
+                    'vehicle_id' => $v->id,
+                    'plate' => $v->plate,
+                    'type' => 'Alt Yağlama',
+                    'remaining' => $mStatus['lube_remaining'],
+                    'critical' => $mStatus['lube_remaining'] < 0
+                ]);
+            }
+        }
     }
 @endphp
 
@@ -135,7 +162,17 @@
                                 @foreach($navItems as $item)
                                     @php
                                         $isActive = request()->routeIs(explode('.', $item['route'])[0].'.*') || request()->routeIs($item['route']);
-                                        $canAccess = !$item['module'] || $user->canAccessModule($item['module']);
+
+                                        // Modül bazlı kontrol
+                                        $moduleAccess = !$item['module'] || $user->canAccessModule($item['module']);
+
+                                        // Yetki bazlı kontrol (eğer belirtilmişse)
+                                        $permissionAccess = !($item['permission'] ?? null) || $user->hasPermission($item['permission']);
+
+                                        // Sadece firma adminine özel sekmeler (ör: LOGLAR)
+                                        $adminGate = empty($item['admin_only']) || $user->isCompanyAdmin() || $user->isSuperAdmin();
+
+                                        $canAccess = $moduleAccess && $permissionAccess && $adminGate;
                                     @endphp
 
                                     @if($canAccess)
@@ -154,6 +191,10 @@
                                             @if($isActive)
                                                 <div class="ml-auto flex items-center">
                                                     <div class="h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)] animate-pulse"></div>
+                                                </div>
+                                            @elseif($item['route'] === 'chat.index')
+                                                <div class="ml-auto flex items-center">
+                                                    <span id="sidebar-chat-badge" style="display: none;" class="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-[0_0_10px_rgba(244,63,94,0.5)]">0</span>
                                                 </div>
                                             @endif
                                         </a>
@@ -195,6 +236,22 @@
 
         <!-- MAIN CONTENT AREA -->
         <div class="ml-72 flex-1 min-w-0 min-h-screen flex flex-col bg-slate-50">
+
+            @php
+                $licenseDays = $company ? $company->licenseDaysRemaining() : null;
+            @endphp
+            @if($licenseDays !== null && $licenseDays <= 7 && $licenseDays >= 0)
+                <div class="bg-gradient-to-r from-rose-500 to-red-600 px-6 py-3 text-white shadow-md flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <div>
+                            <p class="text-sm font-black tracking-wide">LİSANS SÜRESİ UYARISI</p>
+                            <p class="text-xs font-medium text-rose-100">Sistem lisansınızın bitmesine <b>{{ $licenseDays }} gün</b> kaldı. Hizmet kesintisi yaşamamak için lütfen sistem yöneticiniz ile iletişime geçiniz.</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <main class="flex-1 p-6 lg:p-8">
                 <div class="h-full rounded-[40px] border border-white bg-white/60 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] backdrop-blur-xl overflow-hidden flex flex-col">
                     
@@ -434,6 +491,69 @@
     </div>
 @endif
 
+@if(isset($criticalMaintenances) && $criticalMaintenances->count())
+    <div id="criticalMaintenancesGlobalModal" class="fixed inset-0 z-[62] flex items-center justify-center bg-slate-900/60 p-4">
+        <div class="w-full max-w-3xl rounded-[30px] bg-white shadow-2xl overflow-hidden">
+            <div class="border-b border-slate-100 px-6 py-5">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl {{ $criticalMaintenances->contains(fn ($m) => $m['critical']) ? 'bg-rose-100' : 'bg-amber-100' }} text-2xl">
+                        🛠️
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-slate-900">Yaklaşan / Geciken Bakım Uyarıları</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Bakım zamanı gelmiş veya gecikmiş araçların listesi.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="max-h-[65vh] overflow-y-auto p-6 space-y-4">
+                @foreach($criticalMaintenances as $alert)
+                    <div class="rounded-[24px] border {{ $alert['critical'] ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50' }} p-5">
+                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <div class="text-base font-bold text-slate-900">
+                                    <span class="{{ $alert['critical'] ? 'text-rose-700' : 'text-amber-700' }}">
+                                        {{ $alert['plate'] }}
+                                    </span>
+                                    plakalı aracın
+                                    <span class="{{ $alert['critical'] ? 'text-rose-700' : 'text-amber-700' }}">
+                                        {{ $alert['type'] }}
+                                    </span>
+                                    zamanı
+                                    {{ $alert['critical'] ? 'geçti!' : 'yaklaştı.' }}
+                                </div>
+
+                                <div class="mt-2 text-sm font-semibold {{ $alert['critical'] ? 'text-rose-700' : 'text-amber-700' }}">
+                                    @if($alert['critical'])
+                                        {{ number_format(abs($alert['remaining']), 0, ',', '.') }} KM gecikme var! KRİTİK DURUM.
+                                    @else
+                                        {{ number_format($alert['remaining'], 0, ',', '.') }} KM kaldı.
+                                    @endif
+                                </div>
+                            </div>
+
+                            <a href="{{ route('vehicles.show', ['vehicle' => $alert['vehicle_id'], 'tab' => 'maintenances']) }}"
+                               class="inline-flex items-center justify-center rounded-2xl {{ $alert['critical'] ? 'bg-gradient-to-r from-rose-600 to-pink-600' : 'bg-gradient-to-r from-amber-500 to-orange-500' }} px-5 py-3 text-sm font-semibold text-white shadow hover:scale-[1.01] transition">
+                                Bakım Ekle
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="border-t border-slate-100 px-6 py-4 bg-slate-50 flex justify-end">
+                <button type="button"
+                        id="closeCriticalMaintenancesGlobalModal"
+                        class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Daha Sonra Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         function updateGlobalClock() {
@@ -451,14 +571,21 @@
         const vehicleModal = document.getElementById('expiredVehicleDocumentsGlobalModal');
         const vehicleCloseBtn = document.getElementById('closeExpiredVehicleDocumentsGlobalModal');
 
+        // Oturumda daha önce kapatıldıysa gösterme
+        if (vehicleModal && sessionStorage.getItem('vehicleDocModalDismissed')) {
+            vehicleModal.style.display = 'none';
+        }
+
         if (vehicleModal && vehicleCloseBtn) {
             vehicleCloseBtn.addEventListener('click', function () {
                 vehicleModal.style.display = 'none';
+                sessionStorage.setItem('vehicleDocModalDismissed', '1');
             });
 
             vehicleModal.addEventListener('click', function (e) {
                 if (e.target === vehicleModal) {
                     vehicleModal.style.display = 'none';
+                    sessionStorage.setItem('vehicleDocModalDismissed', '1');
                 }
             });
         }
@@ -466,19 +593,124 @@
         const driverModal = document.getElementById('driverDocumentsGlobalModal');
         const driverCloseBtn = document.getElementById('closeDriverDocumentsGlobalModal');
 
+        // Oturumda daha önce kapatıldıysa gösterme
+        if (driverModal && sessionStorage.getItem('driverDocModalDismissed')) {
+            driverModal.style.display = 'none';
+        }
+
         if (driverModal && driverCloseBtn) {
             driverCloseBtn.addEventListener('click', function () {
                 driverModal.style.display = 'none';
+                sessionStorage.setItem('driverDocModalDismissed', '1');
             });
 
             driverModal.addEventListener('click', function (e) {
                 if (e.target === driverModal) {
                     driverModal.style.display = 'none';
+                    sessionStorage.setItem('driverDocModalDismissed', '1');
+                }
+            });
+        }
+
+        const maintenanceModal = document.getElementById('criticalMaintenancesGlobalModal');
+        const maintenanceCloseBtn = document.getElementById('closeCriticalMaintenancesGlobalModal');
+
+        // Oturumda daha önce kapatıldıysa gösterme
+        if (maintenanceModal && sessionStorage.getItem('maintenanceAlertModalDismissed')) {
+            maintenanceModal.style.display = 'none';
+        }
+
+        if (maintenanceModal && maintenanceCloseBtn) {
+            maintenanceCloseBtn.addEventListener('click', function () {
+                maintenanceModal.style.display = 'none';
+                sessionStorage.setItem('maintenanceAlertModalDismissed', '1');
+            });
+
+            maintenanceModal.addEventListener('click', function (e) {
+                if (e.target === maintenanceModal) {
+                    maintenanceModal.style.display = 'none';
+                    sessionStorage.setItem('maintenanceAlertModalDismissed', '1');
                 }
             });
         }
     });
 </script>
+
+{{-- Global Chat Notification --}}
+@auth
+<audio id="global-chat-notification-sound" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAAAAAAD//w==" preload="auto"></audio>
+
+<div id="global-chat-toast" class="fixed bottom-6 right-6 z-50 transform transition-all duration-300 translate-y-20 opacity-0 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 w-80" style="display: none;">
+    <div class="flex items-start gap-3 cursor-pointer" onclick="window.location.href='{{ route('chat.index') }}'">
+        <div class="w-10 h-10 rounded-full bg-[#00a884] text-white flex items-center justify-center font-bold shadow-lg">
+            💬
+        </div>
+        <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-800" id="global-chat-sender">PilotChat</h4>
+            <p class="text-xs text-slate-500 mt-0.5 line-clamp-2" id="global-chat-body">Mesaj içeriği...</p>
+        </div>
+        <button onclick="event.stopPropagation(); document.getElementById('global-chat-toast').classList.replace('translate-y-0', 'translate-y-20'); document.getElementById('global-chat-toast').classList.replace('opacity-100', 'opacity-0'); setTimeout(() => document.getElementById('global-chat-toast').style.display = 'none', 300); " class="text-slate-400 hover:text-slate-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let lastUnreadCount = 0;
+        
+        // Sadece chat sayfasında değilsek polling yap (chat sayfası kendi içinde güncelleniyor)
+        if (window.location.pathname.indexOf('/chat') === -1) {
+            setInterval(() => {
+                fetch('{{ route("chat.unread") }}')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.count > lastUnreadCount && data.latest) {
+                            // Sesi Çal
+                            const audio = document.getElementById('global-chat-notification-sound');
+                            if (audio) {
+                                audio.currentTime = 0;
+                                audio.play().catch(e => console.log('Audio blocked:', e));
+                            }
+                            
+                            // Toast Göster
+                            document.getElementById('global-chat-sender').textContent = data.latest.sender;
+                            document.getElementById('global-chat-body').textContent = data.latest.body;
+                            
+                            const toast = document.getElementById('global-chat-toast');
+                            toast.style.display = 'block';
+                            setTimeout(() => {
+                                toast.classList.remove('translate-y-20', 'opacity-0');
+                                toast.classList.add('translate-y-0', 'opacity-100');
+                            }, 50);
+                            
+                            // 5 saniye sonra gizle
+                            setTimeout(() => {
+                                toast.classList.remove('translate-y-0', 'opacity-100');
+                                toast.classList.add('translate-y-20', 'opacity-0');
+                                setTimeout(() => toast.style.display = 'none', 300);
+                            }, 5000);
+                        }
+                        
+                        lastUnreadCount = data.count;
+                        
+                        // Sidebar badge güncellemesi
+                        const badge = document.getElementById('sidebar-chat-badge');
+                        if (badge) {
+                            if (data.count > 0) {
+                                badge.textContent = data.count;
+                                badge.style.display = 'flex';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }
+                    })
+                    .catch(e => console.log(e));
+            }, 5000);
+        }
+    });
+</script>
+@endauth
 
 </body>
 </html>

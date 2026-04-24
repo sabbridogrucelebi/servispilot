@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 use App\Models\Concerns\LogsActivity;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, LogsActivity;
+    use HasApiTokens, HasFactory, Notifiable, LogsActivity;
 
     protected $fillable = [
         'company_id',
@@ -121,6 +122,14 @@ class User extends Authenticatable
     {
         // Super admin her şeye erişebilir
         if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Firma yöneticisi (company_admin) kendi firması için tam yetkilidir.
+        // Bu sayede yeni eklenen granüler yetkiler (vehicles.create/edit/delete vb.)
+        // için ayrıca atama yapılmasına gerek kalmaz ve admin hiçbir zaman
+        // kendi panelinde "yetkisiz" duruma düşmez.
+        if ($this->isCompanyAdmin()) {
             return true;
         }
 

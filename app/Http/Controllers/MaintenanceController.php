@@ -14,6 +14,8 @@ class MaintenanceController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.view'), 403);
+
         $query = $this->filteredQuery($request);
 
         $maintenances = $query->get();
@@ -53,13 +55,46 @@ class MaintenanceController extends Controller
 
     public function exportExcel(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.view'), 403);
+
         $fileName = 'Bakim_Raporu_' . now()->format('d-m-Y_H-i') . '.xlsx';
 
         return Excel::download(new MaintenancesExport($request->all()), $fileName);
     }
 
+    /**
+     * Toplu bakım ekleme için Excel şablonu indir.
+     */
+    public function downloadImportTemplate()
+    {
+        abort_unless(auth()->user()->hasPermission('maintenances.view'), 403);
+
+        return Excel::download(new \App\Exports\MaintenanceTemplateExport, 'bakim_ekleme_sablonu.xlsx');
+    }
+
+    /**
+     * Toplu bakım ekleme Excel içe aktarımı.
+     */
+    public function importMaintenances(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('maintenances.view'), 403);
+
+        $request->validate([
+            'excel_file' => ['required', 'file', 'max:10240'],
+        ]);
+
+        try {
+            Excel::import(new \App\Imports\MaintenancesImport, $request->file('excel_file'));
+            return back()->with('success', 'Toplu bakım ekleme işlemi başarıyla tamamlandı.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Dosya yüklenirken bir hata oluştu: ' . $e->getMessage());
+        }
+    }
+
     public function exportPdf(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.view'), 403);
+
         $maintenances = $this->filteredQuery($request)->get();
 
         $filters = [
@@ -129,6 +164,8 @@ class MaintenanceController extends Controller
 
     public function settings()
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.view'), 403);
+
         $vehicles = Vehicle::with('maintenanceSetting')
             ->orderBy('plate')
             ->get();
@@ -138,6 +175,8 @@ class MaintenanceController extends Controller
 
     public function saveSettings(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.edit'), 403);
+
         $data = $request->validate([
             'settings' => ['nullable', 'array'],
             'settings.*.vehicle_id' => ['required', 'exists:vehicles,id'],
@@ -169,6 +208,8 @@ class MaintenanceController extends Controller
 
     public function create(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.create'), 403);
+
         $vehicles = Vehicle::with('maintenanceSetting')
             ->orderBy('plate')
             ->get();
@@ -231,6 +272,8 @@ class MaintenanceController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.create'), 403);
+
         $data = $request->validate([
             'vehicle_id' => ['required', 'exists:vehicles,id'],
             'service_date' => ['required', 'date'],
@@ -287,11 +330,15 @@ class MaintenanceController extends Controller
 
     public function show(VehicleMaintenance $maintenance)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.view'), 403);
+
         return redirect()->route('maintenances.index');
     }
 
     public function edit(VehicleMaintenance $maintenance)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.edit'), 403);
+
         $vehicles = Vehicle::with('maintenanceSetting')
             ->orderBy('plate')
             ->get();
@@ -352,6 +399,8 @@ class MaintenanceController extends Controller
 
     public function update(Request $request, VehicleMaintenance $maintenance)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.edit'), 403);
+
         $data = $request->validate([
             'vehicle_id' => ['required', 'exists:vehicles,id'],
             'service_date' => ['required', 'date'],
@@ -405,11 +454,32 @@ class MaintenanceController extends Controller
 
     public function destroy(VehicleMaintenance $maintenance)
     {
+        abort_unless(auth()->user()->hasPermission('maintenances.delete'), 403);
+
         $maintenance->delete();
 
         return redirect()
             ->route('maintenances.index')
             ->with('success', 'Bakım kaydı başarıyla silindi.');
+    }
+
+    /**
+     * Seçilen bakım kayıtlarını toplu sil.
+     */
+    public function bulkDelete(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('maintenances.delete'), 403);
+
+        $request->validate([
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'integer|exists:vehicle_maintenances,id',
+        ]);
+
+        $deleted = VehicleMaintenance::whereIn('id', $request->ids)->delete();
+
+        return redirect()
+            ->route('maintenances.index')
+            ->with('success', $deleted . ' adet bakım kaydı başarıyla silindi.');
     }
 
     protected function calculateNextServiceKm(int $vehicleId, ?string $maintenanceType, $km): ?int

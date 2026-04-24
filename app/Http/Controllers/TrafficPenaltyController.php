@@ -15,6 +15,8 @@ class TrafficPenaltyController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('penalties.view'), 403);
+
         $companyId = auth()->user()->company_id;
 
         $query = TrafficPenalty::query()
@@ -120,6 +122,8 @@ class TrafficPenaltyController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('penalties.create'), 403);
+
         $vehicles = Vehicle::query()
             ->where('company_id', auth()->user()->company_id)
             ->orderBy('plate')
@@ -130,6 +134,8 @@ class TrafficPenaltyController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('penalties.create'), 403);
+
         $data = $request->validate([
             'vehicle_id' => ['nullable', 'exists:vehicles,id'],
             'penalty_no' => ['required', 'string', 'max:255', 'unique:traffic_penalties,penalty_no'],
@@ -202,6 +208,7 @@ class TrafficPenaltyController extends Controller
 
     public function edit(TrafficPenalty $trafficPenalty)
     {
+        abort_unless(auth()->user()->hasPermission('penalties.edit'), 403);
         abort_unless($trafficPenalty->company_id === auth()->user()->company_id, 403);
 
         $vehicles = Vehicle::query()
@@ -214,6 +221,7 @@ class TrafficPenaltyController extends Controller
 
     public function update(Request $request, TrafficPenalty $trafficPenalty)
     {
+        abort_unless(auth()->user()->hasPermission('penalties.edit'), 403);
         abort_unless($trafficPenalty->company_id === auth()->user()->company_id, 403);
 
         $data = $request->validate([
@@ -294,6 +302,7 @@ class TrafficPenaltyController extends Controller
 
     public function destroy(TrafficPenalty $trafficPenalty)
     {
+        abort_unless(auth()->user()->hasPermission('penalties.delete'), 403);
         abort_unless($trafficPenalty->company_id === auth()->user()->company_id, 403);
 
         if ($trafficPenalty->traffic_penalty_document) {
@@ -313,6 +322,7 @@ class TrafficPenaltyController extends Controller
 
     public function quickPay(Request $request, TrafficPenalty $trafficPenalty)
     {
+        abort_unless(auth()->user()->hasPermission('penalties.edit'), 403);
         abort_unless($trafficPenalty->company_id === auth()->user()->company_id, 403);
 
         $data = $request->validate([
@@ -352,6 +362,8 @@ class TrafficPenaltyController extends Controller
 
     public function exportExcel(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('penalties.view'), 403);
+
         return Excel::download(
             new TrafficPenaltyExport($request->all(), auth()->user()->company_id),
             'trafik-cezalari.xlsx'
@@ -360,6 +372,8 @@ class TrafficPenaltyController extends Controller
 
     public function exportPdf(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('penalties.view'), 403);
+
         $query = TrafficPenalty::query()
             ->with('vehicle')
             ->where('company_id', auth()->user()->company_id)

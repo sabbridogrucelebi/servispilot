@@ -10,6 +10,8 @@ class VehicleTrackingController extends Controller
 {
     public function index()
     {
+        abort_unless(auth()->user()->hasPermission('vehicles.view'), 403);
+
         $companyId = auth()->user()->company_id;
         $setting = VehicleTrackingSetting::where('company_id', $companyId)->where('is_active', true)->first();
         
@@ -24,6 +26,8 @@ class VehicleTrackingController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->hasPermission('vehicles.edit'), 403);
+
         $companyId = auth()->user()->company_id;
 
         $request->validate([
