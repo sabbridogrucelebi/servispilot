@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ ($title ?? '') ? $title . ' • ' : '' }}ServisPilot</title>
+    <title>{{ ($title ?? '') ? $title . ' • ' : '' }}FiloMERKEZ</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -114,15 +114,13 @@
                     <div class="flex items-center gap-4">
                         <div class="relative group">
                             <div class="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 opacity-40 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                            <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 border border-white/10 text-2xl">
-                                🚀
-                            </div>
+                            <img src="/assets/images/filomerkez_logo.png" alt="FiloMERKEZ Logo" class="relative w-12 h-12 rounded-2xl border border-white/10 object-cover" />
                         </div>
 
                         <div class="min-w-0 flex-1">
-                            <div class="text-2xl font-black tracking-tighter text-white leading-none">
-                                Servis<span class="text-indigo-500">Pilot</span>
-                            </div>
+                              <div class="text-2xl font-black tracking-tighter text-white leading-none">
+                                  Filo<span class="text-indigo-500">MERKEZ</span>
+                              </div>
                             <div class="mt-2 text-[9px] font-bold uppercase tracking-[0.3em] text-slate-500 whitespace-nowrap">
                                 {{ $company->name ?? 'Kurumsal Sürüm' }}
                             </div>
@@ -134,75 +132,82 @@
                     <div class="space-y-6">
 
                         @if($user && $user->isSuperAdmin())
-                        <div class="pt-2">
-                            <div class="px-4 mb-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-rose-500 opacity-80">Platform Yönetimi</div>
-                            <div class="space-y-1">
-                                <a href="{{ route('super-admin.dashboard') }}"
-                                   class="group flex items-center gap-4 rounded-2xl px-4 py-3 transition-all duration-300 {{ request()->routeIs('super-admin.*') ? 'bg-rose-500/10 text-rose-400' : 'hover:bg-white/5 hover:text-slate-200' }}">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-xl {{ request()->routeIs('super-admin.*') ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800/50 text-slate-500' }} group-hover:scale-110 transition-all shadow-inner">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04a11.357 11.357 0 00-1.018 4.772c0 4.113 2.193 7.713 5.5 9.69a11.354 11.354 0 0011.001 0c3.307-1.977 5.5-5.577 5.5-9.69a11.357 11.357 0 00-1.018-4.772z"></path></svg>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold tracking-tight">Süper Admin</span>
-                                        <span class="text-[9px] font-medium opacity-40">Sistem Yetkilisi</span>
-                                    </div>
-                                </a>
+                            <div class="pt-2">
+                                <div class="px-4 mb-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-slate-600">Süper Admin Menü</div>
+                                <div class="space-y-1">
+                                    <a href="{{ route('super-admin.dashboard') }}"
+                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('super-admin.dashboard') ? 'nav-item-active text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
+                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('super-admin.dashboard') ? 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-rose-300' }} group-hover:scale-110">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                        </div>
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-[13px] font-bold tracking-tight truncate">Genel Bakış</span>
+                                            <span class="text-[9px] font-bold {{ request()->routeIs('super-admin.dashboard') ? 'text-rose-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">SİSTEM ÖZETİ</span>
+                                        </div>
+                                    </a>
+
+                                    <a href="{{ route('super-admin.companies.index') }}"
+                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('super-admin.companies.*') ? 'nav-item-active text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
+                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('super-admin.companies.*') ? 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-rose-300' }} group-hover:scale-110">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                        </div>
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-[13px] font-bold tracking-tight truncate">Firmalar</span>
+                                            <span class="text-[9px] font-bold {{ request()->routeIs('super-admin.companies.*') ? 'text-rose-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">MÜŞTERİ YÖNETİMİ</span>
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
+                        @else
+                            <div class="pt-2">
+                                <div class="px-4 mb-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-slate-600">Ana Menü</div>
+                                <div class="space-y-1">
+
+                                    @foreach($navItems as $item)
+                                        @php
+                                            $isActive = request()->routeIs(explode('.', $item['route'])[0].'.*') || request()->routeIs($item['route']);
+
+                                            // Modül bazlı kontrol
+                                            $moduleAccess = !$item['module'] || $user->canAccessModule($item['module']);
+
+                                            // Yetki bazlı kontrol (eğer belirtilmişse)
+                                            $permissionAccess = !($item['permission'] ?? null) || $user->hasPermission($item['permission']);
+
+                                            // Sadece firma adminine özel sekmeler (ör: LOGLAR)
+                                            $adminGate = empty($item['admin_only']) || $user->isCompanyAdmin() || $user->isSuperAdmin();
+
+                                            $canAccess = $moduleAccess && $permissionAccess && $adminGate;
+                                        @endphp
+
+                                        @if($canAccess)
+                                            <a href="{{ route($item['route']) }}"
+                                               class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
+                                               {{ $isActive
+                                                  ? 'nav-item-active text-white'
+                                                  : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
+                                                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ $isActive ? 'bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300' }} group-hover:scale-110">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"></path></svg>
+                                                </div>
+                                                <div class="flex flex-col min-w-0">
+                                                    <span class="text-[13px] font-bold tracking-tight truncate">{{ $item['label'] }}</span>
+                                                    <span class="text-[9px] font-bold {{ $isActive ? 'text-indigo-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">{{ $item['sub'] }}</span>
+                                                </div>
+                                                @if($isActive)
+                                                    <div class="ml-auto flex items-center">
+                                                        <div class="h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)] animate-pulse"></div>
+                                                    </div>
+                                                @elseif($item['route'] === 'chat.index')
+                                                    <div class="ml-auto flex items-center">
+                                                        <span id="sidebar-chat-badge" style="display: none;" class="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-[0_0_10px_rgba(244,63,94,0.5)]">0</span>
+                                                    </div>
+                                                @endif
+                                            </a>
+                                        @endif
+                                    @endforeach
+
+                                </div>
+                            </div>
                         @endif
-
-                        <div class="pt-2">
-                            <div class="px-4 mb-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-slate-600">Ana Menü</div>
-                            <div class="space-y-1">
-
-                                @php
-                                    $user = auth()->user();
-                                @endphp
-
-                                @foreach($navItems as $item)
-                                    @php
-                                        $isActive = request()->routeIs(explode('.', $item['route'])[0].'.*') || request()->routeIs($item['route']);
-
-                                        // Modül bazlı kontrol
-                                        $moduleAccess = !$item['module'] || $user->canAccessModule($item['module']);
-
-                                        // Yetki bazlı kontrol (eğer belirtilmişse)
-                                        $permissionAccess = !($item['permission'] ?? null) || $user->hasPermission($item['permission']);
-
-                                        // Sadece firma adminine özel sekmeler (ör: LOGLAR)
-                                        $adminGate = empty($item['admin_only']) || $user->isCompanyAdmin() || $user->isSuperAdmin();
-
-                                        $canAccess = $moduleAccess && $permissionAccess && $adminGate;
-                                    @endphp
-
-                                    @if($canAccess)
-                                        <a href="{{ route($item['route']) }}"
-                                           class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
-                                           {{ $isActive
-                                              ? 'nav-item-active text-white'
-                                              : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
-                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ $isActive ? 'bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300' }} group-hover:scale-110">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"></path></svg>
-                                            </div>
-                                            <div class="flex flex-col min-w-0">
-                                                <span class="text-[13px] font-bold tracking-tight truncate">{{ $item['label'] }}</span>
-                                                <span class="text-[9px] font-bold {{ $isActive ? 'text-indigo-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">{{ $item['sub'] }}</span>
-                                            </div>
-                                            @if($isActive)
-                                                <div class="ml-auto flex items-center">
-                                                    <div class="h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.8)] animate-pulse"></div>
-                                                </div>
-                                            @elseif($item['route'] === 'chat.index')
-                                                <div class="ml-auto flex items-center">
-                                                    <span id="sidebar-chat-badge" style="display: none;" class="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-[0_0_10px_rgba(244,63,94,0.5)]">0</span>
-                                                </div>
-                                            @endif
-                                        </a>
-                                    @endif
-                                @endforeach
-
-                            </div>
-                        </div>
 
                     </div>
                 </div>
@@ -290,17 +295,30 @@
                                     </div>
                                 </a>
 
-                                <!-- Canlı Sistem Saati & Çıkış -->
-                                <div class="hidden items-center gap-4 md:flex">
-                                    <div class="flex flex-col items-end">
-                                        <div class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 leading-none">Canlı Sistem Saati</div>
-                                        <div class="flex items-center gap-2">
-                                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100/50 shadow-sm group hover:scale-105 transition-all">
-                                                <span class="text-[11px] font-black text-indigo-600" id="clock-date">{{ now()->format('d.m.Y') }}</span>
+                                <!-- Premium Sistem Saati & Çıkış -->
+                                <div class="hidden items-center gap-4 md:flex mr-2">
+                                    <div class="relative group cursor-default">
+                                        <div class="absolute -inset-0.5 rounded-full bg-gradient-to-r from-slate-200 to-slate-300 opacity-40 group-hover:opacity-100 blur transition duration-500"></div>
+                                        
+                                        <div class="relative flex items-center gap-4 px-5 py-2.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/60 shadow-sm transition-all">
+                                            <!-- Tarih ve Saat -->
+                                            <div class="flex flex-col items-end justify-center">
+                                                <span class="text-[9px] font-extrabold uppercase tracking-[0.15em] text-slate-400 leading-none mb-1" id="clock-date">{{ \Carbon\Carbon::now()->locale('tr')->translatedFormat('j F Y, l') }}</span>
+                                                <div class="flex items-center gap-1 leading-none">
+                                                    <span class="text-sm font-black text-slate-800 tracking-tight font-mono" id="clock-time">{{ now()->format('H:i:s') }}</span>
+                                                </div>
                                             </div>
-                                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 shadow-lg group hover:scale-105 transition-all">
-                                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                                <span class="text-[11px] font-black text-white tracking-wider" id="clock-time">{{ now()->format('H:i:s') }}</span>
+
+                                            <!-- Ayırıcı -->
+                                            <div class="h-6 w-[1.5px] rounded-full bg-slate-100"></div>
+
+                                            <!-- Canlı Gösterge -->
+                                            <div class="flex items-center gap-2">
+                                                <div class="relative flex h-2.5 w-2.5">
+                                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white"></span>
+                                                </div>
+                                                <span class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-0.5">ON</span>
                                             </div>
                                         </div>
                                     </div>
@@ -308,8 +326,8 @@
                                     <!-- Hızlı Çıkış -->
                                     <form method="POST" action="{{ route('logout') }}" class="inline">
                                         @csrf
-                                        <button type="submit" class="group relative flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white transition-all shadow-sm hover:shadow-rose-200 active:scale-90" title="Güvenli Çıkış">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button type="submit" class="group relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-rose-500 border border-slate-200/60 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all shadow-sm active:scale-90" title="Güvenli Çıkış">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                                             </svg>
                                         </button>
@@ -561,7 +579,7 @@
             const dateEl = document.getElementById('clock-date');
             const timeEl = document.getElementById('clock-time');
             if (dateEl && timeEl) {
-                dateEl.innerText = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                dateEl.innerText = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' });
                 timeEl.innerText = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             }
         }

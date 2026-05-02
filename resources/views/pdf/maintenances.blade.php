@@ -19,7 +19,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>{{ $company->name ?? 'ServisPilot' }}</h1>
+        <h1>{{ $company->name ?? 'FiloMERKEZ' }}</h1>
         <p>Araç Bakım Raporu</p>
     </div>
 
@@ -73,7 +73,7 @@
     </table>
 
     <div class="footer">
-        Bu rapor ServisPilot sistemi tarafından otomatik olarak oluşturulmuştur.
+        Bu rapor FiloMERKEZ sistemi tarafından otomatik olarak oluşturulmuştur.
     </div>
 </body>
 </html>

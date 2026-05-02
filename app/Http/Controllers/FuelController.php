@@ -79,6 +79,11 @@ class FuelController extends Controller
         $validated['gross_total_cost'] = $pricing['gross_total_cost'];
         $validated['discount_amount'] = $pricing['discount_amount'];
         $validated['total_cost'] = $pricing['total_cost'];
+        
+        $vehicle = \App\Models\Fleet\Vehicle::find($validated['vehicle_id']);
+        if ($vehicle) {
+            $validated['company_id'] = $vehicle->company_id;
+        }
 
         Fuel::create($validated);
 
@@ -133,6 +138,11 @@ class FuelController extends Controller
         $validated['discount_amount'] = $pricing['discount_amount'];
         $validated['total_cost'] = $pricing['total_cost'];
 
+        $vehicle = \App\Models\Fleet\Vehicle::find($validated['vehicle_id']);
+        if ($vehicle) {
+            $validated['company_id'] = $vehicle->company_id;
+        }
+
         $fuel->update($validated);
 
         return redirect()->route('fuels.index')->with('success', 'Yakıt kaydı güncellendi.');
@@ -145,6 +155,29 @@ class FuelController extends Controller
         $fuel->delete();
 
         return redirect()->route('fuels.index')->with('success', 'Yakıt kaydı silindi.');
+    }
+
+    public function downloadTemplate()
+    {
+        abort_unless(auth()->user()->hasPermission('fuels.create'), 403);
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\FuelTemplateExport, 'yakit_ekleme_sablonu.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('fuels.create'), 403);
+
+        $request->validate([
+            'excel_file' => ['required', 'file', 'max:10240'],
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\FuelsImport, $request->file('excel_file'));
+            return back()->with('success', 'Toplu yakıt ekleme işlemi başarıyla tamamlandı.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Dosya yüklenirken bir hata oluştu: ' . $e->getMessage());
+        }
     }
 
     protected function calculatePricing(float $liters, float $pricePerLiter, ?int $stationId = null): array

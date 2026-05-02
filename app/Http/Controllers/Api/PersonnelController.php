@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Driver;
+use App\Models\Fleet\Driver;
 
 class PersonnelController extends Controller
 {

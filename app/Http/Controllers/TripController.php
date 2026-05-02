@@ -385,6 +385,7 @@ class TripController extends Controller
                 'trip_status' => $tripStatus,
                 'trip_price' => $tripPrice,
                 'notes' => $notes,
+                'company_id' => $serviceRoute->company_id,
             ]
         );
 
@@ -459,6 +460,11 @@ class TripController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $route = \App\Models\CustomerServiceRoute::find($validated['service_route_id']);
+        if ($route) {
+            $validated['company_id'] = $route->company_id;
+        }
+
         Trip::create($validated);
 
         return redirect()->route('trips.index')->with('success', 'Sefer başarıyla eklendi.');
@@ -508,6 +514,11 @@ class TripController extends Controller
             'trip_price' => 'nullable|numeric',
             'notes' => 'nullable|string',
         ]);
+
+        $route = \App\Models\CustomerServiceRoute::find($validated['service_route_id']);
+        if ($route) {
+            $validated['company_id'] = $route->company_id;
+        }
 
         $trip->update($validated);
 

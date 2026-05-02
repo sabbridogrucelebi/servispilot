@@ -1,315 +1,595 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, ScrollView, TextInput } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import SpaceWaves from '../components/SpaceWaves';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, ActivityIndicator, Alert, Text, TouchableOpacity, ScrollView, Modal, Platform, TextInput, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../api/axios';
+import { AuthContext } from '../context/AuthContext';
+import { EmptyState } from '../components';
 
-export default function TripsScreen({ navigation }) {
-    const [trips, setTrips] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [error, setError] = useState(null);
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({length: 6}, (_, i) => (CURRENT_YEAR - 1 + i).toString());
+const MONTHS = [
+    { value: '1', label: 'Ocak' }, { value: '2', label: 'Şubat' }, { value: '3', label: 'Mart' },
+    { value: '4', label: 'Nisan' }, { value: '5', label: 'Mayıs' }, { value: '6', label: 'Haziran' },
+    { value: '7', label: 'Temmuz' }, { value: '8', label: 'Ağustos' }, { value: '9', label: 'Eylül' },
+    { value: '10', label: 'Ekim' }, { value: '11', label: 'Kasım' }, { value: '12', label: 'Aralık' }
+];
 
-    const fetchTrips = async () => {
+export default function TripsScreen({ route, navigation }) {
+    const { hasPermission } = useContext(AuthContext);
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    const params = route?.params || {};
+
+    // Filters
+    const [customers, setCustomers] = useState([]);
+    const [selectedCustomer, setSelectedCustomer] = useState(params.customer_id ? params.customer_id.toString() : '');
+    const [selectedMonth, setSelectedMonth] = useState(params.month ? params.month.toString() : (new Date().getMonth() + 1).toString());
+    const [selectedYear, setSelectedYear] = useState(params.year ? params.year.toString() : CURRENT_YEAR.toString());
+
+    // Matrix Data
+    const [monthDays, setMonthDays] = useState([]);
+    const [serviceRoutes, setServiceRoutes] = useState([]);
+    const [matrix, setMatrix] = useState({});
+    const [summary, setSummary] = useState(null);
+    const [vehicles, setVehicles] = useState([]);
+
+    // Cell Modal
+    const [cellModalVisible, setCellModalVisible] = useState(false);
+    const [activeCell, setActiveCell] = useState(null);
+    const [formData, setFormData] = useState({ price: '', morning_id: '', evening_id: '', status: 'Yapıldı' });
+
+    // Selection Modal (3D Premium Alternative to Picker)
+    const [selectionModalVisible, setSelectionModalVisible] = useState(false);
+    const [selectionType, setSelectionType] = useState(null); // 'customer' | 'month' | 'year' | 'morning_vehicle' | 'evening_vehicle'
+
+    const [exportingType, setExportingType] = useState(null);
+
+    const exportReport = async (type) => {
         try {
-            setError(null);
-            const response = await api.get('/v1/trips');
-            if (response.data.success) {
-                setTrips(response.data.data);
-            } else {
-                setError(response.data.message || 'Sefer verileri alınamadı.');
+            setExportingType(type);
+            
+            // Web ve Mobil uyumlu token alma
+            const token = Platform.OS === 'web' 
+                ? await AsyncStorage.getItem('userToken') 
+                : await require('expo-secure-store').getItemAsync('userToken');
+                
+            if (!token) {
+                Alert.alert("Hata", "Oturum bilgisi bulunamadı.");
+                return;
             }
-        } catch (err) {
-            console.error(err);
-            setError('Bağlantı hatası oluştu.');
+
+            const url = `${api.defaults.baseURL}/v1/trips/export-${type}?customer_id=${selectedCustomer}&month=${selectedMonth}&year=${selectedYear}`;
+            const fileExt = type === 'excel' ? 'xlsx' : 'pdf';
+            const customerName = selectedCustomerObj?.company_name.replace(/ /g, '_') || 'Firma';
+            const monthName = selectedMonthObj?.label || 'Ay';
+            const filename = `${customerName}_${monthName}_Puantaj.${fileExt}`;
+            const fileUri = `${FileSystem.documentDirectory}${filename}`;
+
+            const downloadRes = await FileSystem.downloadAsync(url, fileUri, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (downloadRes.status === 200) {
+                await Sharing.shareAsync(downloadRes.uri, {
+                    dialogTitle: 'Puantaj Raporunu Paylaş'
+                });
+            } else {
+                Alert.alert('Hata', 'Rapor indirilirken bir sorun oluştu.');
+            }
+        } catch (error) {
+            console.error("Export Error:", error);
+            Alert.alert('Hata', 'Rapor oluşturulamadı.');
         } finally {
-            setLoading(false);
-            setRefreshing(false);
+            setExportingType(null);
         }
     };
 
-    useEffect(() => { fetchTrips(); }, []);
-    const onRefresh = () => { setRefreshing(true); fetchTrips(); };
-
-    const renderItem = ({ item }) => {
-        // Mock icons based on route/customer name
-        const c = (item.customer_name || '').toLowerCase();
-        let logoBg = '#EFF6FF';
-        let logoColor = '#3B82F6';
-        let iconName = 'hexagon-multiple';
-        
-        if (c.includes('renka')) { logoBg = '#FEF2F2'; logoColor = '#EF4444'; iconName = 'fire'; }
-        else if (c.includes('eco')) { logoBg = '#ECFDF5'; logoColor = '#10B981'; iconName = 'leaf'; }
-        else if (c.includes('mavi')) { logoBg = '#FFFBEB'; logoColor = '#F59E0B'; iconName = 'cube-outline'; }
-
-        // Mock status
-        let statusTxt = 'Aktif';
-        let statusColor = '#10B981';
-        let statusBg = '#ECFDF5';
-        if (item.id % 4 === 1) { statusTxt = 'Planlandı'; statusColor = '#3B82F6'; statusBg = '#EFF6FF'; }
-        else if (item.id % 4 === 2) { statusTxt = 'Tamamlandı'; statusColor = '#8B5CF6'; statusBg = '#F3E8FF'; }
-        else if (item.id % 4 === 3) { statusTxt = 'Beklemede'; statusColor = '#F59E0B'; statusBg = '#FEF3C7'; }
-
-        return (
-            <TouchableOpacity 
-                style={s.card} 
-                activeOpacity={0.85}
-                onPress={() => navigation.navigate('TripDetail', { tripId: item.id })}
-            >
-                <View style={s.cardTop}>
-                    <View style={[s.logoBox, { backgroundColor: logoBg }]}>
-                        <Icon name={iconName} size={32} color={logoColor} />
-                    </View>
-                    <View style={s.cardHeaderContent}>
-                        <View style={s.chrRow}>
-                            <Text style={s.cTitle} numberOfLines={1}>{item.customer_name || 'Müşteri Adı'}</Text>
-                            <View style={[s.statusBadge, { backgroundColor: statusBg }]}>
-                                <View style={[s.statusDot, { backgroundColor: statusColor }]} />
-                                <Text style={[s.statusTxt, { color: statusColor }]}>{statusTxt}</Text>
-                            </View>
-                        </View>
-                        <View style={s.chrRow}>
-                            <Text style={s.cRoute}>{item.route_name || 'Güzergah Belirtilmemiş'}</Text>
-                            <View style={s.plateBadge}>
-                                <Text style={s.plateTxt}>{item.vehicle_plate || 'PLAKA'}</Text>
-                            </View>
-                        </View>
-                        <View style={s.cMetaRow}>
-                            <Icon name="calendar-blank" size={14} color="#94A3B8" />
-                            <Text style={s.cMetaTxt}>{item.trip_date || 'Tarih Yok'}</Text>
-                            <Icon name="account-outline" size={14} color="#94A3B8" style={{marginLeft: 12}} />
-                            <Text style={s.cMetaTxt} numberOfLines={1}>{item.driver_name || 'Bilinmiyor'}</Text>
-                        </View>
-                    </View>
-                </View>
-                
-                <View style={s.divider} />
-                
-                <View style={s.cardBottom}>
-                    <View style={s.cbItem}>
-                        <Icon name="map-marker-distance" size={16} color="#94A3B8" />
-                        <View>
-                            <Text style={s.cbLabel}>Mesafe</Text>
-                            <Text style={s.cbVal}>512 km</Text>
-                        </View>
-                    </View>
-                    <View style={s.cbDivider} />
-                    <View style={s.cbItem}>
-                        <Icon name="clock-outline" size={16} color="#94A3B8" />
-                        <View>
-                            <Text style={s.cbLabel}>Tahmini Varış</Text>
-                            <Text style={s.cbVal}>16:45</Text>
-                        </View>
-                    </View>
-                    <View style={s.cbDivider} />
-                    <View style={[s.cbItem, {flex:1.2}]}>
-                        <Icon name="account-group-outline" size={16} color="#94A3B8" />
-                        <View style={{flex:1}}>
-                            <Text style={s.cbLabel}>Yolcu / Yük</Text>
-                            <Text style={s.cbVal}>32 Yolcu</Text>
-                        </View>
-                        <Icon name="chevron-right" size={20} color="#CBD5E1" />
-                    </View>
-                </View>
-            </TouchableOpacity>
-        );
+    const fetchMatrix = async () => {
+        try {
+            setLoading(true);
+            const res = await api.get('/v1/trips/matrix', {
+                params: { customer_id: selectedCustomer, month: selectedMonth, year: selectedYear }
+            });
+            if (res.data.success) {
+                const d = res.data.data;
+                setCustomers(d.customers || []);
+                if (!selectedCustomer && d.selectedCustomer) {
+                    setSelectedCustomer(d.selectedCustomer.id.toString());
+                }
+                setMonthDays(d.monthDays || []);
+                setServiceRoutes(d.serviceRoutes || []);
+                setMatrix(d.matrix || {});
+                setSummary(d.summary || null);
+                setVehicles(d.vehicles || []);
+            }
+        } catch (err) {
+            console.error(err);
+            Alert.alert('Hata', 'Matris verisi alınamadı.');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    return (
-        <View style={s.container}>
-            <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={s.header} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
-                <SafeAreaView edges={['top']}>
-                    <View style={s.hRow}>
-                        <TouchableOpacity style={s.menuBtn}>
-                            <Icon name="menu" size={24} color="#fff" />
-                        </TouchableOpacity>
-                        <View style={s.hTitleWrap}>
-                            <Text style={s.hTitle}>Seferler</Text>
-                            <View style={s.hSubWrap}>
-                                <View style={s.dotBlue} />
-                                <Text style={s.hSub}>Canlı operasyon yönetimi</Text>
-                            </View>
-                        </View>
-                        <TouchableOpacity style={s.addBtnBlue}>
-                            <Icon name="plus" size={24} color="#fff" />
-                        </TouchableOpacity>
-                    </View>
+    useEffect(() => { fetchMatrix(); }, [selectedCustomer, selectedMonth, selectedYear]);
 
-                    {/* KPI Cards */}
-                    <View style={s.kpiWrapper}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.kpiScroll}>
-                            
-                            <View style={[s.kpiCard, { borderColor: 'rgba(59, 130, 246, 0.4)' }]}>
-                                <LinearGradient colors={['rgba(37,99,235,0.15)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: '#1E3A8A'}]}><Icon name="map-marker-path" size={18} color="#60A5FA" /></View>
-                                    <Text style={s.kpiLabel}>Bugünkü Sefer</Text>
-                                </View>
-                                <Text style={s.kpiValue}>18</Text>
-                                <Text style={[s.kpiSub, {color: '#10B981'}]}>▲ %12,5 dününe göre</Text>
-                            </View>
+    const openCellModal = (route, day) => {
+        if (!hasPermission('trips.create') && !hasPermission('trips.edit')) {
+            Alert.alert('Yetkisiz', 'Veri girişi yapmaya yetkiniz yok.');
+            return;
+        }
+        const cellData = matrix[day.date_key]?.[route.id];
+        let initialPrice = cellData?.value !== null && cellData?.value !== undefined ? cellData.value.toString() : '';
+        let initialMorning = cellData?.morning_vehicle_id || cellData?.default_morning_vehicle_id || '';
+        let initialEvening = cellData?.evening_vehicle_id || cellData?.default_evening_vehicle_id || '';
 
-                            <View style={[s.kpiCard, { borderColor: 'rgba(20, 184, 166, 0.4)' }]}>
-                                <LinearGradient colors={['rgba(13,148,136,0.15)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: '#134E4A'}]}><Icon name="crosshairs-gps" size={18} color="#2DD4BF" /></View>
-                                    <Text style={s.kpiLabel}>Aktif Rota</Text>
-                                </View>
-                                <Text style={s.kpiValue}>6</Text>
-                                <Text style={[s.kpiSub, {color: '#10B981'}]}>● Canlı takipte</Text>
-                            </View>
+        setActiveCell({ route, day, cellData });
+        setFormData({
+            price: initialPrice,
+            morning_id: initialMorning ? initialMorning.toString() : '',
+            evening_id: initialEvening ? initialEvening.toString() : '',
+            status: cellData?.trip_status || 'Yapıldı'
+        });
+        setCellModalVisible(true);
+    };
 
-                            <View style={[s.kpiCard, { borderColor: 'rgba(245, 158, 11, 0.4)' }]}>
-                                <LinearGradient colors={['rgba(217,119,6,0.15)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: '#78350F'}]}><Icon name="hourglass" size={18} color="#FBBF24" /></View>
-                                    <Text style={s.kpiLabel}>Bekleyen</Text>
-                                </View>
-                                <Text style={s.kpiValue}>4</Text>
-                                <Text style={[s.kpiSub, {color: '#F59E0B'}]}>● Onay bekliyor</Text>
-                            </View>
+    const handleSaveCell = async () => {
+        if (!activeCell) return;
+        setSaving(true);
+        try {
+            const payload = {
+                service_route_id: activeCell.route.id,
+                trip_date: activeCell.day.date_key,
+                trip_price: formData.price,
+                morning_vehicle_id: formData.morning_id,
+                evening_vehicle_id: formData.evening_id,
+                trip_status: formData.status
+            };
+            const res = await api.post('/v1/trips/upsert-cell', payload);
+            if (res.data.success) {
+                setCellModalVisible(false);
+                fetchMatrix();
+            } else {
+                Alert.alert('Hata', res.data.message || 'Kayıt yapılamadı.');
+            }
+        } catch (e) {
+            Alert.alert('Hata', 'Kayıt başarısız.');
+        } finally {
+            setSaving(false);
+        }
+    };
 
-                        </ScrollView>
-                    </View>
-                </SafeAreaView>
+    const handleDeleteCell = async () => {
+        if (!activeCell) return;
+        setSaving(true);
+        try {
+            const payload = {
+                service_route_id: activeCell.route.id,
+                trip_date: activeCell.day.date_key,
+                trip_price: '',
+                trip_status: 'İptal'
+            };
+            const res = await api.post('/v1/trips/upsert-cell', payload);
+            if (res.data.success) {
+                setCellModalVisible(false);
+                fetchMatrix();
+            }
+        } catch (e) {
+            Alert.alert('Hata', 'Silme işlemi başarısız.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const fmtMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2 }).format(v || 0);
+
+    const getSelectionData = () => {
+        if (selectionType === 'customer') return customers.map(c => ({ label: c.company_name, value: c.id.toString() }));
+        if (selectionType === 'month') return MONTHS;
+        if (selectionType === 'year') return YEARS.map(y => ({ label: y, value: y }));
+        if (selectionType === 'morning_vehicle' || selectionType === 'evening_vehicle') {
+            const currentRoute = activeCell?.route;
+            const defaultPlate = selectionType === 'morning_vehicle' ? currentRoute?.morning_plate : currentRoute?.evening_plate;
+            return [
+                { label: `Varsayılan: ${defaultPlate || 'Yok'}`, value: '' },
+                ...vehicles.map(v => ({ label: v.plate, value: v.id.toString() }))
+            ];
+        }
+        return [];
+    };
+
+    const handleSelectOption = (val) => {
+        if (selectionType === 'customer') setSelectedCustomer(val);
+        else if (selectionType === 'month') setSelectedMonth(val);
+        else if (selectionType === 'year') setSelectedYear(val);
+        else if (selectionType === 'morning_vehicle') setFormData({ ...formData, morning_id: val });
+        else if (selectionType === 'evening_vehicle') setFormData({ ...formData, evening_id: val });
+        setSelectionModalVisible(false);
+    };
+
+    const selectedCustomerObj = customers.find(c => c.id.toString() === selectedCustomer);
+    const selectedMonthObj = MONTHS.find(m => m.value === selectedMonth);
+    const morningVehicleObj = formData.morning_id ? vehicles.find(v => v.id.toString() === formData.morning_id) : null;
+    const eveningVehicleObj = formData.evening_id ? vehicles.find(v => v.id.toString() === formData.evening_id) : null;
+
+    const FilterChip = ({ icon, label, value, onPress, flex }) => (
+        <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={[styles.filterChip, flex ? { flex } : {}]}>
+            <LinearGradient colors={['#ffffff', '#f8fafc']} style={styles.filterChipGradient}>
+                <View style={styles.filterIconWrap}>
+                    <Icon name={icon} size={16} color="#3B82F6" />
+                </View>
+                <View style={{ flex: 1, paddingLeft: 8 }}>
+                    <Text style={styles.filterLabel}>{label}</Text>
+                    <Text style={styles.filterValue} numberOfLines={1}>{value || 'Seçiniz'}</Text>
+                </View>
+                <Icon name="chevron-down" size={18} color="#94A3B8" />
             </LinearGradient>
+        </TouchableOpacity>
+    );
 
-            <View style={s.filterWrapper}>
-                <View style={s.filterInner}>
-                    <View style={s.searchBar}>
-                        <Icon name="magnify" size={20} color="#94A3B8" />
-                        <TextInput style={s.searchInput} placeholder="Sefer, müşteri, güzergah ara..." />
-                        <TouchableOpacity style={s.filterBtn}>
-                            <Icon name="filter-variant" size={18} color="#0F172A" />
-                            <Text style={s.filterBtnTxt}>Filtrele</Text>
-                            <View style={s.filterBadge}><Text style={s.filterBadgeTxt}>2</Text></View>
-                        </TouchableOpacity>
+    return (
+        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+            <View style={styles.headerContainer}>
+                <View style={styles.headerTop}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+                        <Icon name="chevron-left" size={26} color="#0F172A" />
+                    </TouchableOpacity>
+                    <View style={{ flex: 1, alignItems: 'center' }}>
+                        <Text style={styles.headerTitle}>Puantaj / Seferler</Text>
+                        <Text style={styles.headerSubtitle}>Canlı Matris Tablosu</Text>
                     </View>
+                    <View style={{ width: 40 }} />
+                </View>
 
-                    <View style={s.pillRow}>
-                        <TouchableOpacity style={s.pillBtn}>
-                            <Icon name="calendar-blank" size={16} color="#64748B" />
-                            <View>
-                                <Text style={s.pillLbl}>Tarih</Text>
-                                <Text style={s.pillTxt}>24.04.2026</Text>
-                            </View>
-                            <Icon name="chevron-down" size={16} color="#94A3B8" />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={s.pillBtn}>
-                            <Icon name="earth" size={16} color="#64748B" />
-                            <View>
-                                <Text style={s.pillLbl}>Durum</Text>
-                                <Text style={s.pillTxt}>Tümü</Text>
-                            </View>
-                            <Icon name="chevron-down" size={16} color="#94A3B8" />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={s.pillBtn}>
-                            <Icon name="bus" size={16} color="#64748B" />
-                            <View>
-                                <Text style={s.pillLbl}>Araç</Text>
-                                <Text style={s.pillTxt}>Tümü</Text>
-                            </View>
-                            <Icon name="chevron-down" size={16} color="#94A3B8" />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={s.sortBtn} onPress={fetchTrips}><Icon name="refresh" size={20} color="#64748B" /></TouchableOpacity>
+                {/* 3D Premium Filter Chips */}
+                <View style={{ paddingHorizontal: 16, marginTop: 16, gap: 12 }}>
+                    <FilterChip 
+                        icon="domain" 
+                        label="MÜŞTERİ" 
+                        value={selectedCustomerObj?.company_name} 
+                        onPress={() => { setSelectionType('customer'); setSelectionModalVisible(true); }}
+                    />
+                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                        <FilterChip 
+                            icon="calendar-month" 
+                            label="AY" 
+                            value={selectedMonthObj?.label} 
+                            onPress={() => { setSelectionType('month'); setSelectionModalVisible(true); }}
+                            flex={1}
+                        />
+                        <FilterChip 
+                            icon="calendar-blank" 
+                            label="YIL" 
+                            value={selectedYear} 
+                            onPress={() => { setSelectionType('year'); setSelectionModalVisible(true); }}
+                            flex={1}
+                        />
                     </View>
                 </View>
+
+                {/* Actions & Info */}
+                {selectedCustomer && (
+                    <View style={styles.actionsRow}>
+                        <View style={styles.routeCountBadge}>
+                            <Text style={styles.routeCountText}>Toplam Güzergah: {serviceRoutes.length}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                            <TouchableOpacity 
+                                style={[styles.exportBtn, exportingType === 'pdf' && { opacity: 0.5 }]}
+                                onPress={() => exportReport('pdf')}
+                                disabled={exportingType !== null}
+                            >
+                                {exportingType === 'pdf' ? <ActivityIndicator size="small" color="#DC2626" /> : <Icon name="file-pdf-box" size={16} color="#DC2626" />}
+                                <Text style={[styles.exportBtnText, { color: '#DC2626' }]}>PDF</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.exportBtn, exportingType === 'excel' && { opacity: 0.5 }]}
+                                onPress={() => exportReport('excel')}
+                                disabled={exportingType !== null}
+                            >
+                                {exportingType === 'excel' ? <ActivityIndicator size="small" color="#16A34A" /> : <Icon name="file-excel-box" size={16} color="#16A34A" />}
+                                <Text style={[styles.exportBtnText, { color: '#16A34A' }]}>Excel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
             </View>
 
-            {loading ? (
-                <View style={s.centerContent}><ActivityIndicator size="large" color="#3B82F6" /></View>
-            ) : error ? (
-                <View style={s.centerContent}>
-                    <Icon name="alert-circle-outline" size={48} color="#ef4444" />
-                    <Text style={[s.emptyT, {color: '#ef4444', marginTop: 12}]}>{error}</Text>
-                    <TouchableOpacity onPress={fetchTrips} style={{ marginTop: 24, padding: 12, backgroundColor: '#3B82F6', borderRadius: 8 }}>
-                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Tekrar Dene</Text>
-                    </TouchableOpacity>
+            {loading && !serviceRoutes.length ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color="#3B82F6" /></View>
+            ) : !selectedCustomer ? (
+                <View style={{ flex: 1 }}>
+                    <EmptyState title="Müşteri Bekleniyor" message="Puantaj tablosunu görüntülemek için yukarıdan bir müşteri seçiniz." icon="domain" />
                 </View>
             ) : (
-                <FlatList 
-                    data={trips} 
-                    keyExtractor={i=>i.id.toString()} 
-                    renderItem={renderItem} 
-                    contentContainerStyle={s.list} 
-                    showsVerticalScrollIndicator={false}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />}
-                    ListEmptyComponent={
-                        <View style={s.empty}>
-                            <Icon name="map-marker-off-outline" size={64} color="#CBD5E1" />
-                            <Text style={s.emptyT}>Sefer bulunamadı.</Text>
+                <ScrollView style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={true} bounces={false}>
+                        <View style={styles.matrixWrapper}>
+                            <View style={styles.row}>
+                                <View style={[styles.cellHeader, styles.routeCol]}>
+                                    <Text style={styles.colHeaderText}>GÜZERGAH</Text>
+                                </View>
+                                {monthDays.map(day => (
+                                    <View key={day.date_key} style={[styles.cellHeader, styles.dayCol, day.is_weekend && styles.weekendHeader, day.is_holiday && styles.holidayHeader]}>
+                                        <Text style={[styles.dayText, (day.is_weekend||day.is_holiday) && { color: '#BE123C' }]}>{day.day}</Text>
+                                        <Text style={[styles.dayNameText, (day.is_weekend||day.is_holiday) && { color: '#BE123C' }]}>{day.day_name.substring(0,3)}</Text>
+                                        {day.is_holiday && <Text style={styles.holidayLabel} numberOfLines={1}>{day.holiday_name}</Text>}
+                                    </View>
+                                ))}
+                            </View>
+
+                            {serviceRoutes.map(route => (
+                                <View key={route.id} style={styles.row}>
+                                    <View style={[styles.cell, styles.routeCol, { backgroundColor: '#FFFFFF', borderRightWidth: 2, borderRightColor: '#E2E8F0' }]}>
+                                        <Text style={styles.routeTitle} numberOfLines={2}>{route.route_name}</Text>
+                                        <View style={{ marginTop: 4 }}>
+                                            <Text style={styles.routeVehicleInfo} numberOfLines={1}>S: {route.morning_plate || '-'}</Text>
+                                            <Text style={styles.routeVehicleInfo} numberOfLines={1}>A: {route.evening_plate || '-'}</Text>
+                                        </View>
+                                    </View>
+                                    
+                                    {monthDays.map(day => {
+                                        const cell = matrix[day.date_key]?.[route.id] || {};
+                                        const hasRecord = cell.has_record;
+                                        const price = cell.value !== null && cell.value !== undefined ? cell.value : '';
+                                        
+                                        let cellStyle = [styles.cell, styles.dayCol];
+                                        if (day.is_weekend) cellStyle.push({ backgroundColor: '#FFF1F2' });
+                                        if (day.is_holiday) cellStyle.push({ backgroundColor: '#FAE8FF' });
+                                        if (hasRecord) cellStyle.push({ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE', borderWidth: 1 });
+
+                                        return (
+                                            <TouchableOpacity 
+                                                key={day.date_key} 
+                                                style={cellStyle}
+                                                activeOpacity={0.7}
+                                                onPress={() => openCellModal(route, day)}
+                                            >
+                                                <Text style={[styles.cellPrice, hasRecord && { color: '#1D4ED8' }]}>
+                                                    {price !== '' ? price : '-'}
+                                                </Text>
+                                                {hasRecord && (cell.morning_vehicle_id !== cell.default_morning_vehicle_id || cell.evening_vehicle_id !== cell.default_evening_vehicle_id) && (
+                                                    <View style={styles.changedVehicleDot} />
+                                                )}
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </View>
+                            ))}
                         </View>
-                    }
-                />
+                    </ScrollView>
+
+                    {summary && (
+                        <View style={styles.summaryContainer}>
+                            <View style={[styles.summaryCard, { backgroundColor: '#FFFFFF' }]}>
+                                <Text style={styles.summaryLabel}>Ara Toplam</Text>
+                                <Text style={styles.summaryValue}>{fmtMoney(summary.subtotal)}</Text>
+                            </View>
+                            <View style={[styles.summaryCard, { backgroundColor: '#FFFFFF' }]}>
+                                <Text style={styles.summaryLabel}>KDV (%{summary.vat_rate})</Text>
+                                <Text style={styles.summaryValue}>{fmtMoney(summary.vat_amount)}</Text>
+                            </View>
+                            {summary.withholding_amount > 0 && (
+                                <View style={[styles.summaryCard, { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
+                                    <Text style={[styles.summaryLabel, { color: '#92400E' }]}>Tevkifat Tutarı</Text>
+                                    <Text style={[styles.summaryValue, { color: '#B45309' }]}>{fmtMoney(summary.withholding_amount)}</Text>
+                                </View>
+                            )}
+                            <LinearGradient colors={['#1E293B', '#0F172A']} style={[styles.summaryCard, { borderColor: 'transparent' }]}>
+                                <Text style={[styles.summaryLabel, { color: '#94A3B8' }]}>Net Fatura Tutarı</Text>
+                                <Text style={[styles.summaryValue, { color: '#FFFFFF', fontSize: 24 }]}>{fmtMoney(summary.net_total)}</Text>
+                            </LinearGradient>
+                        </View>
+                    )}
+                    <View style={{ height: 40 }} />
+                </ScrollView>
             )}
-        </View>
+
+            {/* HÜCRE GİRİŞ MODALI */}
+            <Modal visible={cellModalVisible} animationType="slide" transparent>
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <View>
+                                <Text style={styles.modalTitle}>{activeCell?.day?.display_date}</Text>
+                                <Text style={styles.modalSubtitle} numberOfLines={1}>{activeCell?.route?.route_name}</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => setCellModalVisible(false)} style={styles.modalCloseBtn}>
+                                <Icon name="close" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView contentContainerStyle={{ padding: 20 }}>
+                            <Text style={styles.inputLabel}>TUTAR (₺) *</Text>
+                            <TextInput 
+                                style={styles.priceInput}
+                                value={formData.price}
+                                onChangeText={t => setFormData({...formData, price: t})}
+                                keyboardType="numeric"
+                                placeholder="0.00"
+                                placeholderTextColor="#94A3B8"
+                                autoFocus
+                            />
+                            <Text style={styles.hintText}>Fiyatı silmek/sıfırlamak bu kaydı tamamen iptal eder.</Text>
+
+                            <Text style={[styles.inputLabel, { marginTop: 20, color: '#0369A1' }]}>☀️ SABAH ARACI (İsteğe Bağlı)</Text>
+                            <TouchableOpacity 
+                                style={styles.vehicleSelectorBtn} 
+                                onPress={() => { setSelectionType('morning_vehicle'); setSelectionModalVisible(true); }}
+                            >
+                                <Icon name="white-balance-sunny" size={20} color="#0284C7" />
+                                <Text style={styles.vehicleSelectorText}>
+                                    {morningVehicleObj ? morningVehicleObj.plate : `Varsayılan: ${activeCell?.route?.morning_plate || 'Yok'}`}
+                                </Text>
+                                <Icon name="chevron-down" size={20} color="#94A3B8" />
+                            </TouchableOpacity>
+
+                            <Text style={[styles.inputLabel, { marginTop: 16, color: '#4338CA' }]}>🌙 AKŞAM ARACI (İsteğe Bağlı)</Text>
+                            <TouchableOpacity 
+                                style={[styles.vehicleSelectorBtn, { backgroundColor: '#EEF2FF', borderColor: '#C7D2FE' }]} 
+                                onPress={() => { setSelectionType('evening_vehicle'); setSelectionModalVisible(true); }}
+                            >
+                                <Icon name="moon-waning-crescent" size={20} color="#4F46E5" />
+                                <Text style={[styles.vehicleSelectorText, { color: '#312E81' }]}>
+                                    {eveningVehicleObj ? eveningVehicleObj.plate : `Varsayılan: ${activeCell?.route?.evening_plate || 'Yok'}`}
+                                </Text>
+                                <Icon name="chevron-down" size={20} color="#94A3B8" />
+                            </TouchableOpacity>
+
+                            <View style={styles.modalActions}>
+                                <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteCell} disabled={saving || !activeCell?.cellData?.has_record}>
+                                    <Icon name="trash-can-outline" size={20} color={activeCell?.cellData?.has_record ? "#EF4444" : "#CBD5E1"} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.saveBtn, saving && { opacity: 0.7 }]} onPress={handleSaveCell} disabled={saving}>
+                                    {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Kaydet</Text>}
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+
+                        {/* INNER SELECTION OVERLAY FOR VEHICLES */}
+                        {selectionModalVisible && (selectionType === 'morning_vehicle' || selectionType === 'evening_vehicle') && (
+                            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(15,23,42,0.6)', justifyContent: 'flex-end', zIndex: 9999, borderRadius: 32 }]}>
+                                <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+                                    <View style={styles.modalHeader}>
+                                        <Text style={styles.modalTitle}>Araç Seçiniz</Text>
+                                        <TouchableOpacity onPress={() => setSelectionModalVisible(false)} style={styles.modalCloseBtn}>
+                                            <Icon name="close" size={24} color="#64748B" />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <ScrollView contentContainerStyle={{ padding: 16 }}>
+                                        {getSelectionData().map((item, index) => (
+                                            <TouchableOpacity 
+                                                key={index} 
+                                                style={styles.selectionListItem}
+                                                onPress={() => handleSelectOption(item.value)}
+                                            >
+                                                <Text style={styles.selectionListText}>{item.label}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            </View>
+                        )}
+
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
+
+            {/* MAIN SELECTION MODAL (For Customer, Month, Year) */}
+            <Modal visible={selectionModalVisible && ['customer', 'month', 'year'].includes(selectionType)} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { maxHeight: '70%' }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Lütfen Seçiniz</Text>
+                            <TouchableOpacity onPress={() => setSelectionModalVisible(false)} style={styles.modalCloseBtn}>
+                                <Icon name="close" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView contentContainerStyle={{ padding: 16 }}>
+                            {getSelectionData().map((item, index) => (
+                                <TouchableOpacity 
+                                    key={index} 
+                                    style={styles.selectionListItem}
+                                    onPress={() => handleSelectOption(item.value)}
+                                >
+                                    <Text style={styles.selectionListText}>{item.label}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
+
+
+        </SafeAreaView>
     );
 }
 
-const s = StyleSheet.create({
-    container:{flex:1,backgroundColor:'#F4F7FA'},
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#F1F5F9' },
     
-    header: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden', paddingBottom: 40 },
-    hRow:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingTop:16, paddingHorizontal: 24, marginBottom: 24},
-    menuBtn:{width:46,height:46,borderRadius:16,backgroundColor:'rgba(255,255,255,0.08)',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'rgba(255,255,255,0.15)'},
-    hTitleWrap:{alignItems:'center'},
-    hTitle:{fontSize:22,fontWeight:'900',color:'#fff',letterSpacing:-0.5},
-    hSubWrap:{flexDirection:'row',alignItems:'center',gap:6,marginTop:2},
-    dotBlue:{width:6,height:6,borderRadius:3,backgroundColor:'#3B82F6'},
-    hSub:{color:'#94A3B8',fontSize:12,fontWeight:'600'},
-    addBtnBlue:{width:46,height:46,borderRadius:16,backgroundColor:'rgba(59, 130, 246, 0.4)',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'#3B82F6'},
-
-    kpiWrapper: { height: 130 },
-    kpiScroll: { paddingHorizontal: 20, gap: 14 },
-    kpiCard: { backgroundColor: 'rgba(30,41,59,0.4)', borderRadius: 24, padding: 18, width: 170, borderWidth: 1 },
-    kpiHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
-    kpiIconWrap: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-    kpiLabel: { fontSize: 13, fontWeight: '700', color: '#CBD5E1' },
-    kpiValue: { fontSize: 26, fontWeight: '900', color: '#fff', letterSpacing: -0.5, marginBottom: 6 },
-    kpiSub: { fontSize: 11, fontWeight: '700' },
-
-    filterWrapper: { paddingHorizontal: 20, marginTop: -40, zIndex: 20 },
-    filterInner: { backgroundColor: '#fff', borderRadius: 24, padding: 16, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:12}, shadowOpacity: 0.08, shadowRadius: 24, elevation: 8, borderWidth: 1, borderColor: '#F1F5F9' },
-    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 16, paddingHorizontal: 16, height: 50, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 12 },
-    searchInput: { flex: 1, fontSize: 14, color: '#0F172A', fontWeight: '600', marginLeft: 8 },
-    filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 12, borderLeftWidth: 1, borderLeftColor: '#E2E8F0' },
-    filterBtnTxt: { fontSize: 13, fontWeight: '700', color: '#0F172A' },
-    filterBadge: { backgroundColor: '#3B82F6', width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', position: 'absolute', top: -8, right: -4 },
-    filterBadgeTxt: { color: '#fff', fontSize: 9, fontWeight: 'bold' },
+    headerContainer: { backgroundColor: '#F1F5F9', paddingBottom: 16 },
+    headerTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10 },
+    backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+    headerTitle: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
+    headerSubtitle: { fontSize: 12, fontWeight: '600', color: '#10B981', marginTop: 2, letterSpacing: 0.5 },
     
-    pillRow: { flexDirection: 'row', gap: 8 },
-    pillBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 8, backgroundColor: '#F8FAFC', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0' },
-    pillLbl: { fontSize: 9, color: '#64748B', fontWeight: '700', marginBottom: 2 },
-    pillTxt: { fontSize: 11, fontWeight: '800', color: '#0F172A' },
-    sortBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
+    // 3D Premium Filter Chips
+    filterChip: { borderRadius: 16, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 3, borderWidth: 1, borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' },
+    filterChipGradient: { flexDirection: 'row', alignItems: 'center', padding: 12 },
+    filterIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center' },
+    filterLabel: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 0.5, marginBottom: 2 },
+    filterValue: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
 
-    list:{padding:20,paddingTop:24,paddingBottom:120},
-    card:{backgroundColor:'#fff',borderRadius:24,padding:16,marginBottom:16,shadowColor:'#0A1A3A',shadowOffset:{width:0,height:8},shadowOpacity:0.06,shadowRadius:20,elevation:4,borderWidth:1,borderColor:'#F1F5F9'},
-    cardTop:{flexDirection:'row',alignItems:'flex-start',marginBottom:12},
-    logoBox:{width:60,height:60,borderRadius:16,alignItems:'center',justifyContent:'center',marginRight:16},
-    cardHeaderContent:{flex:1},
-    chrRow:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:6},
-    cTitle:{fontSize:16,fontWeight:'900',color:'#0F172A',flex:1,letterSpacing:-0.5},
-    statusBadge:{flexDirection:'row',alignItems:'center',paddingHorizontal:8,paddingVertical:4,borderRadius:10},
-    statusDot:{width:6,height:6,borderRadius:3,marginRight:4},
-    statusTxt:{fontSize:10,fontWeight:'800',letterSpacing:0.5},
-    cRoute:{fontSize:13,fontWeight:'600',color:'#64748B',flex:1},
-    plateBadge:{backgroundColor:'#F1F5F9',paddingHorizontal:10,paddingVertical:4,borderRadius:8,borderWidth:1,borderColor:'#E2E8F0'},
-    plateTxt:{fontSize:12,fontWeight:'900',color:'#0F172A',letterSpacing:1},
-    cMetaRow:{flexDirection:'row',alignItems:'center',marginTop:4},
-    cMetaTxt:{fontSize:11,fontWeight:'600',color:'#94A3B8',marginLeft:4},
+    actionsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginTop: 16 },
+    routeCountBadge: { backgroundColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0' },
+    routeCountText: { fontSize: 11, fontWeight: '800', color: '#64748B' },
+    exportBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1, gap: 4 },
+    exportBtnText: { fontSize: 12, fontWeight: '800' },
+
+    // Matrix
+    matrixWrapper: { padding: 16, backgroundColor: '#F8FAFC', minHeight: 400 },
+    row: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E2E8F0', shadowColor: '#000', shadowOffset: {width:0, height: 1}, shadowOpacity: 0.02, elevation: 1 },
+    routeCol: { width: 140, paddingHorizontal: 8, paddingVertical: 10, justifyContent: 'center' },
+    dayCol: { width: 55, paddingHorizontal: 2, paddingVertical: 10, justifyContent: 'center', alignItems: 'center', borderLeftWidth: 1, borderLeftColor: '#E2E8F0' },
     
-    divider:{height:1,backgroundColor:'#F1F5F9',marginBottom:16},
+    cellHeader: { backgroundColor: '#F1F5F9', borderBottomWidth: 2, borderBottomColor: '#CBD5E1' },
+    colHeaderText: { fontSize: 11, fontWeight: '800', color: '#64748B', letterSpacing: 0.5 },
+    weekendHeader: { backgroundColor: '#FFE4E6' },
+    holidayHeader: { backgroundColor: '#FDF4FF' },
+    
+    dayText: { fontSize: 16, fontWeight: '900', color: '#334155' },
+    dayNameText: { fontSize: 9, fontWeight: '700', color: '#64748B', textTransform: 'uppercase' },
+    holidayLabel: { fontSize: 7, fontWeight: '800', color: '#D946EF', marginTop: 2 },
 
-    cardBottom: { flexDirection: 'row', alignItems: 'flex-start' },
-    cbItem: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-    cbLabel: { fontSize: 10, fontWeight: '600', color: '#94A3B8', marginBottom: 2 },
-    cbVal: { fontSize: 11, fontWeight: '800', color: '#334155' },
-    cbDivider: { width: 1, height: 30, backgroundColor: '#F1F5F9', marginHorizontal: 8 },
+    cell: { backgroundColor: '#FFFFFF' },
+    routeTitle: { fontSize: 12, fontWeight: '800', color: '#0F172A', lineHeight: 14 },
+    routeVehicleInfo: { fontSize: 9, color: '#64748B', fontWeight: '600' },
+    
+    cellPrice: { fontSize: 12, fontWeight: '700', color: '#94A3B8' },
+    changedVehicleDot: { position: 'absolute', top: 4, right: 4, width: 6, height: 6, borderRadius: 3, backgroundColor: '#F59E0B' },
 
-    centerContent:{flex:1,justifyContent:'center',alignItems:'center'},
-    empty:{alignItems:'center',paddingVertical:48},
-    emptyT:{color:'#94A3B8',fontSize:16,marginTop:16,fontWeight:'600'},
+    // Summary Cards
+    summaryContainer: { padding: 16, gap: 12 },
+    summaryCard: { padding: 20, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 },
+    summaryLabel: { fontSize: 12, fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
+    summaryValue: { fontSize: 22, fontWeight: '900', color: '#0F172A' },
+
+    // Modals
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.6)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, maxHeight: '95%' },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    modalTitle: { fontSize: 20, fontWeight: '900', color: '#0F172A' },
+    modalSubtitle: { fontSize: 13, fontWeight: '700', color: '#64748B', marginTop: 4, maxWidth: 250 },
+    modalCloseBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+    
+    inputLabel: { fontSize: 11, fontWeight: '800', color: '#64748B', marginBottom: 8, marginLeft: 4, letterSpacing: 0.5 },
+    priceInput: { fontSize: 28, fontWeight: '900', color: '#0F172A', backgroundColor: '#F8FAFC', borderWidth: 2, borderColor: '#E2E8F0', borderRadius: 16, padding: 20, textAlign: 'center' },
+    hintText: { fontSize: 11, color: '#94A3B8', textAlign: 'center', marginTop: 8, fontWeight: '600' },
+
+    vehicleSelectorBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F9FF', borderWidth: 1, borderColor: '#BAE6FD', borderRadius: 16, padding: 16 },
+    vehicleSelectorText: { flex: 1, fontSize: 14, fontWeight: '700', color: '#0369A1', marginLeft: 12 },
+
+    modalActions: { flexDirection: 'row', marginTop: 32, gap: 12 },
+    deleteBtn: { width: 60, height: 60, borderRadius: 16, backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FEE2E2' },
+    saveBtn: { flex: 1, height: 60, borderRadius: 16, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+    saveBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', letterSpacing: 0.5 },
+
+    selectionListItem: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    selectionListText: { fontSize: 16, fontWeight: '700', color: '#1E293B', textAlign: 'center' },
+
+    // Dummy Tab
+    dummyTabBar: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E2E8F0', paddingBottom: Platform.OS === 'ios' ? 20 : 0, flexDirection: 'row', height: Platform.OS === 'ios' ? 85 : 65, alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 },
+    dummyTab: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' },
+    dummyTabLabel: { fontSize: 10, fontWeight: '600', marginTop: 4, color: '#94A3B8' },
+    dummyTabCenter: { flex: 1, alignItems: 'center' },
+    dummyTabCenterInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginTop: -35, shadowColor: '#2563EB', shadowOffset: {width:0, height:4}, shadowOpacity:0.3, shadowRadius:8, elevation: 5 }
 });

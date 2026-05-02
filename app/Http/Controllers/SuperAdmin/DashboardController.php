@@ -5,6 +5,8 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Models\Company;
 use App\Models\User;
 use App\Models\CompanyModule;
+use App\Models\GlobalAnnouncement;
+use App\Enums\CompanyStatus;
 use App\Models\Fleet\Vehicle;
 use App\Models\Fleet\Driver;
 use Illuminate\Http\Request;
@@ -15,44 +17,48 @@ class DashboardController extends Controller
     public function index()
     {
         $totalCompanies   = Company::count();
-        $activeCompanies  = Company::where('is_active', true)->count();
-        $passiveCompanies = $totalCompanies - $activeCompanies;
+        $trialCompanies   = Company::where('status', CompanyStatus::Trial)->count();
+        $suspendedCompanies = Company::where('status', CompanyStatus::Suspended)->count();
+        $activeAnnouncements = GlobalAnnouncement::where('is_active', true)->count();
+        
+        // Gerçek MRR ve Finansal Veriler
+        $monthlyMrr = \App\Models\Subscription::where('status', 'active')
+            ->where('billing_cycle', 'monthly')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->sum('plans.price');
 
-        $totalUsers    = User::where('is_super_admin', false)->count();
-        $totalVehicles = Vehicle::withoutGlobalScopes()->count();
-        $totalDrivers  = Driver::withoutGlobalScopes()->count();
+        $yearlyMrr = \App\Models\Subscription::where('status', 'active')
+            ->where('billing_cycle', 'yearly')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->sum('plans.yearly_price') / 12;
 
-        // Lisans durumu
-        $expiredLicenses = Company::where('is_active', true)
-            ->whereNotNull('license_expires_at')
-            ->where('license_expires_at', '<', now())
-            ->count();
+        $totalMrr = $monthlyMrr + $yearlyMrr;
+        $totalRevenue = \App\Models\Invoice::where('status', 'paid')->sum('amount');
 
-        $expiringIn30Days = Company::where('is_active', true)
-            ->whereNotNull('license_expires_at')
-            ->where('license_expires_at', '>=', now())
-            ->where('license_expires_at', '<=', now()->addDays(30))
-            ->count();
-
-        // Son eklenen firmalar
-        $recentCompanies = Company::with(['users' => function ($q) {
+        // Tablo verisi için şirketler
+        $companies = Company::with(['users' => function ($q) {
                 $q->where('role', 'company_admin')->limit(1);
             }])
-            ->withCount('users', 'vehicles', 'drivers')
+            ->withCount('vehicles', 'users')
             ->orderByDesc('created_at')
-            ->take(10)
             ->get();
+            
+        $announcements = GlobalAnnouncement::orderByDesc('created_at')->get();
+
+        // Eski tokenleri temizle ve yeni token üret
+        auth()->user()->tokens()->where('name', 'web_admin_panel')->delete();
+        $apiToken = auth()->user()->createToken('web_admin_panel')->plainTextToken;
 
         return view('super-admin.dashboard', compact(
             'totalCompanies',
-            'activeCompanies',
-            'passiveCompanies',
-            'totalUsers',
-            'totalVehicles',
-            'totalDrivers',
-            'expiredLicenses',
-            'expiringIn30Days',
-            'recentCompanies'
+            'trialCompanies',
+            'suspendedCompanies',
+            'activeAnnouncements',
+            'totalMrr',
+            'totalRevenue',
+            'companies',
+            'announcements',
+            'apiToken'
         ));
     }
 }

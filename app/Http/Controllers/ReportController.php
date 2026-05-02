@@ -8,6 +8,8 @@ use App\Models\Fuel;
 use App\Models\Payroll;
 use App\Models\Trip;
 use App\Models\Fleet\Vehicle;
+use App\Models\VehicleMaintenance;
+use App\Models\TrafficPenalty;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -48,12 +50,49 @@ class ReportController extends Controller
             ->orderByDesc('period_month')
             ->get();
 
+        $maintenances = VehicleMaintenance::with('vehicle')
+            ->whereBetween('service_date', [$startDate, $endDate])
+            ->orderByDesc('service_date')
+            ->get();
+
+        $penalties = TrafficPenalty::with(['driver', 'vehicle'])
+            ->whereBetween('penalty_date', [$startDate, $endDate])
+            ->orderByDesc('penalty_date')
+            ->get();
+
         $tripCount = $trips->count();
         $tripIncome = $trips->sum('trip_price');
         $fuelCost = $fuels->sum('total_cost');
         $salaryCost = $payrolls->sum('net_salary');
+        $maintenanceCost = $maintenances->sum('amount');
+        $penaltyCost = $penalties->sum('penalty_amount');
         $documentCount = $documents->count();
-        $netProfit = $tripIncome - ($fuelCost + $salaryCost);
+        $netProfit = $tripIncome - ($fuelCost + $salaryCost + $maintenanceCost + $penaltyCost);
+
+        // 6 Months Trend Data for Chart.js
+        $trendMonths = [];
+        $trendIncomes = [];
+        $trendExpenses = [];
+        $trendProfits = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $monthStart = now()->subMonths($i)->startOfMonth();
+            $monthEnd = now()->subMonths($i)->endOfMonth();
+            $monthLabel = $monthStart->translatedFormat('M Y');
+            
+            $mInc = Trip::whereBetween('trip_date', [$monthStart->format('Y-m-d'), $monthEnd->format('Y-m-d')])->sum('trip_price');
+            $mExpF = Fuel::whereBetween('date', [$monthStart->format('Y-m-d'), $monthEnd->format('Y-m-d')])->sum('total_cost');
+            $mExpP = Payroll::where('period_month', $monthStart->format('Y-m'))->sum('net_salary');
+            $mExpM = VehicleMaintenance::whereBetween('service_date', [$monthStart->format('Y-m-d'), $monthEnd->format('Y-m-d')])->sum('amount');
+            $mExpPn = TrafficPenalty::whereBetween('penalty_date', [$monthStart->format('Y-m-d'), $monthEnd->format('Y-m-d')])->sum('penalty_amount');
+            
+            $mExpTotal = $mExpF + $mExpP + $mExpM + $mExpPn;
+            
+            $trendMonths[] = $monthLabel;
+            $trendIncomes[] = (float)$mInc;
+            $trendExpenses[] = (float)$mExpTotal;
+            $trendProfits[] = (float)($mInc - $mExpTotal);
+        }
 
         return view('reports.index', compact(
             'startDate',
@@ -62,12 +101,20 @@ class ReportController extends Controller
             'fuels',
             'documents',
             'payrolls',
+            'maintenances',
+            'penalties',
             'tripCount',
             'tripIncome',
             'fuelCost',
             'salaryCost',
+            'maintenanceCost',
+            'penaltyCost',
             'documentCount',
-            'netProfit'
+            'netProfit',
+            'trendMonths',
+            'trendIncomes',
+            'trendExpenses',
+            'trendProfits'
         ));
     }
 

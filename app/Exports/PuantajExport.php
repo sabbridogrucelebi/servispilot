@@ -61,12 +61,16 @@ class PuantajExport implements FromView, WithStyles, WithTitle, WithEvents
 
         // ===== ROW 1: Firma Adı (Merged Header) =====
         $sheet->mergeCells("A1:{$lastCol}1");
-        $sheet->setCellValue('A1', ($this->data['selectedCustomer']->company_name ?? 'Puantaj') . ' — ' . ($this->data['monthOptions'][$this->data['selectedMonth']] ?? '') . ' ' . ($this->data['selectedYear'] ?? '') . ' Puantaj Raporu');
+        $sheet->setCellValue('A1', ($this->data['selectedCustomer']->company_name ?? 'Puantaj') . ' — ' . ($this->data['monthOptions'][$this->data['selectedMonth']] ?? '') . ' ' . ($this->data['selectedYear'] ?? '') . ' Dönemi Servis Kayıtları');
         $sheet->getStyle('A1')->applyFromArray([
             'font' => [
                 'bold' => true,
-                'size' => 14,
-                'color' => ['argb' => 'FF1E293B'],
+                'size' => 16,
+                'color' => ['argb' => 'FFFFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FF1E3A8A'], // Premium Koyu Mavi
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -77,12 +81,16 @@ class PuantajExport implements FromView, WithStyles, WithTitle, WithEvents
 
         // ===== ROW 2: Alt Bilgi =====
         $sheet->mergeCells("A2:{$lastCol}2");
-        $sheet->setCellValue('A2', 'Oluşturulma: ' . now()->format('d.m.Y H:i') . ' • Güzergah Sayısı: ' . $routeCount);
+        $sheet->setCellValue('A2', 'Oluşturulma Tarihi: ' . now()->format('d.m.Y H:i') . ' • Güzergah Sayısı: ' . $routeCount . ' • ServisPilot Premium Motoru');
         $sheet->getStyle('A2')->applyFromArray([
             'font' => [
                 'italic' => true,
-                'size' => 8,
-                'color' => ['argb' => 'FF64748B'],
+                'size' => 9,
+                'color' => ['argb' => 'FFFFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FF3B82F6'], // Açık Mavi Şerit
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -221,21 +229,37 @@ class PuantajExport implements FromView, WithStyles, WithTitle, WithEvents
 
         for ($r = $summaryStart; $r <= $highestRow; $r++) {
             $sheet->getStyle("A{$r}")->applyFromArray([
-                'font' => ['bold' => true, 'size' => 9],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
+                'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF4B5563']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FFF9FAFB'],
+                ],
             ]);
             $sheet->getStyle("B{$r}")->applyFromArray([
-                'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF1E293B']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['argb' => 'FF111827']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
             ]);
             $sheet->mergeCells("B{$r}:{$lastCol}{$r}");
+            $sheet->getRowDimension($r)->setRowHeight(25);
+            
+            // Eğer Net Fatura satırı ise (genellikle en son satırdır) yeşil vurgu yap
+            if ($r == $highestRow) {
+                $sheet->getStyle("A{$r}:B{$r}")->applyFromArray([
+                    'font' => ['bold' => true, 'size' => 12, 'color' => ['argb' => 'FF047857']], // Zümrüt Yeşili Yazı
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['argb' => 'FFD1FAE5'], // Açık Yeşil Arka Plan
+                    ],
+                ]);
+            }
         }
 
         // ===== COLUMN WIDTHS =====
-        $sheet->getColumnDimension('A')->setWidth(24);
+        $sheet->getColumnDimension('A')->setWidth(35); // Güzergah Sütunu Geniş
         for ($c = 2; $c <= $totalCols; $c++) {
             $colLetter = Coordinate::stringFromColumnIndex($c);
-            $sheet->getColumnDimension($colLetter)->setWidth($c === $totalCols ? 10 : 7);
+            $sheet->getColumnDimension($colLetter)->setWidth($c === $totalCols ? 12 : 6);
         }
 
         // Freeze pane

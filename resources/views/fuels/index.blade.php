@@ -292,11 +292,14 @@
                         İşlem Kayıtları
                     </a>
 
+                    @if(auth()->user()->hasPermission('fuels.create'))
                     <button type="button"
                             @click="showImportModal = true"
-                            class="inline-flex items-center rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-100">
-                        Excel Yükle
+                            class="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-2xl font-black text-sm transition-all shadow-sm hover:-translate-y-0.5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        TOPLU EKLE
                     </button>
+                    @endif
 
                     <a href="{{ route('reports.fuels.csv', request()->query()) }}"
                        class="inline-flex items-center rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100">
@@ -598,72 +601,124 @@
         </div>
     </div>
 
-    <template x-teleport="body">
-        <div x-cloak x-show="showImportModal" x-transition.opacity class="fixed inset-0 z-[9999]" style="display:none;">
-            <div class="absolute inset-0 bg-slate-900/55 backdrop-blur-[3px]" @click="showImportModal = false"></div>
+    {{-- Toplu Yakıt Ekle Modal --}}
+    @if(auth()->user()->hasPermission('fuels.create'))
+    <div x-show="showImportModal" 
+         x-cloak
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+        
+        <div x-show="showImportModal" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+             @click="showImportModal = false"></div>
 
-            <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6">
-                <div
-                    x-show="showImportModal"
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                    x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-                    class="w-full max-w-2xl overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_40px_120px_rgba(15,23,42,0.28)]"
-                    @click.stop
-                >
-                    <div class="border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-violet-50/40 px-6 py-5">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Excel ile Yakıt Yükle</h3>
-                                <p class="mt-1 text-sm text-slate-500">Toplu yakıt kayıtlarını Excel dosyasından içe aktar</p>
+        <div x-show="showImportModal" 
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="relative bg-white rounded-[32px] shadow-2xl overflow-hidden w-full max-w-xl transform transition-all border border-slate-100 flex flex-col max-h-[90vh]">
+            
+            {{-- Header --}}
+            <div class="px-8 py-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Toplu Yakıt Ekle</h3>
+                    <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Excel Dosyası ile İçe Aktar</p>
+                </div>
+                <button @click="showImportModal = false" class="text-slate-400 hover:text-rose-500 transition-colors">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            {{-- Form --}}
+            <form action="{{ route('fuels.import') }}" method="POST" enctype="multipart/form-data" class="flex flex-col min-h-0">
+                @csrf
+                <div class="p-8 space-y-6 overflow-y-auto">
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5">
+                        <div class="flex items-start gap-4">
+                            <div class="h-10 w-10 shrink-0 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
-
-                            <button type="button"
-                                    @click="showImportModal = false"
-                                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 hover:text-slate-700">
-                                ✕
-                            </button>
+                            <div>
+                                <h4 class="text-sm font-black text-indigo-900 mb-1">Örnek Şablonu İndirin</h4>
+                                <p class="text-[11px] font-bold text-indigo-700/70 mb-3 leading-relaxed">
+                                    Yakıt kayıtlarını sisteme sorunsuz aktarmak için öncelikle örnek Excel şablonunu indirin ve doğru formatta doldurun.
+                                </p>
+                                <a href="{{ route('fuels.import.template') }}" class="inline-flex items-center gap-1.5 text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-indigo-200 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    ŞABLONU İNDİR
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <form action="{{ route('fuels.import') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
-                        @csrf
-
-                        <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-                            <p class="text-sm font-medium text-slate-700">Excel dosyanı seç</p>
-                            <p class="mt-1 text-xs text-slate-500">xlsx, xls veya csv yükleyebilirsin</p>
-
-                            <input type="file"
-                                   name="file"
-                                   accept=".xlsx,.xls,.csv"
-                                   required
-                                   class="mt-4 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                    {{-- Excel Sütun Rehberi --}}
+                    <div>
+                        <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Sütun Doldurma Rehberi</h4>
+                        <div class="grid grid-cols-2 gap-3 text-[10px] font-medium text-slate-600">
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                                <span class="font-black text-slate-800 block mb-0.5">A) plaka <span class="text-rose-500">*</span></span>
+                                Aracın plakası (Örn: 34ABC123)
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                                <span class="font-black text-slate-800 block mb-0.5">B) yakit_turu</span>
+                                Dizel, Benzin vb. (Boş: Dizel)
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                                <span class="font-black text-slate-800 block mb-0.5">C) istasyon</span>
+                                Örn: Shell Ataşehir
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                                <span class="font-black text-slate-800 block mb-0.5">D) tarih <span class="text-rose-500">*</span></span>
+                                Alım tarihi (Örn: 15.05.2026)
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                                <span class="font-black text-slate-800 block mb-0.5">E) litre</span>
+                                Alınan yakıt miktarı
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                                <span class="font-black text-slate-800 block mb-0.5">F) litre_fiyati</span>
+                                1 litre fiyatı (İndirimsiz)
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                                <span class="font-black text-slate-800 block mb-0.5">G) km</span>
+                                O anki kilometre
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                                <span class="font-black text-slate-800 block mb-0.5">H) notlar</span>
+                                Ek bilgiler (Örn: Nakit alındı)
+                            </div>
                         </div>
+                    </div>
 
-                        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
-                            Şablon sütun sırası: <strong>Plaka, Tarih, KM, Litre, Birim Fiyat, Yakıt Türü, İstasyon, Not</strong>
-                        </div>
-
-                        <div class="flex justify-end gap-3">
-                            <button type="button"
-                                    @click="showImportModal = false"
-                                    class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                                Vazgeç
-                            </button>
-
-                            <button type="submit"
-                                    class="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200/60 transition hover:scale-[1.01]">
-                                Yüklemeyi Başlat
-                            </button>
-                        </div>
-                    </form>
+                    <div>
+                        <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Excel Dosyası (.xlsx, .xls, .csv)</label>
+                        <input type="file" name="excel_file" required accept=".xlsx,.xls,.csv"
+                               class="w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-black file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 transition-all border border-slate-200 rounded-2xl cursor-pointer">
+                    </div>
                 </div>
-            </div>
+
+                {{-- Footer --}}
+                <div class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
+                    <button type="button" @click="showImportModal = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-xl transition-all">
+                        İptal
+                    </button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black text-sm transition-all shadow-lg shadow-indigo-200 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        YÜKLE VE AKTAR
+                    </button>
+                </div>
+            </form>
         </div>
-    </template>
+    </div>
+    @endif
 </div>
 
 <style>

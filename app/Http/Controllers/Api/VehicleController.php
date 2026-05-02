@@ -87,6 +87,13 @@ class VehicleController extends Controller
 
     public function store(Request $request)
     {
+        $company = $request->user()->company;
+        if (!is_null($company->max_vehicles) && $company->vehicles()->count() >= $company->max_vehicles) {
+            return response()->json([
+                'message' => 'Maksimum araç kotanıza (' . $company->max_vehicles . ') ulaştınız. Lütfen paketinizi yükseltin.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'plate' => 'required|string|max:20|unique:vehicles,plate',
             'brand' => 'nullable|string|max:100',

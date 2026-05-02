@@ -1,19 +1,77 @@
-import React, { useContext, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import React, { useContext, useState, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Dimensions, Animated, Keyboard, Easing } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import SpaceWaves from '../components/SpaceWaves';
+import { Image } from 'react-native';
 
-export default function LoginScreen() {
+const { width } = Dimensions.get('window');
+
+export default function LoginScreen({ navigation }) {
+    const [loginStep, setLoginStep] = useState('choose'); // 'choose' | 'form'
+    const [loginType, setLoginType] = useState(null); // 'personnel' | 'parent' | 'driver'
+    
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
+    const [focusedInput, setFocusedInput] = useState(null);
     const { login, isLoading } = useContext(AuthContext);
+
+    // Animasyonlar
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(30)).current;
+    const formFadeAnim = useRef(new Animated.Value(0)).current;
+    const formSlideAnim = useRef(new Animated.Value(20)).current;
+    
+    // Bounce animasyonları için
+    const scaleAnim1 = useRef(new Animated.Value(1)).current;
+    const scaleAnim2 = useRef(new Animated.Value(1)).current;
+    const scaleAnim3 = useRef(new Animated.Value(1)).current;
+
+    const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+            Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true })
+        ]).start();
+
+        const kS = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
+        const kH = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
+
+        return () => { kS.remove(); kH.remove(); };
+    }, []);
+
+    const handleSelectType = (type, scaleAnim) => {
+        Animated.sequence([
+            Animated.timing(scaleAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+            Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true })
+        ]).start(() => {
+            setLoginType(type);
+            setEmail('');
+            setPassword('');
+            setLoginStep('form');
+            
+            // Formu gösterirken animasyon
+            formFadeAnim.setValue(0);
+            formSlideAnim.setValue(20);
+            Animated.parallel([
+                Animated.timing(formFadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+                Animated.timing(formSlideAnim, { toValue: 0, duration: 400, easing: Easing.out(Easing.ease), useNativeDriver: true })
+            ]).start();
+        });
+    };
+
+    const handleBack = () => {
+        setLoginStep('choose');
+    };
 
     const handleLogin = async () => {
         if (!email || !password) {
-            Alert.alert('Uyarı', 'Lütfen e-posta ve şifrenizi girin.');
+            Alert.alert('Uyarı', 'Lütfen kimlik bilgilerinizi girin.');
             return;
         }
         try {
@@ -23,197 +81,194 @@ export default function LoginScreen() {
         }
     };
 
+    const getFormTitle = () => {
+        if (loginType === 'personnel') return 'Kurumsal Giriş';
+        if (loginType === 'parent') return 'Öğrenci / Veli Girişi';
+        if (loginType === 'driver') return 'Araç Girişi';
+    };
+
+    const getInputLabel = () => {
+        if (loginType === 'parent' || loginType === 'driver') return 'Telefon Numaranız';
+        return 'E-posta veya Kullanıcı Adı';
+    };
+
     return (
-        <View style={styles.container}>
-            {/* Arka plan uzay dalgaları animasyonu (Siyah Tema) */}
-            <SpaceWaves />
-
-            {/* Asıl Giriş Formu */}
-            <View style={styles.formContainer}>
-                <SafeAreaView style={{ flex: 1 }}>
-                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : null}>
+            <View style={styles.container}>
+                <SpaceWaves />
+                
+                <SafeAreaView style={styles.safeArea}>
+                    <Animated.View style={[styles.contentWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
                         
-                        <View style={styles.headerContent}>
-                            <View style={styles.logoCircle}>
-                                <Icon name="domain" size={36} color="#000000" />
-                            </View>
-                            <Text style={styles.brandName}>IRMAK TURİZM</Text>
-                            <Text style={styles.brandSubtitle}>Kurumsal Filo Yönetimi</Text>
-                        </View>
-
-                        <View style={styles.formCard}>
-                            <Text style={styles.welcomeTitle}>Sisteme Giriş</Text>
-                            <Text style={styles.welcomeSubtitle}>Yetkili hesabınızla devam edin</Text>
-
-                            <View style={styles.inputContainer}>
-                                <View style={styles.inputIconBox}>
-                                    <Icon name="email-outline" size={22} color="#94A3B8" />
+                        {/* Başlık ve Logo Alanı */}
+                        {!isKeyboardVisible && (
+                            <View style={styles.headerArea}>
+                                <View style={styles.logoWrap}>
+                                    <Image source={require('../../assets/icon.png')} style={styles.logoImage} />
+                                    <Text style={styles.brandWhite}>Filo<Text style={styles.brandPurple}>MERKEZ</Text></Text>
                                 </View>
-                                <TextInput 
-                                    style={styles.input}
-                                    placeholder="E-posta adresiniz"
-                                    placeholderTextColor="#94A3B8"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    autoCapitalize="none"
-                                    keyboardType="email-address"
-                                />
                             </View>
+                        )}
 
-                            <View style={styles.inputContainer}>
-                                <View style={styles.inputIconBox}>
-                                    <Icon name="lock-outline" size={22} color="#94A3B8" />
+                        {loginStep === 'choose' ? (
+                            <View style={styles.chooseCard}>
+                                <Text style={styles.chooseTitle}>Giriş Yöntemi Seçin</Text>
+                                <Text style={styles.chooseDesc}>Uygulamaya hangi profille giriş yapmak istediğinizi seçin.</Text>
+                                
+                                <View style={styles.optionsWrap}>
+                                    <Animated.View style={{ transform: [{ scale: scaleAnim1 }] }}>
+                                        <TouchableOpacity activeOpacity={1} onPress={() => handleSelectType('personnel', scaleAnim1)} style={styles.optionBox}>
+                                            <LinearGradient colors={['#6366F1', '#4F46E5']} style={styles.optionIconWrap}>
+                                                <Icon name="domain" size={28} color="#fff" />
+                                            </LinearGradient>
+                                            <View style={styles.optionTextWrap}>
+                                                <Text style={styles.optionTitle}>Kurumsal Giriş</Text>
+                                                <Text style={styles.optionSub}>Yönetici ve Şirket personeli</Text>
+                                            </View>
+                                            <Icon name="chevron-right" size={24} color="#64748B" />
+                                        </TouchableOpacity>
+                                    </Animated.View>
+
+                                    <Animated.View style={{ transform: [{ scale: scaleAnim2 }] }}>
+                                        <TouchableOpacity activeOpacity={1} onPress={() => handleSelectType('parent', scaleAnim2)} style={styles.optionBox}>
+                                            <LinearGradient colors={['#8B5CF6', '#7C3AED']} style={styles.optionIconWrap}>
+                                                <Icon name="account-school" size={28} color="#fff" />
+                                            </LinearGradient>
+                                            <View style={styles.optionTextWrap}>
+                                                <Text style={styles.optionTitle}>Öğrenci Girişi</Text>
+                                                <Text style={styles.optionSub}>Veliler ve Öğrenciler için</Text>
+                                            </View>
+                                            <Icon name="chevron-right" size={24} color="#64748B" />
+                                        </TouchableOpacity>
+                                    </Animated.View>
+
+                                    <Animated.View style={{ transform: [{ scale: scaleAnim3 }] }}>
+                                        <TouchableOpacity activeOpacity={1} onPress={() => handleSelectType('driver', scaleAnim3)} style={styles.optionBox}>
+                                            <LinearGradient colors={['#38BDF8', '#0284C7']} style={styles.optionIconWrap}>
+                                                <Icon name="bus" size={28} color="#fff" />
+                                            </LinearGradient>
+                                            <View style={styles.optionTextWrap}>
+                                                <Text style={styles.optionTitle}>Araç Girişi</Text>
+                                                <Text style={styles.optionSub}>Şoför ve Hostesler için</Text>
+                                            </View>
+                                            <Icon name="chevron-right" size={24} color="#64748B" />
+                                        </TouchableOpacity>
+                                    </Animated.View>
                                 </View>
-                                <TextInput 
-                                    style={styles.input}
-                                    placeholder="Şifreniz"
-                                    placeholderTextColor="#94A3B8"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry={!showPassword}
-                                />
-                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-                                    <Icon name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color="#94A3B8" />
+                            </View>
+                        ) : (
+                            <Animated.View style={[styles.card, { opacity: formFadeAnim, transform: [{ translateY: formSlideAnim }] }]}>
+                                <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+                                    <Icon name="arrow-left" size={20} color="#94A3B8" />
+                                    <Text style={styles.backTxt}>Geri Dön</Text>
                                 </TouchableOpacity>
-                            </View>
 
-                            <TouchableOpacity style={styles.forgotBtn}>
-                                <Text style={styles.forgotText}>Şifremi Unuttum</Text>
-                            </TouchableOpacity>
+                                <Text style={styles.cardTitle}>{getFormTitle()}</Text>
+                                <Text style={styles.cardDesc}>Devam etmek için giriş bilgilerinizi yazın.</Text>
 
-                            <TouchableOpacity 
-                                onPress={handleLogin}
-                                disabled={isLoading}
-                                activeOpacity={0.85}
-                                style={styles.loginBtn}
-                            >
-                                {isLoading ? (
-                                    <ActivityIndicator color="#ffffff" />
-                                ) : (
-                                    <Text style={styles.loginBtnText}>Güvenli Giriş</Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </KeyboardAvoidingView>
+                                <Text style={styles.inputLabel}>{getInputLabel()}</Text>
+                                <View style={[styles.inputWrap, focusedInput === 'email' && styles.inputWrapFocused]}>
+                                    <TextInput 
+                                        style={styles.input} 
+                                        placeholder={loginType === 'parent' || loginType === 'driver' ? 'Örn: 0555...' : 'E-posta veya Kullanıcı Adı'} 
+                                        placeholderTextColor="#64748B"
+                                        value={email} 
+                                        onChangeText={setEmail} 
+                                        autoCapitalize="none"
+                                        keyboardType={loginType === 'parent' || loginType === 'driver' ? 'phone-pad' : 'email-address'}
+                                        onFocus={() => setFocusedInput('email')}
+                                        onBlur={() => setFocusedInput(null)}
+                                    />
+                                </View>
+
+                                <View style={styles.labelRow}>
+                                    <Text style={styles.inputLabel}>Şifre</Text>
+                                    <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} activeOpacity={0.8}>
+                                        <Text style={styles.forgotTxt}>Şifremi Unuttum</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={[styles.inputWrap, focusedInput === 'password' && styles.inputWrapFocused]}>
+                                    <TextInput 
+                                        style={styles.input} 
+                                        placeholder="••••••••" 
+                                        placeholderTextColor="#64748B"
+                                        value={password} 
+                                        onChangeText={setPassword} 
+                                        secureTextEntry={!showPassword}
+                                        onFocus={() => setFocusedInput('password')}
+                                        onBlur={() => setFocusedInput(null)}
+                                    />
+                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+                                        <Icon name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#64748B" />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <TouchableOpacity style={styles.rememberRow} onPress={() => setRememberMe(!rememberMe)} activeOpacity={0.8}>
+                                    <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
+                                        {rememberMe && <Icon name="check" size={14} color="#fff" />}
+                                    </View>
+                                    <Text style={styles.rememberTxt}>Beni hatırla</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity 
+                                    style={[styles.loginBtn, isLoading && styles.loginBtnDisabled]} 
+                                    onPress={handleLogin} 
+                                    disabled={isLoading}
+                                    activeOpacity={0.8}
+                                >
+                                    {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginBtnTxt}>Giriş Yap</Text>}
+                                </TouchableOpacity>
+                            </Animated.View>
+                        )}
+                    </Animated.View>
                 </SafeAreaView>
             </View>
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#040B16', // Derin Uzay Mavisi
-    },
-    formContainer: {
-        flex: 1,
-        zIndex: 5,
-    },
-    keyboardView: {
-        flex: 1,
-        justifyContent: 'center',
-        paddingHorizontal: 24,
-    },
-    headerContent: {
-        alignItems: 'center',
-        marginBottom: 40,
-    },
-    logoCircle: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#ffffff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#ffffff',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 6,
-        marginBottom: 16,
-    },
-    brandName: {
-        fontSize: 32,
-        fontWeight: '900',
-        color: '#ffffff',
-        letterSpacing: 1,
-    },
-    brandSubtitle: {
-        fontSize: 14,
-        color: 'rgba(255,255,255,0.7)',
-        marginTop: 4,
-        fontWeight: '500',
-        textTransform: 'uppercase',
-        letterSpacing: 2,
-    },
-    formCard: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 28,
-        padding: 28,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        backdropFilter: 'blur(10px)',
-    },
-    welcomeTitle: {
-        fontSize: 26,
-        fontWeight: '900',
-        color: '#ffffff',
-        marginBottom: 4,
-    },
-    welcomeSubtitle: {
-        fontSize: 15,
-        color: '#94A3B8',
-        fontWeight: '500',
-        marginBottom: 32,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 16,
-        marginBottom: 16,
-        paddingHorizontal: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
-    },
-    inputIconBox: {
-        marginRight: 12,
-    },
-    input: {
-        flex: 1,
-        paddingVertical: 18,
-        fontSize: 16,
-        color: '#ffffff',
-        fontWeight: '600',
-    },
-    eyeBtn: {
-        padding: 4,
-    },
-    forgotBtn: {
-        alignSelf: 'flex-end',
-        marginBottom: 24,
-    },
-    forgotText: {
-        color: '#3B82F6',
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    loginBtn: {
-        backgroundColor: '#3B82F6',
-        paddingVertical: 18,
-        borderRadius: 16,
-        alignItems: 'center',
-        shadowColor: '#3B82F6',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 15,
-        elevation: 6,
-    },
-    loginBtnText: {
-        color: '#ffffff',
-        fontSize: 17,
-        fontWeight: '800',
-        letterSpacing: 1,
-    },
+    container: { flex: 1, backgroundColor: '#020617' },
+    safeArea: { flex: 1, justifyContent: 'center', paddingHorizontal: 20 },
+    contentWrap: { flex: 1, justifyContent: 'center' },
+    
+    headerArea: { marginBottom: 30, alignItems: 'center' },
+    logoWrap: { flexDirection: 'row', alignItems: 'center' },
+    logoImage: { width: 52, height: 52, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.4)' },
+    brandWhite: { fontSize: 32, fontWeight: '900', color: '#fff', marginLeft: 14, letterSpacing: -1 },
+    brandPurple: { color: '#8B5CF6' },
+
+    chooseCard: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowOpacity: 0.4, shadowRadius: 30, elevation: 20 },
+    chooseTitle: { fontSize: 22, fontWeight: '900', color: '#fff', marginBottom: 6, textAlign: 'center' },
+    chooseDesc: { fontSize: 13, color: '#94A3B8', marginBottom: 24, textAlign: 'center', paddingHorizontal: 10 },
+    optionsWrap: { gap: 12 },
+    optionBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(2, 6, 23, 0.5)', padding: 12, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+    optionIconWrap: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+    optionTextWrap: { flex: 1, marginLeft: 16 },
+    optionTitle: { color: '#fff', fontSize: 16, fontWeight: '800', marginBottom: 2 },
+    optionSub: { color: '#94A3B8', fontSize: 12, fontWeight: '500' },
+
+    card: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowOpacity: 0.4, shadowRadius: 30, elevation: 20 },
+    backBtn: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, alignSelf: 'flex-start', paddingVertical: 4, paddingRight: 10 },
+    backTxt: { color: '#94A3B8', fontSize: 14, fontWeight: '700', marginLeft: 6 },
+    cardTitle: { fontSize: 24, fontWeight: '900', color: '#fff', marginBottom: 6, letterSpacing: -0.5 },
+    cardDesc: { fontSize: 13, color: '#94A3B8', marginBottom: 24 },
+
+    labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, marginTop: 16 },
+    inputLabel: { fontSize: 12, fontWeight: '700', color: '#94A3B8', letterSpacing: 0.5, marginBottom: 8 },
+    forgotTxt: { fontSize: 12, fontWeight: '700', color: '#8B5CF6', letterSpacing: 0.2 },
+    
+    inputWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(2, 6, 23, 0.6)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+    inputWrapFocused: { borderColor: '#8B5CF6', backgroundColor: 'rgba(139, 92, 246, 0.05)' },
+    input: { flex: 1, paddingHorizontal: 16, paddingVertical: 16, color: '#fff', fontSize: 15 },
+    eyeBtn: { padding: 16 },
+
+    rememberRow: { flexDirection: 'row', alignItems: 'center', marginTop: 16, marginBottom: 24 },
+    checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 1, borderColor: '#334155', backgroundColor: 'rgba(2, 6, 23, 0.6)', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+    checkboxActive: { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
+    rememberTxt: { color: '#E2E8F0', fontSize: 13, fontWeight: '500' },
+
+    loginBtn: { backgroundColor: '#6366F1', paddingVertical: 16, borderRadius: 16, alignItems: 'center', shadowColor: '#6366F1', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8 },
+    loginBtnDisabled: { opacity: 0.7 },
+    loginBtnTxt: { color: '#fff', fontSize: 15, fontWeight: '800', letterSpacing: 0.5 }
 });

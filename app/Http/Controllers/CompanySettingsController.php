@@ -8,6 +8,8 @@ class CompanySettingsController extends Controller
 {
     public function edit()
     {
+        abort_unless(auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin(), 403, 'Bu sayfaya erişim yetkiniz yok.');
+
         $company = auth()->user()->company;
 
         abort_unless($company, 404, 'Firma kaydı bulunamadı.');
@@ -17,6 +19,8 @@ class CompanySettingsController extends Controller
 
     public function update(Request $request)
     {
+        abort_unless(auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin(), 403, 'Bu işlem için yetkiniz yok.');
+
         $company = auth()->user()->company;
 
         abort_unless($company, 404, 'Firma kaydı bulunamadı.');

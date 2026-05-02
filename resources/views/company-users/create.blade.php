@@ -15,6 +15,15 @@
     <form action="{{ route('company-users.store') }}" method="POST">
         @csrf
 
+        @if(session('error'))
+            <div class="mb-6 flex items-center gap-4 rounded-[26px] bg-rose-50 border border-rose-100 p-5 text-rose-700 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-200">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <p class="text-sm font-bold">{{ session('error') }}</p>
+            </div>
+        @endif
+
         <div class="grid gap-6">
             <!-- Temel Bilgiler -->
             <div class="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
@@ -80,28 +89,7 @@
             </div>
 
             <!-- Menü Yetkileri -->
-            <div class="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-                <div class="mb-8 flex items-center gap-4">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04a11.357 11.357 0 00-1.018 4.772c0 4.113 2.193 7.713 5.5 9.69a11.354 11.354 0 0011.001 0c3.307-1.977 5.5-5.577 5.5-9.69a11.357 11.357 0 00-1.018-4.772z"></path></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-black text-slate-900 tracking-tight">Menü Erişimi</h2>
-                        <p class="text-sm font-medium text-slate-400">Kullanıcının görebileceği modülleri belirleyin</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    @foreach($permissions as $permission)
-                        <label class="group relative flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:border-purple-200 hover:bg-white hover:shadow-lg hover:shadow-purple-100 cursor-pointer">
-                            <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" 
-                                   {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}
-                                   class="h-5 w-5 rounded-lg border-slate-200 text-purple-600 focus:ring-purple-500">
-                            <span class="text-xs font-black text-slate-700 group-hover:text-purple-700 transition-colors uppercase tracking-tight">{{ $permission->label }}</span>
-                        </label>
-                    @endforeach
-                </div>
-            </div>
+            @include('company-users.partials.permissions', ['selectedPermissions' => old('permissions', [])])
 
             <!-- Submit -->
             <div class="flex items-center justify-end gap-4 mt-4">

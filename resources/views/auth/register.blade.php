@@ -3,7 +3,7 @@
     <div class="text-center lg:text-left">
         <h2 class="text-3xl font-black tracking-tight text-white">Yeni Kayıt</h2>
         <p class="mt-3 text-sm font-medium text-slate-400">
-            ServisPilot ailesine katılmak için formu doldurun.
+            FiloMERKEZ ailesine katılmak için formu doldurun.
         </p>
     </div>
 

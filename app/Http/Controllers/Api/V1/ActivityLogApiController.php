@@ -32,7 +32,9 @@ class ActivityLogApiController extends BaseApiController
         $companyId = $this->getCompanyId();
         $perPage = $request->input('per_page', 20);
 
-        $paginator = $this->activityLogService->getLogsPaginated($companyId, $perPage);
+        $filters = $request->only(['module', 'action', 'user_id', 'from', 'to', 'search']);
+
+        $paginator = $this->activityLogService->getLogsPaginated($companyId, $filters, $perPage);
 
         // Standart V1 Pagination Response
         return response()->json([

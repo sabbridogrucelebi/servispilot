@@ -27,6 +27,9 @@ class User extends Authenticatable
         'user_type',
         'is_active',
         'is_super_admin',
+        'permissions_updated_at',
+        'profile_photo',
+        'expo_push_token',
     ];
 
     protected $hidden = [
@@ -35,9 +38,10 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'is_active'         => 'boolean',
-        'is_super_admin'    => 'boolean',
+        'email_verified_at'      => 'datetime',
+        'permissions_updated_at' => 'datetime',
+        'is_active'              => 'boolean',
+        'is_super_admin'         => 'boolean',
     ];
 
     /*
@@ -59,6 +63,13 @@ class User extends Authenticatable
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'user_permissions')->withTimestamps();
+    }
+
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\Chat\Conversation::class, 'conversation_user')
+            ->withPivot('last_read_message_id', 'deleted_at')
+            ->withTimestamps();
     }
 
     /*

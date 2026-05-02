@@ -64,6 +64,7 @@
                             <th class="px-6 py-3 font-semibold">E-posta</th>
                             <th class="px-6 py-3 font-semibold">Rol</th>
                             <th class="px-6 py-3 font-semibold text-center">Durum</th>
+                            <th class="px-6 py-3 font-semibold text-right">İşlem</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -76,8 +77,10 @@
                                 <td class="px-6 py-3 font-medium text-slate-900">{{ $u->name }}</td>
                                 <td class="px-6 py-3 text-slate-600">{{ $u->email }}</td>
                                 <td class="px-6 py-3"><span class="rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $role[1] }}">{{ $role[0] }}</span></td>
-                                <td class="px-6 py-3 text-center">
                                     @if($u->is_active)<span class="inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>@else<span class="inline-flex h-2 w-2 rounded-full bg-slate-300"></span>@endif
+                                </td>
+                                <td class="px-6 py-3 text-right">
+                                    <button type="button" onclick="openPasswordModal({{ $u->id }}, '{{ addslashes($u->name) }}')" class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">Şifre Değiştir</button>
                                 </td>
                             </tr>
                         @endforeach
@@ -137,4 +140,42 @@
 <div class="mt-6">
     <a href="{{ route('super-admin.companies.index') }}" class="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">← Firmalara Dön</a>
 </div>
+</div>
+
+{{-- ŞİFRE DEĞİŞTİRME MODAL --}}
+<div id="passwordModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold text-slate-900"><span id="passwordModalUserName" class="text-indigo-600"></span> - Şifre Değiştir</h3>
+            <button type="button" onclick="closePasswordModal()" class="text-slate-400 hover:text-slate-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form id="passwordForm" method="POST" action="">
+            @csrf
+            @method('PUT')
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Yeni Şifre</label>
+                <input type="text" name="password" required minlength="8" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="En az 8 karakter">
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closePasswordModal()" class="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">İptal</button>
+                <button type="submit" class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition">Şifreyi Güncelle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openPasswordModal(userId, userName) {
+        document.getElementById('passwordModalUserName').innerText = userName;
+        document.getElementById('passwordForm').action = `/super-admin/users/${userId}/password`;
+        document.getElementById('passwordModal').classList.remove('hidden');
+    }
+
+    function closePasswordModal() {
+        document.getElementById('passwordModal').classList.add('hidden');
+    }
+</script>
+
 @endsection

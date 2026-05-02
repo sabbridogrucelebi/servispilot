@@ -112,7 +112,7 @@
                             name="title"
                             value="{{ old('title') }}"
                             list="title-suggestions"
-                            class="uppercase-input w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                            class="titlecase-input w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
                             placeholder=""
                         >
                         <datalist id="title-suggestions">
@@ -185,19 +185,33 @@
                         <label class="mb-2 block text-sm font-semibold text-slate-700">
                             Usta
                         </label>
-                        <input
-                            type="text"
-                            name="service_name"
-                            value="{{ old('service_name') }}"
-                            list="master-suggestions"
-                            class="uppercase-input w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
-                            placeholder=""
+                        <select
+                            id="mechanic_select"
+                            onchange="toggleMechanicInput(this.value)"
+                            class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-wide text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
                         >
-                        <datalist id="master-suggestions">
+                            <option value="">Seçiniz</option>
                             @foreach($masters as $master)
-                                <option value="{{ $master }}"></option>
+                                <option value="{{ $master }}" {{ old('service_name') === $master ? 'selected' : '' }}>
+                                    {{ mb_strtoupper($master) }}
+                                </option>
                             @endforeach
-                        </datalist>
+                            <option value="other" {{ old('service_name') && !$masters->contains(old('service_name')) ? 'selected' : '' }}>DİĞER</option>
+                        </select>
+
+                        <div id="custom_mechanic_div" class="{{ old('service_name') && !$masters->contains(old('service_name')) ? 'block' : 'hidden' }} mt-3">
+                            <input
+                                type="text"
+                                id="mechanic_custom_input"
+                                name="service_name"
+                                value="{{ old('service_name') && !$masters->contains(old('service_name')) ? old('service_name') : '' }}"
+                                class="titlecase-input w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                                placeholder="Usta adı giriniz"
+                                {{ old('service_name') && !$masters->contains(old('service_name')) ? '' : 'disabled' }}
+                            >
+                        </div>
+                        <input type="hidden" id="mechanic_hidden_input" name="service_name" value="{{ $masters->contains(old('service_name')) ? old('service_name') : '' }}" {{ $masters->contains(old('service_name')) ? '' : 'disabled' }}>
+                        
                         @error('service_name')
                             <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                         @enderror
@@ -210,7 +224,7 @@
                         <textarea
                             name="description"
                             rows="5"
-                            class="uppercase-input w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                            class="titlecase-input w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
                             placeholder=""
                         >{{ old('description') }}</textarea>
                         @error('description')
@@ -249,22 +263,26 @@
 </div>
 
 <style>
-    .uppercase-input {
-        text-transform: uppercase;
-    }
-
-    .uppercase-input::placeholder {
-        text-transform: uppercase;
-    }
+    /* No uppercase transform, handled via JS */
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.uppercase-input').forEach(function (element) {
+    function toTitleCaseTr(str) {
+        if (!str) return '';
+        return str.split(' ').map(function(word) {
+            if (!word) return '';
+            var first = word.charAt(0).toLocaleUpperCase('tr-TR');
+            var rest = word.slice(1).toLocaleLowerCase('tr-TR');
+            return first + rest;
+        }).join(' ');
+    }
+
+    document.querySelectorAll('.titlecase-input').forEach(function (element) {
         element.addEventListener('input', function () {
             const start = this.selectionStart;
             const end = this.selectionEnd;
-            this.value = this.value.toLocaleUpperCase('tr-TR');
+            this.value = toTitleCaseTr(this.value);
             this.setSelectionRange(start, end);
         });
     });
@@ -315,7 +333,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (typeSelect) {
-        typeSelect.addEventListener('change', calculateNextKm);
+        typeSelect.addEventListener('change', function() {
+            calculateNextKm();
+
+            // Otomatik başlık (title) doldurma
+            const titleInput = document.querySelector('input[name="title"]');
+            const cat = (this.value || '').toUpperCase();
+            let newTitle = titleInput.value;
+
+            if (!newTitle || newTitle.endsWith('Yapıldı') || newTitle.endsWith('Bakımı')) {
+                if (cat === 'YAĞ BAKIMI') newTitle = 'Yağ Bakımı Yapıldı';
+                else if (cat === 'ALT YAĞLAMA') newTitle = 'Alt Yağlama Yapıldı';
+                else if (cat === 'LASTİK BAKIMI') newTitle = 'Lastik Bakımı Yapıldı';
+                else if (cat === 'AKÜ BAKIMI') newTitle = 'Akü Bakımı Yapıldı';
+                else if (cat === 'AĞIR BAKIM') newTitle = 'Ağır Bakım Yapıldı';
+                else if (cat === 'ANTFRİZ BAKIMI') newTitle = 'Antfriz Bakımı Yapıldı';
+                else if (cat === 'ARIZA/ONARIM' || cat === 'ARIZA / ONARIM') newTitle = 'Arıza Onarım Yapıldı';
+                else if (cat === 'MUAYENE') newTitle = 'Muayene Yapıldı';
+                else if (cat === 'DİĞER BAKIMLAR') newTitle = 'Bakım Yapıldı';
+
+                titleInput.value = newTitle;
+            }
+        });
     }
 
     if (kmInput) {
@@ -324,6 +363,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     calculateNextKm();
 });
+
+function toggleMechanicInput(val) {
+    const customDiv = document.getElementById('custom_mechanic_div');
+    const customInput = document.getElementById('mechanic_custom_input');
+    const hiddenInput = document.getElementById('mechanic_hidden_input');
+
+    if (val === 'other') {
+        customDiv.classList.remove('hidden');
+        customDiv.classList.add('block');
+        customInput.disabled = false;
+        hiddenInput.disabled = true;
+        hiddenInput.value = '';
+    } else {
+        customDiv.classList.add('hidden');
+        customDiv.classList.remove('block');
+        customInput.disabled = true;
+        hiddenInput.disabled = false;
+        hiddenInput.value = val;
+    }
+}
 </script>
 
 @endsection

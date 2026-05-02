@@ -1,89 +1,113 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { Animated, StyleSheet, View, Dimensions, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
-const PARTICLE_COUNT = 40;
 
-export default function SpaceWaves() {
-    const rotation = useRef(new Animated.Value(0)).current;
-    const pulse = useRef(new Animated.Value(0)).current;
+// Gerçekte 10000 view kasmaya neden olur, bu yüzden sayıyı artırıp boyutları küçülterek illüzyonu artırıyoruz.
+const STAR_COUNT = 500;
+
+const ShootingStar = ({ id }) => {
+    const anim = useRef(new Animated.Value(0)).current;
+    // Generate random values once per star instance
+    const randomStartX = useMemo(() => Math.random() * (width * 1.5) - width * 0.25, []);
+    const randomStartY = useMemo(() => Math.random() * -200 - 100, []);
+    const randomDelay = useMemo(() => Math.random() * 5000 + id * 300, []);
+    const randomDuration = useMemo(() => Math.random() * 800 + 1000, []);
+    const randomScale = useMemo(() => Math.random() * 0.5 + 0.5, []);
 
     useEffect(() => {
-        // Sürekli yavaş dönüş animasyonu
-        Animated.loop(
-            Animated.timing(rotation, {
+        const shoot = () => {
+            anim.setValue(0);
+            Animated.timing(anim, {
                 toValue: 1,
-                duration: 40000, // 40 saniyede bir tam tur
+                duration: randomDuration,
                 easing: Easing.linear,
-                useNativeDriver: true,
-            })
-        ).start();
+                useNativeDriver: true
+            }).start(() => {
+                setTimeout(shoot, 1000 + Math.random() * 5000);
+            });
+        };
+        setTimeout(shoot, randomDelay);
+    }, []);
 
-        // Nefes alma / dalga animasyonu
+    const translateX = anim.interpolate({ inputRange: [0, 1], outputRange: [randomStartX, randomStartX - width * 1.5] });
+    const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [randomStartY, randomStartY + height * 1.5] });
+    const opacity = anim.interpolate({ inputRange: [0, 0.1, 0.8, 1], outputRange: [0, 1, 1, 0] });
+
+    return (
+        <Animated.View 
+            style={[
+                styles.shootingStar, 
+                { transform: [{ translateX }, { translateY }, { rotate: '-45deg' }, { scale: randomScale }], opacity }
+            ]} 
+        />
+    );
+};
+
+export default function SpaceWaves() {
+    const twinkle = useRef(new Animated.Value(0)).current;
+    
+    useEffect(() => {
         Animated.loop(
             Animated.sequence([
-                Animated.timing(pulse, { toValue: 1, duration: 4000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-                Animated.timing(pulse, { toValue: 0, duration: 4000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+                Animated.timing(twinkle, { toValue: 1, duration: 2500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+                Animated.timing(twinkle, { toValue: 0, duration: 2500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
             ])
         ).start();
     }, []);
 
-    const spin = rotation.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0deg', '360deg']
-    });
-    
-    const spinReverse = rotation.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['360deg', '0deg']
-    });
-
-    const scale = pulse.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0.95, 1.05]
-    });
-
-    const renderParticles = (count, color, size, offsetRadius) => {
-        const particles = [];
-        for (let i = 0; i < count; i++) {
-            const angle = (i * (360 / count)) * (Math.PI / 180);
-            const x = Math.cos(angle) * offsetRadius;
-            const y = Math.sin(angle) * offsetRadius;
-            particles.push(
-                <View 
-                    key={i} 
-                    style={[
-                        styles.particle, 
-                        { backgroundColor: color, width: size, height: size, borderRadius: size / 2, transform: [{ translateX: x }, { translateY: y }] }
-                    ]} 
-                />
-            );
+    const stars = useMemo(() => {
+        const arr = [];
+        for (let i = 0; i < STAR_COUNT; i++) {
+            arr.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                size: Math.random() * 2.5 + 0.5, // 0.5 to 3.0 (büyüklü küçüklü)
+                opacity: Math.random() * 0.9 + 0.1,
+                isTwinkling: Math.random() > 0.4,
+                color: Math.random() > 0.8 ? '#E0F2FE' : (Math.random() > 0.6 ? '#FEF08A' : '#ffffff')
+            });
         }
-        return particles;
-    };
+        return arr;
+    }, []);
+
+    const twinkleOpacity = twinkle.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.1, 1]
+    });
 
     return (
         <View style={styles.container} pointerEvents="none">
-            {/* Arka plan derin uzay gece mavisi */}
-            <LinearGradient colors={['#040B16', '#0A1526', '#02050A']} style={StyleSheet.absoluteFillObject} />
+            {/* Gece mavisi gradyan arka plan */}
+            <LinearGradient colors={['#020617', '#0F172A', '#1E3A8A']} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
             
-            <Animated.View style={[styles.center, { transform: [{ rotate: spin }, { scale }] }]}>
-                {/* Farklı yörüngelerde dönen noktalı dalgalar */}
-                {renderParticles(16, '#3B82F6', 3, width * 0.3)} {/* Mavi */}
-                {renderParticles(24, '#10B981', 2, width * 0.45)} {/* Yeşil */}
-                {renderParticles(32, '#8B5CF6', 2.5, width * 0.6)} {/* Mor */}
-                {renderParticles(12, '#F59E0B', 4, width * 0.2)} {/* Turuncu */}
-                {renderParticles(40, '#ffffff', 1.5, width * 0.8)} {/* Beyaz uzak yıldızlar */}
-            </Animated.View>
+            <View style={StyleSheet.absoluteFillObject}>
+                {stars.map((star, i) => (
+                    <Animated.View 
+                        key={i} 
+                        style={[
+                            styles.star, 
+                            { 
+                                left: star.x, 
+                                top: star.y, 
+                                width: star.size, 
+                                height: star.size, 
+                                borderRadius: star.size / 2,
+                                backgroundColor: star.color,
+                                opacity: star.isTwinkling ? twinkleOpacity : star.opacity
+                            }
+                        ]} 
+                    />
+                ))}
+            </View>
+            
+            {/* Kayan Yıldızlar (Toplam 15 adet, farklı boyut, konum ve hızlarda) */}
+            {[...Array(15)].map((_, i) => (
+                <ShootingStar key={`shooting-star-${i}`} id={i} />
+            ))}
 
-            <Animated.View style={[styles.center, { transform: [{ rotate: spinReverse }, { scale }] }]}>
-                {/* Ters yöne dönen ekstra dalgalar */}
-                {renderParticles(20, '#06B6D4', 2, width * 0.5)} {/* Turkuaz */}
-                {renderParticles(15, '#EC4899', 3, width * 0.35)} {/* Pembe */}
-            </Animated.View>
-            
-            {/* Ortayı hafif aydınlatan çok hafif bir gradient hissi için bir view */}
+            {/* Merkez parlaklık illüzyonu */}
             <View style={styles.glow} />
         </View>
     );
@@ -93,20 +117,26 @@ const styles = StyleSheet.create({
     container: {
         ...StyleSheet.absoluteFillObject,
         overflow: 'hidden',
-        backgroundColor: '#040B16',
+        backgroundColor: '#020617',
     },
-    center: {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        width: 0,
-        height: 0,
-    },
-    particle: {
+    star: {
         position: 'absolute',
         shadowColor: '#ffffff',
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    shootingStar: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: 100,
+        height: 2,
+        backgroundColor: 'rgba(255,255,255,0.8)',
+        shadowColor: '#ffffff',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
         shadowRadius: 4,
         elevation: 5,
     },
@@ -114,11 +144,12 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: '50%',
         left: '50%',
-        width: width * 1.5,
-        height: width * 1.5,
-        marginLeft: -width * 0.75,
-        marginTop: -width * 0.75,
-        borderRadius: width * 0.75,
-        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+        width: width,
+        height: width,
+        marginLeft: -width / 2,
+        marginTop: -width / 2,
+        borderRadius: width / 2,
+        backgroundColor: 'rgba(59, 130, 246, 0.08)',
+        transform: [{ scale: 1.5 }],
     }
 });

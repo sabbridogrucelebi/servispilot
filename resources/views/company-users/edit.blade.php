@@ -54,14 +54,14 @@
 
                     <div class="space-y-2">
                         <label class="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Yeni Şifre</label>
-                        <input type="password" name="password" placeholder="Değiştirmek istemiyorsanız boş bırakın"
+                        <input type="password" name="password" placeholder="Değiştirmek istemiyorsanız boş bırakın" autocomplete="new-password"
                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold text-slate-900 transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10">
                         @error('password') <p class="px-2 text-xs font-bold text-rose-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="space-y-2">
                         <label class="px-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Şifre Tekrar</label>
-                        <input type="password" name="password_confirmation" 
+                        <input type="password" name="password_confirmation" autocomplete="new-password"
                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold text-slate-900 transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10">
                     </div>
 
@@ -87,28 +87,7 @@
             </div>
 
             <!-- Menü Yetkileri -->
-            <div class="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-                <div class="mb-8 flex items-center gap-4">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04a11.357 11.357 0 00-1.018 4.772c0 4.113 2.193 7.713 5.5 9.69a11.354 11.354 0 0011.001 0c3.307-1.977 5.5-5.577 5.5-9.69a11.357 11.357 0 00-1.018-4.772z"></path></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-black text-slate-900 tracking-tight">Menü Erişimi</h2>
-                        <p class="text-sm font-medium text-slate-400">Modül bazlı yetkileri düzenleyin</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    @foreach($permissions as $permission)
-                        <label class="group relative flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:border-purple-200 hover:bg-white hover:shadow-lg hover:shadow-purple-100 cursor-pointer">
-                            <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" 
-                                   {{ in_array($permission->id, old('permissions', $selectedPermissions)) ? 'checked' : '' }}
-                                   class="h-5 w-5 rounded-lg border-slate-200 text-purple-600 focus:ring-purple-500">
-                            <span class="text-xs font-black text-slate-700 group-hover:text-purple-700 transition-colors uppercase tracking-tight">{{ $permission->label }}</span>
-                        </label>
-                    @endforeach
-                </div>
-            </div>
+            @include('company-users.partials.permissions')
 
             <!-- Submit -->
             <div class="flex items-center justify-end gap-4 mt-4">

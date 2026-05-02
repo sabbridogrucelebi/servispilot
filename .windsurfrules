@@ -1,0 +1,15 @@
+ServisPilot is a dual-platform product (Laravel web panel + React Native mobile-app/).
+
+CRITICAL RULE: Any change to web behavior must be mirrored in the mobile app, and vice versa.
+
+When editing:
+- API controllers (app/Http/Controllers/Api/V1/) → also update mobile-app/src/screens/ and mobile-app/src/api/
+- Migrations → check mobile form fields
+- Permission slugs → check mobile hasPermission() calls
+- Validation rules → mirror them in mobile forms
+
+Read WEB_MOBIL_SENKRON_KURALLARI.md and AGENTS.md before any non-trivial change.
+
+Use the existing custom permission system (app/Models/User.php::hasPermission()), NOT Spatie.
+Every tenant model must use BelongsToCompany trait.
+Mobile axios is centralized in mobile-app/src/api/axios.js.

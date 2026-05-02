@@ -93,6 +93,52 @@ class DashboardService
             ->take(6)
             ->get();
 
+        // Bakım Sağlığı (Maintenance Health)
+        // Son 200 KM'ye düşen veya gecikmiş (<= 200) yağ ve alt yağlama bakımlarını bul
+        $vehiclesWithSettings = Vehicle::with(['maintenanceSetting', 'maintenances' => function($q) {
+            $q->whereIn('maintenance_type', ['YAĞ BAKIMI', 'ALT YAĞLAMA'])->where('status', 'completed');
+        }])->where('company_id', $companyId)->get();
+
+        $maintenanceHealth = [];
+        foreach ($vehiclesWithSettings as $vehicle) {
+            $status = $vehicle->maintenance_status;
+            $needsAttention = false;
+            $alerts = [];
+
+            if ($status['has_oil_setting'] && $status['oil_remaining'] !== null && $status['oil_remaining'] <= 200) {
+                $needsAttention = true;
+                $alerts[] = [
+                    'type' => 'YAĞ BAKIMI',
+                    'remaining' => $status['oil_remaining'],
+                    'percent' => $status['oil_percent']
+                ];
+            }
+            if ($status['has_lube_setting'] && $status['lube_remaining'] !== null && $status['lube_remaining'] <= 200) {
+                $needsAttention = true;
+                $alerts[] = [
+                    'type' => 'ALT YAĞLAMA',
+                    'remaining' => $status['lube_remaining'],
+                    'percent' => $status['lube_percent']
+                ];
+            }
+
+            if ($needsAttention) {
+                $maintenanceHealth[] = [
+                    'vehicle_id' => $vehicle->id,
+                    'plate' => $vehicle->plate,
+                    'current_km' => $status['current_km'],
+                    'alerts' => $alerts
+                ];
+            }
+        }
+
+        // Kalan km'ye göre küçükten büyüğe sırala (en aciller üstte)
+        usort($maintenanceHealth, function($a, $b) {
+            $minA = min(array_column($a['alerts'], 'remaining'));
+            $minB = min(array_column($b['alerts'], 'remaining'));
+            return $minA <=> $minB;
+        });
+
         return [
             'vehicle_count' => $vehicleCount,
             'driver_count' => $driverCount,
@@ -111,7 +157,8 @@ class DashboardService
             'total_salary' => $totalSalary,
             'net_profit' => $netProfit,
             'recent_trips' => $recentTrips,
-            'recent_activity' => $recentActivity
+            'recent_activity' => $recentActivity,
+            'maintenance_health' => $maintenanceHealth
         ];
     }
 }

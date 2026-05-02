@@ -9,7 +9,7 @@ class ActivityLogService
     /**
      * Şirkete ait logları sayfalı ve güvenli şekilde getirir.
      */
-    public function getLogsPaginated($companyId, $perPage = 20)
+    public function getLogsPaginated($companyId, $filters = [], $perPage = 20)
     {
         // Maksimum limit koruması
         $perPage = min((int) $perPage, 50);
@@ -17,9 +17,23 @@ class ActivityLogService
 
         $logs = ActivityLog::where('company_id', $companyId)
             ->with('user:id,name') // Sadece id ve name çekilir, şifre gibi alanlar gelmez
+            ->when(isset($filters['module']), fn ($q) => $q->where('module', $filters['module']))
+            ->when(isset($filters['action']), fn ($q) => $q->where('action', $filters['action']))
+            ->when(isset($filters['user_id']), fn ($q) => $q->where('user_id', $filters['user_id']))
+            ->when(isset($filters['from']), fn ($q) => $q->whereDate('created_at', '>=', $filters['from']))
+            ->when(isset($filters['to']), fn ($q) => $q->whereDate('created_at', '<=', $filters['to']))
+            ->when(isset($filters['search']), function ($q) use ($filters) {
+                $needle = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['search']) . '%';
+                $q->where(function ($qq) use ($needle) {
+                    $qq->where('title', 'like', $needle)
+                       ->orWhere('description', 'like', $needle)
+                       ->orWhere('ip_address', 'like', $needle);
+                });
+            })
             ->select('id', 'company_id', 'user_id', 'module', 'action', 'title', 'description', 'ip_address', 'created_at')
             ->latest('created_at') // Newest first
-            ->paginate($perPage);
+            ->paginate($perPage)
+            ->withQueryString();
 
         // API'de gösterilmek üzere manipüle ediliyor
         $logs->getCollection()->transform(function ($log) {

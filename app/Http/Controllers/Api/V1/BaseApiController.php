@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Base for all V1 API controllers consumed by the mobile app.
+ * Any new endpoint here MUST have a matching mobile-app/src/api/ + screen consumer.
+ * See WEB_MOBIL_SENKRON_KURALLARI.md
+ */
+
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;

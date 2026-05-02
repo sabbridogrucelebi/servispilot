@@ -170,7 +170,11 @@ class MaintenanceController extends Controller
             ->orderBy('plate')
             ->get();
 
-        return view('maintenances.settings', compact('vehicles'));
+        $mechanics = \App\Models\Mechanic::where('company_id', auth()->user()->company_id)
+            ->orderBy('name')
+            ->get();
+
+        return view('maintenances.settings', compact('vehicles', 'mechanics'));
     }
 
     public function saveSettings(Request $request)
@@ -224,13 +228,10 @@ class MaintenanceController extends Controller
             'DİĞER BAKIMLAR',
         ]);
 
-        $masters = VehicleMaintenance::query()
-            ->whereNotNull('service_name')
-            ->where('service_name', '!=', '')
-            ->select('service_name')
-            ->distinct()
-            ->orderBy('service_name')
-            ->pluck('service_name');
+        $masters = \App\Models\Mechanic::where('company_id', auth()->user()->company_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->pluck('name');
 
         $titleSuggestions = VehicleMaintenance::query()
             ->whereNotNull('title')
@@ -306,8 +307,10 @@ class MaintenanceController extends Controller
             $data['km'] ?? null
         );
 
+        $vehicle = \App\Models\Fleet\Vehicle::find($data['vehicle_id']);
+
         VehicleMaintenance::create([
-            'company_id' => auth()->user()->company_id,
+            'company_id' => $vehicle ? $vehicle->company_id : auth()->user()->company_id,
             'vehicle_id' => $data['vehicle_id'],
             'created_by' => auth()->id(),
             'service_date' => $data['service_date'],
@@ -353,13 +356,10 @@ class MaintenanceController extends Controller
             'DİĞER BAKIMLAR',
         ]);
 
-        $masters = VehicleMaintenance::query()
-            ->whereNotNull('service_name')
-            ->where('service_name', '!=', '')
-            ->select('service_name')
-            ->distinct()
-            ->orderBy('service_name')
-            ->pluck('service_name');
+        $masters = \App\Models\Mechanic::where('company_id', auth()->user()->company_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->pluck('name');
 
         $titleSuggestions = VehicleMaintenance::query()
             ->whereNotNull('title')
@@ -433,7 +433,10 @@ class MaintenanceController extends Controller
             $data['km'] ?? null
         );
 
+        $vehicle = \App\Models\Fleet\Vehicle::find($data['vehicle_id']);
+
         $maintenance->update([
+            'company_id' => $vehicle ? $vehicle->company_id : $maintenance->company_id,
             'vehicle_id' => $data['vehicle_id'],
             'service_date' => $data['service_date'],
             'maintenance_type' => $maintenanceType,
@@ -510,5 +513,65 @@ class MaintenanceController extends Controller
         }
 
         return null;
+    }
+
+    public function storeMechanic(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('vehicles.view'), 403);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        \App\Models\Mechanic::create([
+            'company_id' => auth()->user()->company_id,
+            'name' => $validated['name'],
+            'is_active' => true,
+        ]);
+
+        return back()->with('success', 'Usta başarıyla eklendi.');
+    }
+
+    public function updateMechanic(Request $request, \App\Models\Mechanic $mechanic)
+    {
+        abort_unless(auth()->user()->hasPermission('vehicles.view'), 403);
+        
+        if ($mechanic->company_id !== auth()->user()->company_id) abort(403);
+
+        $oldName = $mechanic->name;
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+        
+        $mechanic->update(['name' => $validated['name']]);
+        
+        if ($oldName !== $validated['name']) {
+            \App\Models\VehicleMaintenance::where('company_id', auth()->user()->company_id)
+                ->where('service_name', $oldName)
+                ->update(['service_name' => $validated['name']]);
+        }
+        
+        return back()->with('success', 'Usta güncellendi ve geçmiş kayıtlara yansıtıldı.');
+    }
+
+    public function toggleMechanic(\App\Models\Mechanic $mechanic)
+    {
+        abort_unless(auth()->user()->hasPermission('vehicles.view'), 403);
+        if ($mechanic->company_id !== auth()->user()->company_id) abort(403);
+
+        $mechanic->update(['is_active' => !$mechanic->is_active]);
+
+        return back()->with('success', 'Usta durumu güncellendi.');
+    }
+
+    public function destroyMechanic(\App\Models\Mechanic $mechanic)
+    {
+        abort_unless(auth()->user()->hasPermission('vehicles.view'), 403);
+        if ($mechanic->company_id !== auth()->user()->company_id) abort(403);
+
+        $mechanic->delete();
+
+        return back()->with('success', 'Usta başarıyla silindi.');
     }
 }

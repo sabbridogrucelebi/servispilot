@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * ╔══════════════════════════════════════════════════════════════════════════╗
+ * ║  WEB PANEL ROUTES                                                        ║
+ * ║  If you add functionality here that is also relevant for mobile users,   ║
+ * ║  you MUST add the equivalent endpoint to routes/api.php and the          ║
+ * ║  corresponding screen/api call in mobile-app/.                           ║
+ * ║  Web-only routes (admin-panel/companies, exports, email previews) are    ║
+ * ║  exempt — see WEB_MOBIL_SENKRON_KURALLARI.md for the exemption list.     ║
+ * ╚══════════════════════════════════════════════════════════════════════════╝
+ */
+
 use App\Models\Trip;
 use App\Models\Fuel;
 use App\Models\Document;
@@ -146,19 +157,37 @@ Route::get('/dashboard', function () {
         ->name('vehicle-tracking.store');
 
 Route::middleware('auth')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | CHAT (MESSAGING)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/chat', function () { return view('chat.index'); })->name('chat.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHAT (MESSAGING) API FOR WEB
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('chat-api')->group(function () {
+        Route::get('/users', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'users']);
+        Route::get('/conversations', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'conversations']);
+        Route::post('/conversations', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'storeConversation']);
+        Route::delete('/conversations/{conversation}', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'deleteConversation']);
+        Route::post('/conversations/bulk-delete', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'bulkDeleteConversations']);
+        Route::get('/conversations/{conversation}/messages', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'messages']);
+        Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'sendMessage']);
+        Route::delete('/conversations/{conversation}/messages/{message}', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'deleteMessage']);
+        Route::post('/profile-photo', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'uploadProfilePhoto']);
+    });
+    Route::get('/chat/unread-count', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'unreadCount'])->name('chat.unread');
+
 
     /*
     |--------------------------------------------------------------------------
     | CHAT (MESSAGING)
     |--------------------------------------------------------------------------
     */
-    Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
-    Route::get('/chat/conversations', [\App\Http\Controllers\ChatController::class, 'fetchConversations'])->name('chat.conversations');
-    Route::get('/chat/messages', [\App\Http\Controllers\ChatController::class, 'fetchMessages'])->name('chat.messages');
-    Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
-    Route::post('/chat/group', [\App\Http\Controllers\ChatController::class, 'createGroup'])->name('chat.group.create');
-    Route::get('/chat/users', [\App\Http\Controllers\ChatController::class, 'fetchAllUsers'])->name('chat.users');
-    Route::get('/chat/unread-count', [\App\Http\Controllers\ChatController::class, 'fetchUnreadCount'])->name('chat.unread');
 
     /*
     |--------------------------------------------------------------------------
@@ -217,6 +246,14 @@ Route::middleware('auth')->group(function () {
     | DRIVER EXTRA
     |--------------------------------------------------------------------------
     */
+    Route::get('/drivers/import/template', [DriverController::class, 'downloadTemplate'])
+        ->middleware('permission:drivers.create')
+        ->name('drivers.import.template');
+
+    Route::post('/drivers/import', [DriverController::class, 'importExcel'])
+        ->middleware('permission:drivers.create')
+        ->name('drivers.import');
+
     Route::post('/drivers/{driver}/documents', [DriverController::class, 'uploadDocument'])
         ->middleware('permission:drivers.view')
         ->name('drivers.documents.store');
@@ -249,6 +286,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/maintenances/settings', [MaintenanceController::class, 'saveSettings'])
         ->middleware('permission:vehicles.view')
         ->name('maintenances.settings.store');
+
+    Route::post('/maintenances/settings/mechanics', [MaintenanceController::class, 'storeMechanic'])
+        ->middleware('permission:vehicles.view')
+        ->name('maintenances.mechanics.store');
+
+    Route::put('/maintenances/settings/mechanics/{mechanic}', [MaintenanceController::class, 'updateMechanic'])
+        ->middleware('permission:vehicles.view')
+        ->name('maintenances.mechanics.update');
+
+    Route::patch('/maintenances/settings/mechanics/{mechanic}/toggle', [MaintenanceController::class, 'toggleMechanic'])
+        ->middleware('permission:vehicles.view')
+        ->name('maintenances.mechanics.toggle');
+
+    Route::delete('/maintenances/settings/mechanics/{mechanic}', [MaintenanceController::class, 'destroyMechanic'])
+        ->middleware('permission:vehicles.view')
+        ->name('maintenances.mechanics.destroy');
 
     Route::get('/maintenances/import/template', [MaintenanceController::class, 'downloadImportTemplate'])
         ->middleware('permission:vehicles.view')
@@ -305,9 +358,6 @@ Route::middleware('auth')->group(function () {
     | EXTRA
     |--------------------------------------------------------------------------
     */
-    Route::post('/fuels/import', [FuelController::class, 'import'])
-        ->middleware('permission:fuels.view')
-        ->name('fuels.import');
 
     Route::post('/fuel-stations/payments/bulk', [FuelStationController::class, 'storeBulkPayment'])
         ->middleware('permission:fuels.view')
@@ -434,14 +484,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehicles/export/excel', [VehicleController::class, 'exportExcel'])->name('vehicles.export.excel');
     Route::post('/vehicles/ai-assistant', [VehicleController::class, 'aiAssistant'])->name('vehicles.ai.assistant');
 
+    // Destek Masası (Tenant)
+    Route::get('/support-tickets', [\App\Http\Controllers\SupportTicketController::class, 'index'])->name('support-tickets.index');
+    Route::get('/support-tickets/create', [\App\Http\Controllers\SupportTicketController::class, 'create'])->name('support-tickets.create');
+    Route::post('/support-tickets', [\App\Http\Controllers\SupportTicketController::class, 'store'])->name('support-tickets.store');
+    Route::get('/support-tickets/{supportTicket}', [\App\Http\Controllers\SupportTicketController::class, 'show'])->name('support-tickets.show');
+    Route::post('/support-tickets/{supportTicket}/reply', [\App\Http\Controllers\SupportTicketController::class, 'reply'])->name('support-tickets.reply');
+
     Route::resource('payrolls', PayrollController::class)
         ->middleware('permission:payrolls.view');
 
     Route::resource('documents', DocumentController::class)
+        ->except(['show'])
         ->middleware('permission:documents.view');
 
     Route::resource('fuels', FuelController::class)
         ->middleware('permission:fuels.view');
+
+    Route::post('/fuels/import', [FuelController::class, 'import'])
+        ->middleware('permission:fuels.create')
+        ->name('fuels.import');
 
     Route::resource('company-users', CompanyUserController::class)
         ->parameters(['company-users' => 'companyUser'])
@@ -485,13 +547,165 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
+    Route::resource('payrolls', PayrollController::class)
+        ->middleware('permission:payrolls.view');
 
+    Route::resource('documents', DocumentController::class)
+        ->except(['show'])
+        ->middleware('permission:documents.view');
+
+    Route::resource('fuels', FuelController::class)
+        ->middleware('permission:fuels.view');
+
+    Route::get('/fuels/import/template', [FuelController::class, 'downloadTemplate'])
+        ->middleware('permission:fuels.create')
+        ->name('fuels.import.template');
+
+    Route::post('/fuels/import', [FuelController::class, 'import'])
+        ->middleware('permission:fuels.create')
+        ->name('fuels.import');
+
+    Route::resource('company-users', CompanyUserController::class)
+        ->parameters(['company-users' => 'companyUser'])
+        ->middleware('permission:company_users.view');
+
+    /*
+    |--------------------------------------------------------------------------
+    | REPORTS
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/reports', [ReportController::class, 'index'])
+        ->middleware('permission:reports.view')
+        ->name('reports.index');
+
+    Route::get('/reports/trips-csv', [ReportController::class, 'exportTripsCsv'])
+        ->middleware('permission:reports.view')
+        ->name('reports.trips.csv');
+
+    Route::get('/reports/payrolls-csv', [ReportController::class, 'exportPayrollsCsv'])
+        ->middleware('permission:reports.view')
+        ->name('reports.payrolls.csv');
+
+    Route::get('/reports/fuels-csv', [ReportController::class, 'exportFuelsCsv'])
+        ->middleware('permission:reports.view')
+        ->name('reports.fuels.csv');
+
+    Route::get('/reports/documents-csv', [ReportController::class, 'exportDocumentsCsv'])
+        ->middleware('permission:reports.view')
+        ->name('reports.documents.csv');
+
+    /*
+    |--------------------------------------------------------------------------
+    | SETTINGS
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/company-settings', [CompanySettingsController::class, 'edit'])
+        ->name('company-settings.edit');
+
+    Route::put('/company-settings', [CompanySettingsController::class, 'update'])
+        ->name('company-settings.update');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 
     Route::get('/support', function () {
         return view('support');
     })->name('support');
+
+    // Abonelik ve Faturalandırma (Tenant)
+    Route::get('/billing', [\App\Http\Controllers\BillingController::class, 'index'])->name('billing.index');
+    Route::post('/billing/plans/{plan}/select', [\App\Http\Controllers\BillingController::class, 'selectPlan'])->name('billing.plans.select');
+    Route::get('/billing/invoices/{invoice}', [\App\Http\Controllers\BillingController::class, 'showInvoice'])->name('billing.invoice');
+    Route::post('/billing/invoices/{invoice}/upload-receipt', [\App\Http\Controllers\BillingController::class, 'uploadReceipt'])->name('billing.invoice.upload-receipt');
+
+    // PilotCell
+    Route::get('/pilotcell', [\App\Http\Controllers\PilotCellController::class, 'dashboard'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.dashboard');
+
+    Route::get('/pilotcell/school/{id}', [\App\Http\Controllers\PilotCellController::class, 'school'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school');
+
+    Route::post('/pilotcell/school/{id}/routes', [\App\Http\Controllers\PilotCellController::class, 'storeRoute'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.store');
+
+    Route::put('/pilotcell/school/{school_id}/routes/{route_id}', [\App\Http\Controllers\PilotCellController::class, 'updateRoute'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.update');
+
+    Route::delete('/pilotcell/school/{school_id}/routes/{route_id}', [\App\Http\Controllers\PilotCellController::class, 'destroyRoute'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.destroy');
+
+    Route::get('/pilotcell/school/{school_id}/routes/{route_id}', [\App\Http\Controllers\PilotCellController::class, 'routeDetails'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.show');
+
+    Route::get('/pilotcell/school/{school_id}/routes/{route_id}/users', [\App\Http\Controllers\PilotCellController::class, 'routeUsers'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.users');
+
+    Route::post('/pilotcell/school/{school_id}/routes/{route_id}/users', [\App\Http\Controllers\PilotCellController::class, 'storeRouteUser'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.users.store');
+
+    Route::put('/pilotcell/school/{school_id}/routes/{route_id}/users/{user_id}', [\App\Http\Controllers\PilotCellController::class, 'updateRouteUser'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.users.update');
+
+    Route::delete('/pilotcell/school/{school_id}/routes/{route_id}/users/{user_id}', [\App\Http\Controllers\PilotCellController::class, 'destroyRouteUser'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.users.destroy');
+
+    Route::post('/pilotcell/school/{school_id}/routes/{route_id}/students', [\App\Http\Controllers\PilotCellController::class, 'storeStudent'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.store');
+
+    Route::put('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}', [\App\Http\Controllers\PilotCellController::class, 'updateStudent'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.update');
+
+    Route::delete('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}', [\App\Http\Controllers\PilotCellController::class, 'destroyStudent'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.destroy');
+
+    Route::get('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}', [\App\Http\Controllers\PilotCellController::class, 'studentDetails'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.show');
+
+    Route::post('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}/debts', [\App\Http\Controllers\PilotCellController::class, 'storeDebts'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.debts.store');
+
+    Route::post('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}/debts/{debt_id}/payment', [\App\Http\Controllers\PilotCellController::class, 'updateDebtPayment'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.debts.payment');
+
+    Route::delete('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}/debts/{debt_id}', [\App\Http\Controllers\PilotCellController::class, 'destroyDebt'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.debts.destroy');
+
+    Route::get('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}/users', [\App\Http\Controllers\PilotCellController::class, 'studentUsers'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.users');
+
+    Route::post('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}/users', [\App\Http\Controllers\PilotCellController::class, 'storeStudentUser'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.users.store');
+
+    Route::put('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}/users/{user_id}', [\App\Http\Controllers\PilotCellController::class, 'updateStudentUser'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.users.update');
+
+    Route::delete('/pilotcell/school/{school_id}/routes/{route_id}/students/{student_id}/users/{user_id}', [\App\Http\Controllers\PilotCellController::class, 'destroyStudentUser'])
+        ->middleware(['auth', 'permission:pilotcell.view'])
+        ->name('pilotcell.school.routes.students.users.destroy');
 });
 
 require __DIR__ . '/auth.php';
@@ -523,6 +737,40 @@ Route::prefix('super-admin')
         Route::post('/companies/{company}/users', [SuperAdminCompanyController::class, 'storeUser'])
             ->name('companies.users.store');
 
+        Route::post('/companies/{company}/impersonate', [SuperAdminCompanyController::class, 'impersonate'])
+            ->name('companies.impersonate');
+
         Route::put('/companies/{company}/modules', [SuperAdminCompanyController::class, 'updateModules'])
             ->name('companies.modules.update');
+
+        Route::put('/users/{user}/password', [SuperAdminCompanyController::class, 'updateUserPassword'])
+            ->name('users.password.update');
+
+        // Global Settings
+        Route::get('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'index'])
+            ->name('settings.index');
+        Route::post('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])
+            ->name('settings.update');
+
+        // Global Logs
+        Route::get('/logs', [\App\Http\Controllers\SuperAdmin\ActivityLogController::class, 'index'])
+            ->name('logs.index');
+
+        // Super Admin Support Tickets
+        Route::get('/support-tickets', [\App\Http\Controllers\SuperAdmin\SupportTicketController::class, 'index'])
+            ->name('support-tickets.index');
+        Route::get('/support-tickets/{supportTicket}', [\App\Http\Controllers\SuperAdmin\SupportTicketController::class, 'show'])
+            ->name('support-tickets.show');
+        Route::post('/support-tickets/{supportTicket}/reply', [\App\Http\Controllers\SuperAdmin\SupportTicketController::class, 'reply'])
+            ->name('support-tickets.reply');
+
+        // Paket ve Finans Yönetimi (Super Admin)
+        Route::resource('plans', \App\Http\Controllers\SuperAdmin\PlanController::class);
+        
+        Route::get('/finance', [\App\Http\Controllers\SuperAdmin\FinanceController::class, 'index'])
+            ->name('finance.index');
+        Route::post('/finance/invoices/{invoice}/approve', [\App\Http\Controllers\SuperAdmin\FinanceController::class, 'approve'])
+            ->name('finance.approve');
+        Route::post('/finance/invoices/{invoice}/reject', [\App\Http\Controllers\SuperAdmin\FinanceController::class, 'reject'])
+            ->name('finance.reject');
     });

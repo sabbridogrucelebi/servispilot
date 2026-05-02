@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\DriversImport;
 
 class DriverController extends Controller
 {
@@ -155,6 +157,29 @@ class DriverController extends Controller
         return redirect()
             ->route('drivers.index')
             ->with('success', 'Personel başarıyla eklendi.');
+    }
+
+    public function importExcel(Request $request)
+    {
+        if (!auth()->user()->hasPermission('drivers.create')) {
+            abort(403, 'Personel ekleme yetkiniz yok.');
+        }
+
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            Excel::import(new DriversImport, $request->file('excel_file'));
+            return redirect()->back()->with('success', 'Personeller başarıyla içe aktarıldı.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'İçe aktarma sırasında bir hata oluştu: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new \App\Exports\DriversTemplateExport, 'personel_sablonu.xlsx');
     }
 
     public function show(Request $request, Driver $driver)

@@ -6,5 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PayrollLock extends Model
 {
-    protected $fillable = ['period', 'is_locked'];
+    use \App\Models\Concerns\BelongsToCompany;
+
+    protected $fillable = ['company_id', 'period', 'is_locked'];
 }

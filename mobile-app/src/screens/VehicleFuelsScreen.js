@@ -1,353 +1,420 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, Modal, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, FlatList, ActivityIndicator, Alert, Text, Platform, TouchableOpacity, RefreshControl, Modal, ScrollView } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/axios';
+import { AuthContext } from '../context/AuthContext';
+import { EmptyState, FormField } from '../components';
 import DatePickerInput from '../components/DatePickerInput';
-import { toApiDate, toUiDate, todayUi } from '../utils/date';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const fmtMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2 }).format(v || 0);
+const fmtNum = (v) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(v || 0);
 
 export default function VehicleFuelsScreen({ route, navigation }) {
-    const { vehicleId, plate } = route.params || {};
+    const { hasPermission } = useContext(AuthContext);
+    const { vehicleId, vehicle } = route.params || {};
     const [fuels, setFuels] = useState([]);
-    const [summary, setSummary] = useState(null);
-    const [options, setOptions] = useState({ stations: [], fuel_types: [] });
+    const [summary, setSummary] = useState({});
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    
-    // Filters
-    const [showFilters, setShowFilters] = useState(false);
-    const [search, setSearch] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [selectedStation, setSelectedStation] = useState('');
-    const [selectedFuelType, setSelectedFuelType] = useState('');
 
-    // Add Modal
     const [modalVisible, setModalVisible] = useState(false);
-    const [form, setForm] = useState({ date: todayUi(), km: '', liters: '', price_per_liter: '', station_id: '', fuel_type: 'Dizel', notes: '' });
+    const [editingId, setEditingId] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState({
+        date: new Date().toISOString().split('T')[0],
+        km: '', liters: '', price_per_liter: '', station_name: '', fuel_type: 'Dizel', notes: ''
+    });
 
     const fetchFuels = async (isRefreshing = false) => {
         if (!vehicleId) return;
         if (!isRefreshing) setLoading(true);
         try {
-            const params = { 
-                search, 
-                start_date: toApiDate(startDate), 
-                end_date: toApiDate(endDate), 
-                station: selectedStation, 
-                fuel_type: selectedFuelType 
-            };
-            const r = await api.get(`/vehicles/${vehicleId}/fuels`, { params });
-            setFuels(r.data.fuels);
-            setSummary(r.data.summary);
-            setOptions(r.data.options);
-        } catch (e) { console.error(e); }
+            const r = await api.get(`/vehicles/${vehicleId}/fuels`);
+            if (r.data) {
+                setFuels(r.data.fuels || []);
+                setSummary(r.data.summary || {});
+            }
+        } catch (e) {
+            if (e.response?.status === 403) {
+                Alert.alert('Erişim Engellendi', 'Yakıt kayıtlarını görüntüleme yetkiniz bulunmuyor.');
+                navigation.goBack();
+            } else if (e.response?.status === 404) {
+                Alert.alert('Bulunamadı', 'Araç bulunamadı.');
+                navigation.goBack();
+            } else {
+                Alert.alert('Hata', 'Veriler alınırken bir hata oluştu.');
+            }
+        } 
         finally { setLoading(false); setRefreshing(false); }
     };
 
-    useEffect(() => { fetchFuels(); }, [search, startDate, endDate, selectedStation, selectedFuelType]);
+    useEffect(() => { fetchFuels(); }, [vehicleId]);
+
+    const openAdd = () => {
+        if (!hasPermission('fuels.create')) { Alert.alert('Yetki Yok', 'Yakıt kaydı ekleme yetkiniz bulunmuyor.'); return; }
+        setEditingId(null);
+        setFormData({
+            date: new Date().toISOString().split('T')[0],
+            km: '', liters: '', price_per_liter: '', station_name: '', fuel_type: 'Dizel', notes: ''
+        });
+        setModalVisible(true);
+    };
 
     const handleSave = async () => {
-        if (!form.km || !form.liters || !form.price_per_liter) {
-            Alert.alert('Hata', 'Lütfen zorunlu alanları doldurun.');
-            return;
+        if (!formData.liters || !formData.date) {
+            Alert.alert('Eksik Bilgi', 'Tarih ve litre alanları zorunludur.'); return;
         }
         setSaving(true);
         try {
-            await api.post(`/vehicles/${vehicleId}/fuels`, {
-                ...form,
-                date: toApiDate(form.date),
-                total_cost: parseFloat(form.liters) * parseFloat(form.price_per_liter)
-            });
+            const url = editingId ? `/v1/fuels/${editingId}` : '/v1/fuels';
+            const method = editingId ? 'PUT' : 'POST';
+            
+            // Calculate total cost if missing
+            const dataToSubmit = { ...formData, vehicle_id: vehicleId };
+            if (!dataToSubmit.total_cost && dataToSubmit.liters && dataToSubmit.price_per_liter) {
+                dataToSubmit.total_cost = parseFloat(dataToSubmit.liters) * parseFloat(dataToSubmit.price_per_liter);
+            } else if (!dataToSubmit.total_cost) {
+                dataToSubmit.total_cost = 0; // fallback
+            }
+
+            await api({ method, url, data: dataToSubmit });
             setModalVisible(false);
-            setForm({ date: todayUi(), km: '', liters: '', price_per_liter: '', station_id: '', fuel_type: 'Dizel', notes: '' });
             fetchFuels();
-        } catch (e) {
-            Alert.alert('Hata', 'Kayıt eklenemedi.');
-        } finally {
-            setSaving(false);
-        }
+        } catch (e) { Alert.alert('Hata', 'Kaydedilemedi.'); } 
+        finally { setSaving(false); }
     };
 
-    const renderSummary = () => (
-        <View style={s.kpiWrapper}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.kpiScroll}>
-                
-                <View style={[s.kpiCard, { borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
-                    <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                    <Text style={s.kpiLabel}>Toplam Yakıt</Text>
-                    <Text style={[s.kpiValue, {color: '#38BDF8'}]}>{Number(summary?.month_liters || 0).toLocaleString('tr-TR')} L</Text>
-                    <Text style={s.kpiSub}>Bu Ay</Text>
-                </View>
+    const confirmDelete = (id) => {
+        if (!hasPermission('fuels.delete')) { Alert.alert('Yetki Yok', 'Yakıt kaydı silme yetkiniz bulunmuyor.'); return; }
+        Alert.alert('Silinecek', 'Bu yakıt kaydını silmek istediğinize emin misiniz?', [
+            { text: 'İptal', style: 'cancel' },
+            { text: 'Sil', style: 'destructive', onPress: async () => {
+                try { await api.delete(`/v1/fuels/${id}`); fetchFuels(); }
+                catch (e) { Alert.alert('Hata', 'Silinemedi.'); }
+            }}
+        ]);
+    };
 
-                <View style={[s.kpiCard, { borderColor: 'rgba(16, 185, 129, 0.3)' }]}>
-                    <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                    <Text style={s.kpiLabel}>Toplam Tutar</Text>
-                    <Text style={[s.kpiValue, {color: '#10B981'}]}>₺{Number(summary?.month_total || 0).toLocaleString('tr-TR')}</Text>
-                    <Text style={s.kpiSub}>Bu Ay</Text>
-                </View>
+    const monthName = new Intl.DateTimeFormat('tr-TR', { month: 'long' }).format(new Date()).toUpperCase();
 
-                <View style={[s.kpiCard, { borderColor: 'rgba(167, 139, 250, 0.3)' }]}>
-                    <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                    <Text style={s.kpiLabel}>Ort. Tüketim</Text>
-                    <Text style={[s.kpiValue, {color: '#A78BFA', fontSize: 20}]}>33,6 <Text style={{fontSize: 12}}>L/100 km</Text></Text>
-                    <Text style={s.kpiSub}>Bu Ay</Text>
-                </View>
-
-                <View style={[s.kpiCard, { borderColor: 'rgba(251, 146, 60, 0.3)' }]}>
-                    <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                    <Text style={s.kpiLabel}>Toplam İşlem</Text>
-                    <Text style={[s.kpiValue, {color: '#FB923C'}]}>{summary?.month_count || 0}</Text>
-                    <Text style={s.kpiSub}>Bu Ay</Text>
-                </View>
-
-            </ScrollView>
-        </View>
-    );
-
-    const renderFilters = () => (
-        <View style={s.filterContainer}>
-            <View style={s.searchBar}>
-                <Icon name="magnify" size={20} color="#94A3B8" />
-                <TextInput 
-                    style={s.searchInput} 
-                    placeholder="Tarih, istasyon veya açıklama ara..." 
-                    value={search}
-                    onChangeText={setSearch}
-                />
-                <TouchableOpacity onPress={() => setShowFilters(!showFilters)} style={s.filterToggle}>
-                    <Icon name={showFilters ? "filter-variant-plus" : "filter-variant"} size={22} color={showFilters ? "#0F172A" : "#64748B"} />
-                </TouchableOpacity>
-            </View>
-            
-            <View style={s.pillRow}>
-                <TouchableOpacity style={s.filterPill}>
-                    <Icon name="calendar-range" size={16} color="#64748B" />
-                    <View>
-                        <Text style={s.pillLabel}>Tarih Aralığı</Text>
-                        <Text style={s.pillValue}>Son 30 Gün</Text>
+    const renderItem = ({ item }) => {
+        const isPaid = item.is_paid;
+        return (
+            <LinearGradient 
+                colors={['#FFFFFF', '#F8FAFC']} 
+                start={{x:0, y:0}} 
+                end={{x:0, y:1}} 
+                style={[st.card, { borderLeftWidth: 4, borderLeftColor: isPaid ? '#10B981' : '#EF4444' }]}
+            >
+                <View style={st.cardTop}>
+                    <View style={st.cardInfo}>
+                        <Text style={st.dateText}>{new Date(item.date).toLocaleDateString('tr-TR')}</Text>
+                        <Text style={st.stationName}>{item.station_name || 'İstasyon Belirtilmedi'}</Text>
+                        <Text style={st.fuelTypeText}>{item.fuel_type || 'Dizel'}</Text>
                     </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={s.filterPill}>
-                    <Icon name="gas-station" size={16} color="#64748B" />
-                    <View>
-                        <Text style={s.pillLabel}>İstasyon</Text>
-                        <Text style={s.pillValue}>Tümü</Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-
-            {showFilters && (
-                <View style={s.filterOptions}>
-                    <View style={s.filterRow}>
-                        <View style={{flex:1}}><DatePickerInput placeholder="Başlangıç" value={startDate} onChange={setStartDate} /></View>
-                        <View style={{flex:1}}><DatePickerInput placeholder="Bitiş" value={endDate} onChange={setEndDate} /></View>
-                    </View>
-                    <View style={s.filterRow}>
-                        <View style={s.selectWrapper}>
-                            <TextInput style={s.miniInput} placeholder="İstasyon" value={selectedStation} onChangeText={setSelectedStation} />
-                        </View>
-                        <View style={s.selectWrapper}>
-                            <TextInput style={s.miniInput} placeholder="Yakıt Türü" value={selectedFuelType} onChangeText={setSelectedFuelType} />
+                    <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={st.amountText}>{fmtMoney(item.total_cost || item.total_amount)}</Text>
+                        <View style={[st.paidBadge, isPaid ? {backgroundColor: '#D1FAE5'} : {backgroundColor: '#FEE2E2'}]}>
+                            <Text style={[st.paidText, isPaid ? {color: '#065F46'} : {color: '#991B1B'}]}>
+                                {isPaid ? 'Ödendi' : 'Bekliyor'}
+                            </Text>
                         </View>
                     </View>
                 </View>
-            )}
-        </View>
-    );
 
-    const renderItem = ({ item }) => (
-        <View style={s.card}>
-            <View style={s.cardImageWrap}>
-                <LinearGradient colors={['#EFF6FF', '#DBEAFE']} style={StyleSheet.absoluteFillObject} />
-                <Icon name="gas-station" size={28} color="#3B82F6" />
-            </View>
-
-            <View style={s.cardContent}>
-                <View style={s.cardHeaderRow}>
-                    <Text style={s.dateTxt}>{new Date(item.date).toLocaleDateString('tr-TR')} · {new Date(item.date).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}</Text>
-                    <Text style={s.priceTxt}>₺{Number(item.total_cost).toLocaleString('tr-TR')}</Text>
-                </View>
-                
-                <View style={s.cardMiddleRow}>
-                    <Text style={s.stationName}>{item.station_name}</Text>
-                    <Text style={s.literTxt}>{item.liters} L</Text>
-                </View>
-
-                <View style={s.cardBottomRow}>
-                    <Text style={s.unitPriceTxt}>Birim Fiyat: ₺{Number(item.price_per_liter).toLocaleString('tr-TR')}/L</Text>
-                    <View style={s.kmWrap}>
-                        <Icon name="map-marker-outline" size={12} color="#94A3B8" />
-                        <Text style={s.kmTxt}>{Number(item.km).toLocaleString('tr-TR')} km</Text>
+                <View style={st.cardDates}>
+                    <View style={st.dateGroup}>
+                        <Text style={st.dateLabel}>KM</Text>
+                        <Text style={st.dateValue}>{item.km ? fmtNum(item.km) : '-'}</Text>
+                    </View>
+                    <View style={st.dateDivider} />
+                    <View style={st.dateGroup}>
+                        <Text style={st.dateLabel}>FARK</Text>
+                        <Text style={st.dateValue}>{fmtNum(item.km_diff)}</Text>
+                    </View>
+                    <View style={st.dateDivider} />
+                    <View style={st.dateGroup}>
+                        <Text style={st.dateLabel}>LİTRE</Text>
+                        <Text style={st.dateValue}>{fmtNum(item.liters)}</Text>
+                    </View>
+                    <View style={st.dateDivider} />
+                    <View style={st.dateGroup}>
+                        <Text style={st.dateLabel}>B.FİYAT</Text>
+                        <Text style={st.dateValue}>{fmtMoney(item.price_per_liter)}</Text>
+                    </View>
+                    <View style={st.dateDivider} />
+                    <View style={st.dateGroup}>
+                        <Text style={st.dateLabel}>KM/L</Text>
+                        <Text style={st.dateValue}>{fmtNum(item.km_per_liter)}</Text>
                     </View>
                 </View>
-            </View>
-        </View>
-    );
+
+                {item.notes ? (
+                    <View style={st.notesBox}>
+                        <Icon name="note-text-outline" size={14} color="#94A3B8" />
+                        <Text style={st.notesText}>{item.notes}</Text>
+                    </View>
+                ) : null}
+
+                <View style={st.actionRow}>
+                    <TouchableOpacity style={[st.actionBtn, { backgroundColor: '#FEF2F2' }]} onPress={() => confirmDelete(item.id)}>
+                        <Icon name="trash-can-outline" size={16} color="#EF4444" />
+                        <Text style={[st.actionText, { color: '#EF4444' }]}>Sil</Text>
+                    </TouchableOpacity>
+                </View>
+            </LinearGradient>
+        );
+    };
 
     return (
-        <View style={s.container}>
-            <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={s.header} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
-                <SafeAreaView edges={['top']}>
-                    <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-                            <Icon name="arrow-left" size={22} color="#fff" />
-                        </TouchableOpacity>
-                        <View style={{flex:1, alignItems:'center'}}><Text style={s.headerTitle}>{plate} - Yakıtlar</Text></View>
-                        <TouchableOpacity onPress={() => setModalVisible(true)} style={s.addHeaderBtn}><Icon name="plus" size={24} color="#fff" /></TouchableOpacity>
+        <View style={st.container}>
+            <View style={{ backgroundColor: '#fff', zIndex: 10, paddingTop: Platform.OS === 'android' ? 44 : 54 }}>
+                <View style={st.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={st.backBtn}>
+                        <Icon name="chevron-left" size={26} color="#0F172A" />
+                    </TouchableOpacity>
+                    <View style={st.headerCenter}>
+                        <Text style={st.headerTitle}>Araç Yakıtları</Text>
+                        <Text style={st.headerSubtitle}>{vehicle?.plate || 'Maliyet Takibi'}</Text>
                     </View>
-                </SafeAreaView>
-            </LinearGradient>
-
-            <FlatList
-                data={fuels}
-                renderItem={renderItem}
-                keyExtractor={item => item.id.toString()}
-                contentContainerStyle={s.list}
-                ListHeaderComponent={() => (
-                    <>
-                        <View style={{marginTop: -40, zIndex: 20}}>
-                            {renderSummary()}
-                        </View>
-                        {renderFilters()}
-                    </>
-                )}
-                onRefresh={() => { setRefreshing(true); fetchFuels(true); }}
-                refreshing={refreshing}
-                ListEmptyComponent={loading ? null : (
-                    <View style={s.empty}>
-                        <Icon name="gas-station-off" size={48} color="#CBD5E1" />
-                        <Text style={s.emptyTxt}>Yakıt kaydı bulunamadı.</Text>
-                    </View>
-                )}
-            />
-
-            {/* Bottom Total Bar */}
-            <View style={s.bottomBar}>
-                <View style={s.bottomItem}>
-                    <View style={s.bottomIconBox}><Icon name="gas-station" size={20} color="#64748B" /></View>
-                    <View>
-                        <Text style={s.bottomLabel}>Toplam Tutar</Text>
-                        <Text style={s.bottomValue}>₺{Number(summary?.month_total || 0).toLocaleString('tr-TR')}</Text>
-                    </View>
+                    <TouchableOpacity style={st.addHeaderBtn} onPress={openAdd}>
+                        <Icon name="plus" size={24} color="#fff" />
+                    </TouchableOpacity>
                 </View>
-                <View style={s.bottomDivider} />
-                <View style={s.bottomItem}>
-                    <View style={s.bottomIconBox}><Icon name="water-outline" size={20} color="#64748B" /></View>
-                    <View>
-                        <Text style={s.bottomLabel}>Toplam Litre</Text>
-                        <Text style={s.bottomValue}>{Number(summary?.month_liters || 0).toLocaleString('tr-TR')} L</Text>
+
+                {/* Web Panel Summary Mirror (3D Premium Grid) */}
+                <View style={st.summaryWrapper}>
+                    <View style={st.summaryGrid}>
+                        {/* Orange Card (Month Cost) */}
+                        <View style={[st.statCardContainer, { width: '48%' }]}>
+                            <LinearGradient colors={['#F59E0B', '#D97706']} start={{x:0, y:0}} end={{x:1, y:1}} style={st.statCard}>
+                                <Icon name="cash" size={60} color="rgba(255,255,255,0.15)" style={st.statCardBgIcon} />
+                                <View style={st.statCardInner}>
+                                    <Text style={st.statCardLabel}>{monthName} AYI GİDERİ</Text>
+                                    <Text style={st.statCardVal} numberOfLines={1}>{fmtMoney(summary.month_total)}</Text>
+                                    <View style={[st.summaryBoxFooter, { borderTopColor: 'rgba(255,255,255,0.2)' }]}>
+                                        <Text style={{fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: '600'}} numberOfLines={1}>T: {fmtMoney(summary.all_time_total)}</Text>
+                                    </View>
+                                </View>
+                            </LinearGradient>
+                        </View>
+
+                        {/* Blue Card (Month KM) */}
+                        <View style={[st.statCardContainer, { width: '48%' }]}>
+                            <LinearGradient colors={['#3B82F6', '#2563EB']} start={{x:0, y:0}} end={{x:1, y:1}} style={st.statCard}>
+                                <Icon name="map-marker-distance" size={60} color="rgba(255,255,255,0.15)" style={st.statCardBgIcon} />
+                                <View style={st.statCardInner}>
+                                    <Text style={st.statCardLabel}>{monthName} AYI KM</Text>
+                                    <Text style={st.statCardVal} numberOfLines={1}>{fmtNum(summary.month_km)} KM</Text>
+                                    <View style={[st.summaryBoxFooter, { borderTopColor: 'rgba(255,255,255,0.2)' }]}>
+                                        <Text style={{fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: '600'}} numberOfLines={1}>İ:{fmtNum(summary.month_first_km)} S:{fmtNum(summary.month_last_km)}</Text>
+                                    </View>
+                                </View>
+                            </LinearGradient>
+                        </View>
+                    </View>
+
+                    <View style={[st.summaryGrid, { marginTop: 12 }]}>
+                        {/* Green Card (Month Liters) */}
+                        <View style={[st.statCardContainer, { width: '48%' }]}>
+                            <LinearGradient colors={['#10B981', '#059669']} start={{x:0, y:0}} end={{x:1, y:1}} style={st.statCard}>
+                                <Icon name="water-outline" size={60} color="rgba(255,255,255,0.15)" style={st.statCardBgIcon} />
+                                <View style={st.statCardInner}>
+                                    <Text style={st.statCardLabel}>{monthName} AYI LİTRE</Text>
+                                    <Text style={st.statCardVal} numberOfLines={1}>{fmtNum(summary.month_liters)} L</Text>
+                                    <View style={[st.summaryBoxFooter, { borderTopColor: 'rgba(255,255,255,0.2)' }]}>
+                                        <Text style={{fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: '700'}} numberOfLines={1}>FİŞ: {summary.month_count || 0}</Text>
+                                    </View>
+                                </View>
+                            </LinearGradient>
+                        </View>
+
+                        {/* Purple Card (Last KM) */}
+                        <View style={[st.statCardContainer, { width: '48%' }]}>
+                            <LinearGradient colors={['#8B5CF6', '#6D28D9']} start={{x:0, y:0}} end={{x:1, y:1}} style={st.statCard}>
+                                <Icon name="speedometer" size={60} color="rgba(255,255,255,0.15)" style={st.statCardBgIcon} />
+                                <View style={st.statCardInner}>
+                                    <Text style={st.statCardLabel}>SON KM</Text>
+                                    <Text style={st.statCardVal} numberOfLines={1}>{fmtNum(summary.last_km)}</Text>
+                                    <View style={[st.summaryBoxFooter, { borderTopColor: 'rgba(255,255,255,0.2)' }]}>
+                                        <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
+                                            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981', borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' }} />
+                                            <Text style={{ fontSize: 8, color: 'rgba(255,255,255,0.8)', fontWeight: '700' }}>ÖDENDİ</Text>
+                                            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#EF4444', marginLeft: 2, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' }} />
+                                            <Text style={{ fontSize: 8, color: 'rgba(255,255,255,0.8)', fontWeight: '700' }}>BEKLİYOR</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </LinearGradient>
+                        </View>
                     </View>
                 </View>
             </View>
 
+            {loading ? (
+                <View style={st.loader}><ActivityIndicator size="large" color="#F59E0B" /></View>
+            ) : (
+                <FlatList
+                    data={fuels}
+                    renderItem={renderItem}
+                    keyExtractor={item => item.id.toString()}
+                    contentContainerStyle={st.listContent}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchFuels(true)} tintColor="#F59E0B" />}
+                    ListEmptyComponent={<EmptyState title="Yakıt Kaydı Yok" message="Bu araç için henüz yakıt girişi yapılmamış." icon="gas-station-outline" />}
+                />
+            )}
+
+            {/* Modal */}
             <Modal visible={modalVisible} animationType="slide" transparent>
-                <View style={s.mOverlay}>
-                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex:1, justifyContent:'flex-end'}}>
-                        <View style={s.mContent}>
-                            <View style={s.mHeader}>
-                                <Text style={s.mTitle}>Yeni Yakıt Kaydı</Text>
-                                <TouchableOpacity onPress={() => setModalVisible(false)} style={s.mClose}>
-                                    <Icon name="close" size={24} color="#64748B" />
-                                </TouchableOpacity>
-                            </View>
-                            <ScrollView showsVerticalScrollIndicator={false}>
-                                <View style={s.mForm}>
-                                    <DatePickerInput label="Tarih" value={form.date} onChange={d => setForm({...form, date: d})} />
-                                    <View style={s.mInpGroup}><Text style={s.mLabel}>KM</Text><TextInput style={s.mInp} value={form.km} keyboardType="numeric" onChangeText={t => setForm({...form, km:t})} placeholder="Örn: 150000" /></View>
-                                    <View style={s.mInpGroup}><Text style={s.mLabel}>Litre</Text><TextInput style={s.mInp} value={form.liters} keyboardType="numeric" onChangeText={t => setForm({...form, liters:t})} placeholder="Örn: 50" /></View>
-                                    <View style={s.mInpGroup}><Text style={s.mLabel}>Birim Fiyat</Text><TextInput style={s.mInp} value={form.price_per_liter} keyboardType="numeric" onChangeText={t => setForm({...form, price_per_liter:t})} placeholder="Örn: 45.50" /></View>
-                                    <View style={s.mInpGroup}><Text style={s.mLabel}>İstasyon Adı</Text><TextInput style={s.mInp} value={form.station_name} onChangeText={t => setForm({...form, station_name:t})} placeholder="Örn: Shell" /></View>
-                                    <TouchableOpacity style={s.mSaveBtn} onPress={handleSave} disabled={saving}>
-                                        {saving ? <ActivityIndicator color="#fff" /> : <Text style={s.mSaveText}>Yakıt Kaydını Kaydet</Text>}
-                                    </TouchableOpacity>
-                                </View>
-                            </ScrollView>
+                <View style={st.modalOverlay}>
+                    <View style={st.modalContent}>
+                        <View style={st.modalHeader}>
+                            <Text style={st.modalTitle}>Yeni Yakıt Kaydı</Text>
+                            <TouchableOpacity onPress={() => setModalVisible(false)} style={st.modalClose}>
+                                <Icon name="close" size={24} color="#64748B" />
+                            </TouchableOpacity>
                         </View>
-                    </KeyboardAvoidingView>
+                        
+                        <ScrollView style={{ padding: 20 }}>
+                            <DatePickerInput label="TARİH" value={formData.date} onChange={(d) => setFormData({...formData, date: d})} />
+                            
+                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>LİTRE</Text>
+                                    <FormField value={formData.liters} onChangeText={t => setFormData({...formData, liters: t})} placeholder="0.00" keyboardType="numeric" />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>BİRİM FİYAT</Text>
+                                    <FormField value={formData.price_per_liter} onChangeText={t => setFormData({...formData, price_per_liter: t})} placeholder="0.00" keyboardType="numeric" />
+                                </View>
+                            </View>
+
+                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>KİLOMETRE</Text>
+                                    <FormField value={formData.km} onChangeText={t => setFormData({...formData, km: t})} placeholder="150000" keyboardType="numeric" />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>YAKIT TÜRÜ</Text>
+                                    <FormField value={formData.fuel_type} onChangeText={t => setFormData({...formData, fuel_type: t})} placeholder="Örn: Dizel" />
+                                </View>
+                            </View>
+
+                            <Text style={st.inputLabel}>İSTASYON ADI</Text>
+                            <FormField value={formData.station_name} onChangeText={t => setFormData({...formData, station_name: t})} placeholder="Örn: Shell, Opet..." />
+
+                            <Text style={st.inputLabel}>NOTLAR</Text>
+                            <FormField value={formData.notes} onChangeText={t => setFormData({...formData, notes: t})} placeholder="Açıklama..." multiline numberOfLines={2} style={{ height: 60, textAlignVertical: 'top' }} />
+
+                            <TouchableOpacity style={[st.saveBtn, saving && { opacity: 0.7 }]} onPress={handleSave} disabled={saving}>
+                                {saving ? <ActivityIndicator color="#fff" /> : <Text style={st.saveBtnText}>Kaydet</Text>}
+                            </TouchableOpacity>
+                            <View style={{ height: 40 }} />
+                        </ScrollView>
+                    </View>
                 </View>
             </Modal>
+
+
         </View>
     );
 }
 
-const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F4F7FA' },
+const st = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#F8FAFC' },
+    loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12 },
+    backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' },
+    headerCenter: { flex: 1, alignItems: 'center' },
+    headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', marginTop: 8 },
+    headerSubtitle: { fontSize: 12, fontWeight: '600', color: '#64748B', marginTop: 2 },
+    addHeaderBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F59E0B', alignItems: 'center', justifyContent: 'center', shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 4 },
     
-    // Header
-    header: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 10, paddingBottom: 50 },
-    backBtn: { width: 46, height: 46, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', shadowColor: '#fff', shadowOffset: {width:0, height:4}, shadowOpacity: 0.1, shadowRadius: 10 },
-    headerTitle: { fontSize: 18, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
-    addHeaderBtn: { width: 46, height: 46, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+    summaryWrapper: { paddingHorizontal: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', marginTop: 8 },
+    summaryGrid: { flexDirection: 'row', justifyContent: 'space-between' },
+    summaryBoxFooter: { borderTopWidth: 1, paddingTop: 8, marginTop: 'auto' },
+
+    // 3D Premium KPI Grid
+    statCardContainer: { 
+        height: 105, 
+        borderRadius: 20,
+        shadowColor: '#000', 
+        shadowOffset: { width: 0, height: 6 }, 
+        shadowOpacity: 0.25, 
+        shadowRadius: 10, 
+        elevation: 8,
+        backgroundColor: '#fff' 
+    },
+    statCard: { 
+        flex: 1, 
+        borderRadius: 20, 
+        overflow: 'hidden',
+        borderTopWidth: 1.5,
+        borderTopColor: 'rgba(255,255,255,0.4)',
+        borderBottomWidth: 4,
+        borderBottomColor: 'rgba(0,0,0,0.2)',
+        borderLeftWidth: 0.5,
+        borderRightWidth: 0.5,
+        borderColor: 'rgba(0,0,0,0.1)'
+    },
+    statCardBgIcon: { position: 'absolute', right: -10, bottom: -10, transform: [{ rotate: '-15deg' }] },
+    statCardInner: { flex: 1, padding: 12, justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.05)' },
+    statCardLabel: { fontSize: 10, color: 'rgba(255,255,255,0.9)', fontWeight: '800', letterSpacing: 0.5, textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2, marginBottom: 4 },
+    statCardVal: { fontSize: 18, color: '#FFF', fontWeight: '900', textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
+
+    listContent: { padding: 16, paddingBottom: 120 },
+    card: { 
+        backgroundColor: '#fff', 
+        borderRadius: 20, 
+        padding: 16, 
+        marginBottom: 16, 
+        shadowColor: '#3B82F6', 
+        shadowOffset: { width: 0, height: 6 }, 
+        shadowOpacity: 0.1, 
+        shadowRadius: 10, 
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderBottomWidth: 4
+    },
+    cardTop: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
+    cardInfo: { flex: 1, justifyContent: 'center' },
+    dateText: { fontSize: 11, fontWeight: '800', color: '#64748B', letterSpacing: 0.5, marginBottom: 2 },
+    stationName: { fontSize: 15, fontWeight: '800', color: '#1E293B', letterSpacing: -0.2 },
+    fuelTypeText: { fontSize: 11, fontWeight: '700', color: '#94A3B8', marginTop: 2 },
+    amountText: { fontSize: 16, fontWeight: '800', color: '#0F172A' },
+    paidBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginTop: 4 },
+    paidText: { fontSize: 10, fontWeight: '800' },
     
-    // KPIs (Inside Header Area)
-    kpiWrapper: { height: 110, marginBottom: 20 },
-    kpiScroll: { paddingHorizontal: 20, gap: 14 },
-    kpiCard: { backgroundColor: 'rgba(30,41,59,0.8)', borderRadius: 20, padding: 16, width: 115, borderWidth: 1, overflow: 'hidden' },
-    kpiLabel: { fontSize: 11, fontWeight: '700', color: '#94A3B8', marginBottom: 6 },
-    kpiValue: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5, marginBottom: 4 },
-    kpiSub: { fontSize: 10, fontWeight: '600', color: '#64748B' },
+    cardDates: { flexDirection: 'row', alignItems: 'center', marginTop: 8, padding: 12, backgroundColor: '#F8FAFC', borderRadius: 12 },
+    dateGroup: { flex: 1, alignItems: 'center' },
+    dateDivider: { width: 1, height: 24, backgroundColor: '#E2E8F0', marginHorizontal: 8 },
+    dateLabel: { fontSize: 9, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
+    dateValue: { fontSize: 11, fontWeight: '800', color: '#334155' },
 
-    // Filters & Search
-    filterContainer: { paddingHorizontal: 20, marginBottom: 16, zIndex: 10 },
-    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 30, paddingHorizontal: 20, height: 56, gap: 12, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:8}, shadowOpacity: 0.05, shadowRadius: 16, elevation: 4, marginBottom: 16 },
-    searchInput: { flex: 1, fontSize: 15, color: '#0F172A', fontWeight: '600' },
-    filterToggle: { padding: 6 },
-    
-    pillRow: { flexDirection: 'row', gap: 12 },
-    filterPill: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 14, borderRadius: 20, gap: 10, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:4}, shadowOpacity: 0.04, shadowRadius: 10, elevation: 2 },
-    pillLabel: { fontSize: 10, fontWeight: '700', color: '#94A3B8', marginBottom: 2 },
-    pillValue: { fontSize: 13, fontWeight: '800', color: '#334155' },
+    notesBox: { flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingHorizontal: 4 },
+    notesText: { fontSize: 12, color: '#64748B', marginLeft: 6, flex: 1 },
 
-    filterOptions: { marginTop: 16, gap: 12, backgroundColor: '#fff', padding: 16, borderRadius: 20 },
-    filterRow: { flexDirection: 'row', gap: 12 },
-    miniInput: { flex: 1, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, padding: 12, fontSize: 13, fontWeight: '600' },
-    selectWrapper: { flex: 1 },
+    actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 16, gap: 8 },
+    actionBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
+    actionText: { fontSize: 12, fontWeight: '800' },
 
-    // List
-    list: { paddingBottom: 120 },
-    card: { backgroundColor: '#fff', borderRadius: 24, padding: 16, marginHorizontal: 20, marginBottom: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4, flexDirection: 'row', alignItems: 'center' },
-    cardImageWrap: { width: 60, height: 60, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 16, overflow: 'hidden' },
-    cardContent: { flex: 1 },
-    
-    cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-    dateTxt: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
-    priceTxt: { fontSize: 16, fontWeight: '900', color: '#10B981' },
-    
-    cardMiddleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-    stationName: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
-    literTxt: { fontSize: 15, fontWeight: '800', color: '#0F172A' },
-    
-    cardBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    unitPriceTxt: { fontSize: 11, fontWeight: '600', color: '#64748B' },
-    kmWrap: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    kmTxt: { fontSize: 11, fontWeight: '600', color: '#94A3B8' },
+    // Modal
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.6)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '90%' },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    modalTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+    modalClose: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+    inputLabel: { fontSize: 11, fontWeight: '800', color: '#64748B', marginBottom: 8, marginLeft: 4, letterSpacing: 0.5 },
+    saveBtn: { backgroundColor: '#F59E0B', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
+    saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
 
-    // Bottom Bar
-    bottomBar: { position: 'absolute', bottom: 24, left: 20, right: 20, backgroundColor: '#fff', borderRadius: 30, padding: 16, flexDirection: 'row', alignItems: 'center', shadowColor: '#0A1A3A', shadowOffset: {width:0, height:16}, shadowOpacity: 0.15, shadowRadius: 30, elevation: 15 },
-    bottomItem: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 10 },
-    bottomIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' },
-    bottomLabel: { fontSize: 11, fontWeight: '700', color: '#64748B', marginBottom: 2 },
-    bottomValue: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
-    bottomDivider: { width: 1, height: 40, backgroundColor: '#E2E8F0' },
-
-    empty: { alignItems: 'center', marginTop: 80 },
-    emptyTxt: { color: '#94A3B8', marginTop: 16, fontWeight: '600', fontSize: 16 },
-
-    // Modals
-    mOverlay: { flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.7)' },
-    mContent: { backgroundColor: '#fff', borderTopLeftRadius: 36, borderTopRightRadius: 36, padding: 30, maxHeight: '90%' },
-    mHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
-    mTitle: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
-    mClose: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
-    mForm: { gap: 20, paddingBottom: 50 },
-    mInpGroup: { gap: 10 },
-    mLabel: { fontSize: 13, fontWeight: '800', color: '#475569', marginLeft: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
-    mInp: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 18, fontSize: 16, fontWeight: '600', color: '#0F172A' },
-    mSaveBtn: { backgroundColor: '#0F172A', padding: 20, borderRadius: 20, alignItems: 'center', marginTop: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 6 },
-    mSaveText: { color: '#fff', fontSize: 17, fontWeight: '900' }
+    // Dummy Tab
+    dummyTabBar: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E2E8F0', paddingBottom: Platform.OS === 'ios' ? 20 : 0, flexDirection: 'row', height: Platform.OS === 'ios' ? 85 : 65, alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 },
+    dummyTab: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' },
+    dummyTabLabel: { fontSize: 10, fontWeight: '600', marginTop: 4, color: '#94A3B8' },
+    dummyTabCenter: { flex: 1, alignItems: 'center' },
+    dummyTabCenterInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginTop: -35, shadowColor: '#2563EB', shadowOffset: {width:0, height:4}, shadowOpacity:0.3, shadowRadius:8, elevation: 5 },
 });
-

@@ -64,6 +64,7 @@
         </div>
 
         {{-- Total Income --}}
+        @if(auth()->user()->hasPermission('financials.view'))
         <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-6 border border-emerald-100 relative overflow-hidden group">
             <div class="absolute -right-6 -top-6 text-emerald-500/10 transition-transform group-hover:scale-110 duration-500">
                 <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -76,6 +77,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     {{-- Data Table --}}
@@ -87,7 +89,9 @@
                         <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Müşteri / Kurum</th>
                         <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Sabah (Adet)</th>
                         <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Akşam (Adet)</th>
+                        @if(auth()->user()->hasPermission('financials.view'))
                         <th class="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Toplam Kazanç</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -114,11 +118,13 @@
                                     {{ $report['evening_count'] }}
                                 </span>
                             </td>
+                            @if(auth()->user()->hasPermission('financials.view'))
                             <td class="py-4 px-6 text-right">
                                 <span class="font-black text-emerald-600 text-base">
                                     {{ number_format($report['total_price'], 2, ',', '.') }} ₺
                                 </span>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
@@ -138,7 +144,9 @@
                             <td class="py-4 px-6 text-right font-black text-slate-600 text-[11px] uppercase tracking-wider">GENEL TOPLAM :</td>
                             <td class="py-4 px-6 text-center font-black text-amber-600">{{ number_format($reportTotals['morning']) }}</td>
                             <td class="py-4 px-6 text-center font-black text-indigo-600">{{ number_format($reportTotals['evening']) }}</td>
+                            @if(auth()->user()->hasPermission('financials.view'))
                             <td class="py-4 px-6 text-right font-black text-emerald-600 text-lg">{{ number_format($reportTotals['income'], 2, ',', '.') }} ₺</td>
+                            @endif
                         </tr>
                     </tfoot>
                 @endif

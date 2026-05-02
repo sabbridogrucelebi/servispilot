@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Platform, Image, Modal, TextInput, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Platform, Image, Modal, TextInput, ScrollView, Linking, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Picker } from '@react-native-picker/picker';
 import api from '../api/axios';
 import * as ImagePicker from 'expo-image-picker';
 import * as Clipboard from 'expo-clipboard';
+import { Header, EmptyState } from '../components';
 
 export default function VehicleGalleryScreen() {
     const navigation = useNavigation();
     const route = useRoute();
-    const { vehicleId, plate } = route.params || {};
+    const { vehicleId, vehicle } = route.params || {};
 
     const [images, setImages] = useState([]);
     const [uploadLink, setUploadLink] = useState('');
@@ -23,19 +25,8 @@ export default function VehicleGalleryScreen() {
     const [uploading, setUploading] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [imageTitle, setImageTitle] = useState('');
-    const [imageType, setImageType] = useState('other');
+    const [imageType, setImageType] = useState('Araç Ön Resmi');
     const [isFeatured, setIsFeatured] = useState(false);
-
-    const imageTypes = [
-        { label: 'Araç Ön Resmi', value: 'front' },
-        { label: 'Sağ Yan', value: 'right_side' },
-        { label: 'Sol Yan', value: 'left_side' },
-        { label: 'Arka', value: 'rear' },
-        { label: 'İç Resim 1', value: 'interior_1' },
-        { label: 'İç Resim 2', value: 'interior_2' },
-        { label: 'Göğüs', value: 'dashboard' },
-        { label: 'Diğer Resimler', value: 'other' }
-    ];
 
     useEffect(() => {
         fetchGallery();
@@ -44,12 +35,13 @@ export default function VehicleGalleryScreen() {
     const fetchGallery = async (isRefreshing = false) => {
         try {
             if (!isRefreshing) setLoading(true);
-            const response = await api.get(`/vehicles/${vehicleId}/gallery`);
-            setImages(response.data.images);
-            setUploadLink(response.data.upload_link);
+            const response = await api.get(`/v1/vehicles/${vehicleId}/gallery`);
+            if (response.data && response.data.data) {
+                setImages(response.data.data.images || []);
+                setUploadLink(response.data.data.driver_upload_link || '');
+            }
         } catch (e) {
-            console.error(e);
-            Alert.alert('Hata', 'Galeri yüklenirken bir sorun oluştu.');
+            console.error('Fetch gallery error:', e);
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -57,24 +49,24 @@ export default function VehicleGalleryScreen() {
     };
 
     const copyToClipboard = async () => {
+        if (!uploadLink) return;
         await Clipboard.setStringAsync(uploadLink);
-        Alert.alert('Kopyalandı', 'Şoför için hızlı yükleme linki panoya kopyalandı.');
+        Alert.alert('Kopyalandı', 'Şoför yükleme linki panoya kopyalandı.');
     };
 
     const setAsFeatured = async (imageId) => {
         try {
             setLoading(true);
-            await api.post(`/vehicles/${vehicleId}/gallery/${imageId}/featured`);
+            await api.post(`/v1/vehicles/${vehicleId}/gallery/${imageId}/featured`);
             fetchGallery();
         } catch (e) {
-            console.error(e);
             Alert.alert('Hata', 'Vitrin resmi ayarlanamadı.');
             setLoading(false);
         }
     };
 
     const deleteImage = (imageId) => {
-        Alert.alert('Onay', 'Bu resmi silmek istediğinize emin misiniz?', [
+        Alert.alert('Emin misiniz?', 'Bu resmi silmek istediğinize emin misiniz?', [
             { text: 'İptal', style: 'cancel' },
             { 
                 text: 'Sil', 
@@ -82,10 +74,9 @@ export default function VehicleGalleryScreen() {
                 onPress: async () => {
                     try {
                         setLoading(true);
-                        await api.delete(`/vehicles/${vehicleId}/gallery/${imageId}`);
+                        await api.delete(`/v1/vehicles/${vehicleId}/gallery/${imageId}`);
                         fetchGallery();
                     } catch (e) {
-                        console.error(e);
                         Alert.alert('Hata', 'Resim silinemedi.');
                         setLoading(false);
                     }
@@ -97,7 +88,7 @@ export default function VehicleGalleryScreen() {
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
+            allowsEditing: false,
             quality: 0.8,
         });
 
@@ -122,11 +113,11 @@ export default function VehicleGalleryScreen() {
             let type = match ? `image/${match[1]}` : `image`;
 
             formData.append('image', { uri: localUri, name: filename, type });
-            formData.append('image_type', imageType);
+            formData.append('type', imageType);
             if (imageTitle) formData.append('title', imageTitle);
             formData.append('is_featured', isFeatured ? '1' : '0');
 
-            await api.post(`/vehicles/${vehicleId}/gallery`, formData, {
+            await api.post(`/v1/vehicles/${vehicleId}/gallery`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
@@ -135,8 +126,8 @@ export default function VehicleGalleryScreen() {
             setImageTitle('');
             setIsFeatured(false);
             fetchGallery();
+            Alert.alert('Başarılı', 'Resim başarıyla yüklendi.');
         } catch (e) {
-            console.error(e);
             Alert.alert('Hata', 'Resim yüklenirken bir sorun oluştu.');
         } finally {
             setUploading(false);
@@ -148,20 +139,25 @@ export default function VehicleGalleryScreen() {
             <View style={s.imageBox}>
                 <Image source={{ uri: item.url }} style={s.image} resizeMode="cover" />
                 
-                {/* Transparent Black Overlay for Premium look */}
                 <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.8)']} style={StyleSheet.absoluteFillObject} />
                 
                 <View style={s.cardOverlayContent}>
-                    {item.is_featured && (
-                        <View style={s.featuredBadge}>
-                            <Icon name="star" size={10} color="#fff" />
-                            <Text style={s.featuredTxt}>VİTRİN</Text>
+                    <View style={s.overlayTop}>
+                        {item.is_featured ? (
+                            <View style={s.featuredBadge}>
+                                <Icon name="star" size={12} color="#fff" />
+                                <Text style={s.featuredTxt}>VİTRİN</Text>
+                            </View>
+                        ) : <View/>}
+                        <View style={[s.sourceBadge, item.source === 'driver' ? {backgroundColor: '#3B82F6'} : {backgroundColor: '#64748B'}]}>
+                            <Icon name={item.source === 'driver' ? 'steering' : 'account-cog'} size={10} color="#fff" />
+                            <Text style={s.sourceTxt}>{item.source === 'driver' ? 'Şoför Linki' : 'Manuel'}</Text>
                         </View>
-                    )}
+                    </View>
                     
                     <View style={s.overlayBottom}>
-                        <Text style={s.imgTitleOverlay} numberOfLines={1}>{item.title || item.type_label}</Text>
-                        <Text style={s.imgSubOverlay}>{item.source_label}</Text>
+                        <Text style={s.imgTitleOverlay} numberOfLines={1}>{item.title || item.type}</Text>
+                        <Text style={s.imgSubOverlay}>{new Date(item.created_at).toLocaleDateString('tr-TR')}</Text>
                     </View>
                 </View>
             </View>
@@ -170,209 +166,218 @@ export default function VehicleGalleryScreen() {
                 {!item.is_featured && (
                     <TouchableOpacity style={s.actionBtn} onPress={() => setAsFeatured(item.id)}>
                         <Icon name="star-outline" size={16} color="#3B82F6" />
+                        <Text style={s.actionBtnText}>Vitrin Yap</Text>
                     </TouchableOpacity>
                 )}
-                <TouchableOpacity style={[s.actionBtn, {marginLeft: 'auto'}]} onPress={() => deleteImage(item.id)}>
+                <TouchableOpacity style={[s.actionBtn, item.is_featured && {marginLeft: 'auto'}]} onPress={() => Linking.openURL(item.url)}>
+                    <Icon name="cloud-download-outline" size={16} color="#10B981" />
+                    <Text style={[s.actionBtnText, {color: '#10B981'}]}>İndir</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={s.actionBtn} onPress={() => Share.share({ message: `Araç Görseli: ${item.url}` })}>
+                    <Icon name="share-variant-outline" size={16} color="#06B6D4" />
+                    <Text style={[s.actionBtnText, {color: '#06B6D4'}]}>Paylaş</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[s.actionBtn, !item.is_featured && {marginLeft: 'auto'}]} onPress={() => deleteImage(item.id)}>
                     <Icon name="trash-can-outline" size={16} color="#EF4444" />
+                    <Text style={[s.actionBtnText, {color: '#EF4444'}]}>Sil</Text>
                 </TouchableOpacity>
             </View>
         </View>
     );
 
+    const renderHeader = () => (
+        <View style={s.listHeader}>
+            {/* Driver Link Card */}
+            <View style={s.driverLinkCard}>
+                <LinearGradient colors={['#4F46E5', '#3B82F6']} style={s.driverLinkGradient} start={{x:0, y:0}} end={{x:1, y:1}}>
+                    <View style={s.driverLinkContent}>
+                        <View style={s.driverLinkIconBox}>
+                            <Icon name="link-variant" size={24} color="#fff" />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={s.driverLinkTitle}>Şoför İçin Hızlı Yükleme</Text>
+                            <Text style={s.driverLinkDesc}>Şoföre özel linki göndererek araca ait resimleri kendi kamerasından yüklemesini sağlayın.</Text>
+                        </View>
+                    </View>
+                    <TouchableOpacity style={s.copyBtn} onPress={copyToClipboard}>
+                        <Icon name="content-copy" size={16} color="#4F46E5" />
+                        <Text style={s.copyBtnText}>LİNKİ KOPYALA</Text>
+                    </TouchableOpacity>
+                </LinearGradient>
+            </View>
+
+            <View style={s.sectionHeader}>
+                <Text style={s.sectionTitle}>Araç Resimleri</Text>
+                <Text style={s.sectionSubtitle}>Toplam {images.length} görsel</Text>
+            </View>
+        </View>
+    );
 
     return (
-        <View style={s.container}>
-            <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={s.header} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
-                <SafeAreaView edges={['top']}>
-                    <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-                            <Icon name="arrow-left" size={20} color="#fff" />
-                        </TouchableOpacity>
-                        <View style={s.headerTitleWrap}>
-                            <Text style={s.headerTitle}>{plate} · Galeri</Text>
-                            <View style={s.headerSubWrap}>
-                                <View style={s.statusDotSmall} />
-                                <Text style={s.headerSubTxt}>Araç Görselleri Yönetimi</Text>
-                            </View>
-                        </View>
-                        <View style={{flexDirection:'row', gap: 8}}>
-                            <TouchableOpacity style={s.topBtn} onPress={fetchGallery}><Icon name="refresh" size={20} color="#fff" /></TouchableOpacity>
-                            <TouchableOpacity style={s.topAddBtn} onPress={() => setUploadModalVisible(true)}>
-                                <Icon name="plus" size={20} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
+        <SafeAreaView style={s.container} edges={['top']}>
+            <View style={{ backgroundColor: '#fff', zIndex: 10, paddingBottom: 12 }}>
+                <View style={s.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+                        <Icon name="chevron-left" size={26} color="#0F172A" />
+                    </TouchableOpacity>
+                    <View style={s.headerCenter}>
+                        <Text style={s.headerTitle}>Araç Galerisi</Text>
+                        <Text style={s.headerSubtitle}>{vehicle?.plate || 'Görseller'}</Text>
                     </View>
-                </SafeAreaView>
-            </LinearGradient>
-
-            <View style={s.driverLinkWrapper}>
-                <View style={s.driverLinkBox}>
-                    <View style={s.driverLinkHead}>
-                        <Icon name="cellphone-link" size={20} color="#4F46E5" />
-                        <Text style={s.driverLinkTitle}>Şoför Hızlı Yükleme</Text>
-                    </View>
-                    <View style={s.linkRow}>
-                        <Text style={s.linkTxt} numberOfLines={1}>{uploadLink}</Text>
-                        <TouchableOpacity style={s.copyBtn} onPress={copyToClipboard}>
-                            <Icon name="content-copy" size={16} color="#4F46E5" />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity style={s.addHeaderBtn} onPress={() => setUploadModalVisible(true)}>
+                        <Icon name="plus" size={24} color="#fff" />
+                    </TouchableOpacity>
                 </View>
             </View>
 
-            {loading && !refreshing ? <ActivityIndicator style={{marginTop:40}} color="#4F46E5" size="large" /> : (
+            {loading && !refreshing ? (
+                <View style={s.loader}><ActivityIndicator size="large" color="#4F46E5" /></View>
+            ) : (
                 <FlatList
                     data={images}
+                    keyExtractor={(i) => i.id.toString()}
                     renderItem={renderImageCard}
-                    keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={s.list}
-                    refreshing={refreshing}
-                    onRefresh={() => fetchGallery(true)}
-                    numColumns={2}
-                    columnWrapperStyle={{ justifyContent: 'space-between' }}
-                    ListEmptyComponent={
-                        <View style={s.empty}>
-                            <Icon name="image-off-outline" size={60} color="#E2E8F0" />
-                            <Text style={s.emptyTxt}>Kayıtlı araç görseli bulunamadı.</Text>
-                        </View>
-                    }
+                    ListHeaderComponent={renderHeader}
+                    contentContainerStyle={s.listContent}
+                    ListEmptyComponent={<EmptyState icon="image-off-outline" title="Görsel Bulunamadı" message="Bu araca ait henüz hiç resim yüklenmemiş." />}
                 />
             )}
 
-            {/* Yükleme Modalı */}
-            <Modal visible={uploadModalVisible} animationType="slide" transparent>
+            {/* Upload Modal */}
+            <Modal visible={uploadModalVisible} animationType="slide" transparent={true} onRequestClose={() => setUploadModalVisible(false)}>
                 <View style={s.modalOverlay}>
-                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={s.modalContentWrap}>
-                        <View style={s.modalContent}>
-                            <View style={s.modalHeader}>
-                                <Text style={s.modalTitle}>Yeni Resim Yükle</Text>
-                                <TouchableOpacity onPress={() => setUploadModalVisible(false)}><Icon name="close" size={24} color="#64748B" /></TouchableOpacity>
-                            </View>
-                            <ScrollView showsVerticalScrollIndicator={false}>
-                                <View style={s.inputGroup}>
-                                    <Text style={s.label}>Resim Tipi</Text>
-                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.typeScroll}>
-                                        {imageTypes.map(t => (
-                                            <TouchableOpacity 
-                                                key={t.value} 
-                                                style={[s.typeBtn, imageType === t.value && s.typeBtnActive]}
-                                                onPress={() => setImageType(t.value)}
-                                            >
-                                                <Text style={[s.typeBtnTxt, imageType === t.value && s.typeBtnTxtActive]}>{t.label}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </ScrollView>
-                                </View>
-
-                                <View style={s.inputGroup}>
-                                    <Text style={s.label}>Resim Başlığı (Opsiyonel)</Text>
-                                    <TextInput style={s.input} placeholder="Örn: Ön görünüm" value={imageTitle} onChangeText={setImageTitle} />
-                                </View>
-
-                                <View style={s.inputGroup}>
-                                    <Text style={s.label}>Resim Dosyası</Text>
-                                    <TouchableOpacity style={s.filePickBox} onPress={pickImage}>
-                                        {selectedImage ? (
-                                            <Image source={{ uri: selectedImage.uri }} style={s.selectedImgPreview} borderRadius={12} />
-                                        ) : (
-                                            <>
-                                                <Icon name="image-plus" size={32} color="#94A3B8" />
-                                                <Text style={s.filePickTxt}>Galeriden Seç</Text>
-                                            </>
-                                        )}
-                                    </TouchableOpacity>
-                                </View>
-
-                                <TouchableOpacity style={s.checkboxRow} onPress={() => setIsFeatured(!isFeatured)}>
-                                    <View style={[s.checkbox, isFeatured && s.checkboxActive]}>
-                                        {isFeatured && <Icon name="check" size={14} color="#fff" />}
-                                    </View>
-                                    <View>
-                                        <Text style={s.checkTitle}>Vitrin resmi olarak ayarla</Text>
-                                        <Text style={s.checkDesc}>Araç detay ekranında bu görsel gösterilsin.</Text>
-                                    </View>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity style={[s.submitBtn, uploading && {opacity:0.7}]} onPress={handleUpload} disabled={uploading}>
-                                    {uploading ? <ActivityIndicator color="#fff" /> : <Text style={s.submitBtnTxt}>Resim Yükle</Text>}
-                                </TouchableOpacity>
-                            </ScrollView>
+                    <View style={s.modalContent}>
+                        <View style={s.modalHeader}>
+                            <Text style={s.modalTitle}>Yeni Resim Yükle</Text>
+                            <TouchableOpacity onPress={() => setUploadModalVisible(false)} style={s.modalClose}>
+                                <Icon name="close" size={24} color="#64748B" />
+                            </TouchableOpacity>
                         </View>
-                    </KeyboardAvoidingView>
+                        
+                        <ScrollView style={{ padding: 20 }}>
+                            <Text style={s.inputLabel}>RESİM TİPİ *</Text>
+                            <View style={s.pickerContainer}>
+                                <Picker selectedValue={imageType} onValueChange={(itemValue) => setImageType(itemValue)} style={s.picker}>
+                                    <Picker.Item label="Araç Ön Resmi" value="Araç Ön Resmi" />
+                                    <Picker.Item label="Sağ Yan" value="Sağ Yan" />
+                                    <Picker.Item label="Sol Yan" value="Sol Yan" />
+                                    <Picker.Item label="Arka" value="Arka" />
+                                    <Picker.Item label="İç Resim 1" value="İç Resim 1" />
+                                    <Picker.Item label="İç Resim 2" value="İç Resim 2" />
+                                    <Picker.Item label="Göğüs" value="Göğüs" />
+                                    <Picker.Item label="Ruhsat Resmi" value="Ruhsat Resmi" />
+                                    <Picker.Item label="Diğer" value="Diğer" />
+                                </Picker>
+                            </View>
+
+                            <Text style={[s.inputLabel, { marginTop: 16 }]}>RESİM BAŞLIĞI / AÇIKLAMA</Text>
+                            <TextInput 
+                                value={imageTitle}
+                                onChangeText={setImageTitle}
+                                placeholder="Örn: Ön tamponda hafif çizik"
+                                style={s.inputBox}
+                            />
+
+                            <Text style={[s.inputLabel, { marginTop: 16 }]}>RESİM DOSYASI *</Text>
+                            <TouchableOpacity style={s.uploadArea} onPress={pickImage}>
+                                {selectedImage ? (
+                                    <Image source={{ uri: selectedImage.uri }} style={s.previewImage} />
+                                ) : (
+                                    <View style={s.uploadAreaPlaceholder}>
+                                        <Icon name="image-plus" size={40} color="#94A3B8" />
+                                        <Text style={s.uploadAreaText}>Kameradan veya Galeriden Seç</Text>
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity 
+                                style={[s.checkboxRow, {marginTop: 16}]} 
+                                onPress={() => setIsFeatured(!isFeatured)}
+                                activeOpacity={0.7}
+                            >
+                                <View style={[s.checkbox, isFeatured && s.checkboxActive]}>
+                                    {isFeatured && <Icon name="check" size={14} color="#fff" />}
+                                </View>
+                                <Text style={s.checkboxText}>Bu resmi vitrin (ana) resim yap</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={[s.saveBtn, uploading && { opacity: 0.7 }]} onPress={handleUpload} disabled={uploading}>
+                                {uploading ? <ActivityIndicator color="#fff" /> : <Text style={s.saveBtnText}>Resmi Yükle</Text>}
+                            </TouchableOpacity>
+                            <View style={{ height: 40 }} />
+                        </ScrollView>
+                    </View>
                 </View>
             </Modal>
-        </View>
+        </SafeAreaView>
     );
 }
 
 const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F4F7FA' },
+    container: { flex: 1, backgroundColor: '#F8FAFC' },
+    loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     
-    header: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden', paddingBottom: 40 },
-    headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 10, marginBottom: 20 },
-    backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-    headerTitleWrap: { alignItems: 'center' },
-    headerTitle: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
-    headerSubWrap: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
-    statusDotSmall: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981' },
-    headerSubTxt: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
-    topBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-    topAddBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(59, 130, 246, 0.4)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#3B82F6' },
-    
-    driverLinkWrapper: { paddingHorizontal: 20, marginTop: -30, zIndex: 20 },
-    driverLinkBox: { backgroundColor: '#fff', borderRadius: 24, padding: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.08, shadowRadius: 24, elevation: 8, borderWidth: 1, borderColor: '#F1F5F9' },
-    driverLinkHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-    driverLinkTitle: { fontSize: 14, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
-    linkRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 16, paddingLeft: 16, borderWidth: 1, borderColor: '#E2E8F0', height: 48 },
-    linkTxt: { flex: 1, fontSize: 13, color: '#475569', fontWeight: '600' },
-    copyBtn: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1, borderLeftColor: '#E2E8F0' },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 44 : 24 },
+    backBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+    headerCenter: { flex: 1, alignItems: 'center' },
+    headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+    headerSubtitle: { fontSize: 13, color: '#64748B', marginTop: 2, fontWeight: '500' },
+    addHeaderBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
 
-    list: { padding: 20, paddingBottom: 100, paddingTop: 20 },
-    card: { width: '48%', backgroundColor: '#fff', borderRadius: 24, marginBottom: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4, borderWidth: 1, borderColor: '#F1F5F9', overflow: 'hidden' },
-    imageBox: { width: '100%', height: 180, position: 'relative' },
+    listContent: { padding: 16, paddingBottom: 100 },
+    listHeader: { marginBottom: 20 },
+
+    driverLinkCard: { borderRadius: 20, overflow: 'hidden', marginBottom: 24, shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 16, elevation: 6 },
+    driverLinkGradient: { padding: 20 },
+    driverLinkContent: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 },
+    driverLinkIconBox: { width: 48, height: 48, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+    driverLinkTitle: { fontSize: 16, fontWeight: '800', color: '#fff', marginBottom: 4 },
+    driverLinkDesc: { fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 18 },
+    copyBtn: { backgroundColor: '#fff', borderRadius: 12, paddingVertical: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 },
+    copyBtnText: { color: '#4F46E5', fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+
+    sectionHeader: { marginBottom: 12 },
+    sectionTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+    sectionSubtitle: { fontSize: 13, color: '#64748B', marginTop: 2 },
+
+    card: { backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden', marginBottom: 16, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+    imageBox: { height: 200, width: '100%', position: 'relative' },
     image: { width: '100%', height: '100%' },
-    
-    cardOverlayContent: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 12, justifyContent: 'space-between' },
-    featuredBadge: { alignSelf: 'flex-start', backgroundColor: '#F59E0B', flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-    featuredTxt: { color: '#fff', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
-    
+    cardOverlayContent: { position: 'absolute', inset: 0, padding: 16, justifyContent: 'space-between' },
+    overlayTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+    featuredBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E0B', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, gap: 4 },
+    featuredTxt: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+    sourceBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, gap: 4 },
+    sourceTxt: { color: '#fff', fontSize: 10, fontWeight: '700' },
     overlayBottom: { marginTop: 'auto' },
-    imgTitleOverlay: { fontSize: 13, fontWeight: '800', color: '#fff', marginBottom: 2, letterSpacing: -0.5 },
-    imgSubOverlay: { fontSize: 10, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+    imgTitleOverlay: { color: '#fff', fontSize: 18, fontWeight: '800', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: {width: 0, height: 1}, textShadowRadius: 4 },
+    imgSubOverlay: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '500', marginTop: 4 },
     
-    actionRow: { flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: '#fff' },
-    actionBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+    actionRow: { flexDirection: 'row', padding: 12, backgroundColor: '#F8FAFC', borderTopWidth: 1, borderColor: '#F1F5F9' },
+    actionBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', gap: 6 },
+    actionBtnText: { fontSize: 12, fontWeight: '700', color: '#475569' },
 
-    empty: { alignItems: 'center', marginTop: 60 },
-    emptyTxt: { color: '#94A3B8', marginTop: 16, fontWeight: '600', fontSize: 16 },
-
-    /* Modal Styles */
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.6)', justifyContent: 'flex-end' },
-    modalContentWrap: { width: '100%', maxHeight: '90%' },
-    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 36, borderTopRightRadius: 36, padding: 30, paddingBottom: 50 },
-    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
-    modalTitle: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.6)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '85%' },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, borderBottomWidth: 1, borderColor: '#F1F5F9' },
+    modalTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+    modalClose: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
     
-    inputGroup: { marginBottom: 24 },
-    label: { fontSize: 13, fontWeight: '800', color: '#475569', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
-    input: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingHorizontal: 18, paddingVertical: 16, fontSize: 15, color: '#0F172A', fontWeight: '600' },
+    inputLabel: { fontSize: 12, fontWeight: '700', color: '#475569', marginBottom: 8, letterSpacing: 0.5 },
+    pickerContainer: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, backgroundColor: '#fff', overflow: 'hidden' },
+    picker: { height: 50, width: '100%' },
+    inputBox: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: '#0F172A' },
     
-    typeScroll: { flexDirection: 'row', marginHorizontal: -4 },
-    typeBtn: { paddingHorizontal: 18, paddingVertical: 12, backgroundColor: '#F1F5F9', borderRadius: 14, marginHorizontal: 4, borderWidth: 1, borderColor: 'transparent' },
-    typeBtnActive: { backgroundColor: '#EFF6FF', borderColor: '#3B82F6' },
-    typeBtnTxt: { fontSize: 13, fontWeight: '700', color: '#64748B' },
-    typeBtnTxtActive: { color: '#3B82F6', fontWeight: '900' },
-
-    filePickBox: { width: '100%', height: 180, backgroundColor: '#F8FAFC', borderRadius: 24, borderWidth: 2, borderColor: '#E2E8F0', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
-    filePickTxt: { fontSize: 14, fontWeight: '800', color: '#94A3B8', marginTop: 10 },
-    selectedImgPreview: { width: '100%', height: '100%' },
-
-    checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 30, backgroundColor: '#F8FAFC', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0' },
-    checkbox: { width: 24, height: 24, borderRadius: 8, borderWidth: 2, borderColor: '#CBD5E1', alignItems: 'center', justifyContent: 'center' },
-    checkboxActive: { backgroundColor: '#3B82F6', borderColor: '#3B82F6' },
-    checkTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', letterSpacing: -0.5 },
-    checkDesc: { fontSize: 12, color: '#64748B', marginTop: 4, fontWeight: '500' },
-
-    submitBtn: { backgroundColor: '#3B82F6', paddingVertical: 20, borderRadius: 20, alignItems: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 6 },
-    submitBtnTxt: { color: '#fff', fontSize: 17, fontWeight: '900' }
+    uploadArea: { height: 160, borderWidth: 2, borderColor: '#E2E8F0', borderStyle: 'dashed', borderRadius: 16, backgroundColor: '#F8FAFC', overflow: 'hidden' },
+    uploadAreaPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+    uploadAreaText: { fontSize: 14, fontWeight: '600', color: '#64748B' },
+    previewImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+    
+    checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#CBD5E1', alignItems: 'center', justifyContent: 'center' },
+    checkboxActive: { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
+    checkboxText: { fontSize: 14, fontWeight: '500', color: '#475569' },
+    
+    saveBtn: { backgroundColor: '#8B5CF6', paddingVertical: 16, borderRadius: 16, alignItems: 'center', marginTop: 24, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
+    saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' }
 });

@@ -29,6 +29,9 @@ class CustomerService
                 },
                 'serviceRoutes' => function($q) {
                     $q->latest();
+                },
+                'portalUsers' => function($q) {
+                    $q->latest();
                 }
             ])
             ->first();

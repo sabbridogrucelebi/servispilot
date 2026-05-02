@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'ServisPilot') }}</title>
+    <title>{{ config('app.name', 'FiloMERKEZ') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
@@ -32,8 +32,8 @@
                 {{-- Left Side: Branding & Info --}}
                 <div class="hidden lg:block space-y-12">
                     <div class="inline-flex items-center gap-4">
-                        <div class="h-14 w-14 bg-indigo-600 rounded-[20px] flex items-center justify-center text-3xl shadow-2xl shadow-indigo-500/20">🚀</div>
-                        <span class="text-3xl font-black tracking-tighter uppercase">Servis<span class="text-indigo-400">Pilot</span></span>
+                        <img src="/assets/images/filomerkez_logo.png" alt="FiloMERKEZ" class="h-14 w-14 rounded-2xl shadow-2xl shadow-indigo-500/20 object-cover border border-white/10" />
+                        <span class="text-3xl font-black tracking-tighter uppercase">Filo<span class="text-indigo-400">MERKEZ</span></span>
                     </div>
 
                     <div class="space-y-6">
@@ -71,8 +71,8 @@
                         
                         {{-- Mobile Logo --}}
                         <div class="lg:hidden flex items-center gap-3 mb-10">
-                            <div class="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center text-xl">🚀</div>
-                            <span class="text-xl font-black tracking-tighter uppercase">ServisPilot</span>
+                            <img src="/assets/images/filomerkez_logo.png" alt="FiloMERKEZ" class="h-10 w-10 rounded-xl object-cover border border-white/10" />
+                            <span class="text-xl font-black tracking-tighter uppercase">FiloMERKEZ</span>
                         </div>
 
                         <div class="text-white">

@@ -17,6 +17,14 @@ class CompanyController extends Controller
     {
         $query = Company::withCount('users', 'vehicles', 'drivers');
 
+        $totalCompanies = Company::count();
+        $activeCompanies = Company::where('is_active', true)->count();
+        $passiveCompanies = Company::where('is_active', false)->count();
+        $expiringSoonCompanies = Company::whereNotNull('license_expires_at')
+            ->where('license_expires_at', '<=', now()->addDays(7))
+            ->where('license_expires_at', '>=', now())
+            ->count();
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -33,7 +41,13 @@ class CompanyController extends Controller
 
         $companies = $query->orderByDesc('created_at')->paginate(20);
 
-        return view('super-admin.companies.index', compact('companies'));
+        return view('super-admin.companies.index', compact(
+            'companies', 
+            'totalCompanies', 
+            'activeCompanies', 
+            'passiveCompanies', 
+            'expiringSoonCompanies'
+        ));
     }
 
     public function create()
@@ -190,13 +204,53 @@ class CompanyController extends Controller
 
     public function destroy(Company $company)
     {
-        // Firmaya ait kullanıcıları pasif yap
-        $company->users()->update(['is_active' => false]);
-        $company->update(['is_active' => false]);
+        $companyName = $company->name;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($company) {
+            // İlgili tüm verileri ilişkilerine göre temizle
+            $company->users()->delete();
+            \App\Models\TrafficPenalty::where('company_id', $company->id)->delete();
+            \App\Models\ActivityLog::where('company_id', $company->id)->delete();
+            \App\Models\VehicleMaintenance::where('company_id', $company->id)->delete();
+            \App\Models\VehicleMaintenanceSetting::where('company_id', $company->id)->delete();
+            \App\Models\Mechanic::where('company_id', $company->id)->delete();
+            \App\Models\Fleet\VehicleImage::where('company_id', $company->id)->delete();
+            
+            $fuelStations = \App\Models\FuelStation::where('company_id', $company->id)->get();
+            foreach($fuelStations as $station) {
+                \App\Models\FuelStationPayment::where('fuel_station_id', $station->id)->delete();
+                $station->delete();
+            }
+
+            $company->documents()->delete();
+            $company->fuels()->delete();
+            \App\Models\PayrollLock::where('company_id', $company->id)->delete();
+            $company->payrolls()->delete();
+            $company->trips()->delete();
+            $company->routeStops()->delete();
+            $company->serviceRoutes()->delete();
+
+            $customers = $company->customers()->get();
+            foreach($customers as $customer) {
+                \App\Models\CustomerContract::where('customer_id', $customer->id)->delete();
+                \App\Models\CustomerServiceRoute::where('customer_id', $customer->id)->delete();
+                $customer->delete();
+            }
+
+            $company->drivers()->delete();
+            $company->vehicles()->delete();
+            $company->modules()->delete();
+
+            // Mesajlaşma modülü verileri (Cascade On Delete olabilir ama garantiye alalım)
+            \App\Models\Chat\Conversation::where('company_id', $company->id)->delete();
+
+            // En son firmayı sil
+            $company->delete();
+        });
 
         return redirect()
             ->route('super-admin.companies.index')
-            ->with('success', $company->name . ' firması devre dışı bırakıldı.');
+            ->with('success', $companyName . ' firması tüm verileriyle birlikte sistemden kalıcı olarak silindi.');
     }
 
     /**
@@ -247,5 +301,54 @@ class CompanyController extends Controller
         return redirect()
             ->route('super-admin.companies.show', $company)
             ->with('success', 'Modül ayarları güncellendi.');
+    }
+
+    /**
+     * Kullanıcı şifresini güncelle (Super Admin panelinden)
+     */
+    public function updateUserPassword(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:8'],
+        ]);
+
+        $user->update([
+            'password' => $validated['password']
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', $user->name . ' adlı kullanıcının şifresi başarıyla güncellendi.');
+    }
+
+    /**
+     * Web paneli üzerinden impersonate işlemi (Giriş Yap)
+     */
+    public function impersonate(Request $request, Company $company)
+    {
+        $admin = User::where('company_id', $company->id)->where('role', 'company_admin')->first();
+        if (!$admin) {
+            return response()->json(['success' => false, 'message' => 'Bu firmanın yönetici hesabı bulunamadı.'], 404);
+        }
+
+        \App\Models\ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'company_id' => $company->id,
+            'module' => 'Platform Yönetimi',
+            'action' => 'impersonate_company',
+            'title' => 'Süper Admin Girişi (Impersonation)',
+            'description' => "Super Admin logged in as Company Admin ({$admin->email}) for company: {$company->name}",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
+
+        session()->put('impersonated_by', auth()->id());
+        auth()->login($admin);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'redirect' => route('dashboard')]);
+        }
+        
+        return redirect()->route('dashboard');
     }
 }

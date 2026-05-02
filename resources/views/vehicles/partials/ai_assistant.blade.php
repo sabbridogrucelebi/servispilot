@@ -25,7 +25,7 @@
             <div class="flex items-start gap-4">
                 <div class="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-500/20 shrink-0 border border-indigo-400/30 text-white font-bold">AI</div>
                 <div class="bg-white/5 border border-white/10 p-5 rounded-[24px] rounded-tl-none text-sm text-slate-300 leading-relaxed shadow-xl">
-                    Merhaba! Ben **ServisPilot Pro** Yapay Zeka Asistanı. 
+                    Merhaba! Ben **FiloMERKEZ Pro** Yapay Zeka Asistanı. 
                     <br><br>
                     **{{ $vehicle->plate }}** plakalı aracınızın tüm operasyonel ve finansal verilerine erişimim var. Size nasıl yardımcı olabilirim?
                 </div>
@@ -129,9 +129,13 @@
             } else if (q.includes('bakım') || q.includes('servis') || q.includes('muayene')) {
                 response = "Aracın muayene geçerlilik tarihi: **{{ $inspectionInfo['text'] }}**. Sistem verilerine göre, bir sonraki periyodik bakım için yaklaşık **4.500 KM** vaktiniz bulunuyor.";
             } else if (q.includes('kar') || q.includes('kazanç') || q.includes('hasılat') || q.includes('para')) {
-                response = "Harika haber! Bu aracın bu dönemdeki toplam hasılatı **{{ number_format($income, 2, ',', '.') }} ₺**. Giderler düşüldüğünde işletmenize **{{ number_format($profit, 2, ',', '.') }} ₺** net kâr sağladığını görüyorum.";
+                @if(auth()->user()->hasPermission('financials.view'))
+                response = "Harika haber! Bu aracın bu dönemdeki toplam hasılatı **{{ number_format($income, 2, ',', '.') }} ₺**. Giderler düşüldüğünde işletmenize **{{ number_format($profit, 2, ',', '.') }} ₺** net kâr sağladığını görüyörüm.";
+                @else
+                response = "Finansal verilere erişim yetkiniz bulunmamaktadır. Bu bilgilere ulaşmak için lütfen firma yöneticinizle iletişime geçin.";
+                @endif
             } else if (q.includes('merhaba') || q.includes('selam') || q.includes('hey')) {
-                response = "Selam! Ben ServisPilot AI. **{{ $vehicle->plate }}** ile ilgili verileri analiz etmek için buradayım. Yakıt analizi mi yapalım yoksa finansal durumu mu inceleyelim?";
+                response = "Selam! Ben FiloMERKEZ AI. **{{ $vehicle->plate }}** ile ilgili verileri analiz etmek için buradayım. Yakıt analizi mi yapalım yoksa finansal durumu mu inceleyelim?";
             } else if (q.includes('şoför') || q.includes('sürücü')) {
                 response = "Bu araçta şu an aktif olarak **{{ $driverFullName ?: 'Kaydı bulunmayan' }}** şoför görev almaktadır. Sürücü performans puanı sistemde **4.8/5** olarak görünmektedir.";
             } else {

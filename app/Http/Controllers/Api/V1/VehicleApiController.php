@@ -51,6 +51,11 @@ class VehicleApiController extends BaseApiController
             return $this->error('Araç bulunamadı veya yetkisiz erişim.', 404);
         }
 
+        // Finansal verileri gizle (yetki yoksa)
+        if (!$this->userHasPermission($request->user(), 'financials.view')) {
+            $result['stats'] = ['revenue' => 0, 'fuel' => 0, 'salary' => 0, 'net' => 0];
+        }
+
         return $this->success('Araç detayı getirildi.', $result);
     }
 
@@ -158,6 +163,97 @@ class VehicleApiController extends BaseApiController
         return $this->success('Araç görselleri getirildi.', $result);
     }
 
+    public function storeGallery(Request $request, $id)
+    {
+        if (!$this->userHasPermission($request->user(), 'vehicles.edit')) {
+            return $this->error('Araç görsellerini düzenleme yetkiniz yok.', 403);
+        }
+
+        $request->validate([
+            'image' => 'required|image|max:5120',
+            'type' => 'required|string|max:100',
+            'title' => 'nullable|string|max:255',
+            'is_featured' => 'nullable|in:0,1,true,false',
+        ]);
+
+        $companyId = $this->getCompanyId();
+        $vehicle = \App\Models\Fleet\Vehicle::where('company_id', $companyId)->find($id);
+
+        if (!$vehicle) {
+            return $this->error('Araç bulunamadı veya yetkisiz erişim.', 404);
+        }
+
+        $path = $request->file('image')->store('vehicle-images', 'public');
+        $isFeatured = filter_var($request->input('is_featured', false), FILTER_VALIDATE_BOOLEAN);
+
+        if ($isFeatured) {
+            $vehicle->images()->update(['is_featured' => false]);
+        }
+
+        $vehicle->images()->create([
+            'company_id' => $companyId,
+            'image_type_label' => $request->input('type'),
+            'title' => $request->input('title'),
+            'file_path' => $path,
+            'is_featured' => $isFeatured,
+            'source' => 'manual'
+        ]);
+
+        return $this->success('Görsel başarıyla eklendi.', null, null, 201);
+    }
+
+    public function deleteGallery(Request $request, $id, $imageId)
+    {
+        if (!$this->userHasPermission($request->user(), 'vehicles.edit')) {
+            return $this->error('Araç görsellerini düzenleme yetkiniz yok.', 403);
+        }
+
+        $companyId = $this->getCompanyId();
+        $vehicle = \App\Models\Fleet\Vehicle::where('company_id', $companyId)->find($id);
+
+        if (!$vehicle) {
+            return $this->error('Araç bulunamadı.', 404);
+        }
+
+        $image = $vehicle->images()->find($imageId);
+        if (!$image) {
+            return $this->error('Görsel bulunamadı.', 404);
+        }
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($image->file_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($image->file_path);
+        }
+
+        $image->delete();
+
+        return $this->success('Görsel başarıyla silindi.');
+    }
+
+    public function setFeaturedGallery(Request $request, $id, $imageId)
+    {
+        if (!$this->userHasPermission($request->user(), 'vehicles.edit')) {
+            return $this->error('Araç görsellerini düzenleme yetkiniz yok.', 403);
+        }
+
+        $companyId = $this->getCompanyId();
+        $vehicle = \App\Models\Fleet\Vehicle::where('company_id', $companyId)->find($id);
+
+        if (!$vehicle) {
+            return $this->error('Araç bulunamadı.', 404);
+        }
+
+        $image = $vehicle->images()->find($imageId);
+        if (!$image) {
+            return $this->error('Görsel bulunamadı.', 404);
+        }
+
+        $vehicle->images()->update(['is_featured' => false]);
+        $image->update(['is_featured' => true]);
+
+        return $this->success('Vitrin resmi güncellendi.');
+    }
+
+
     public function reports(Request $request, $id)
     {
         if (!$this->userHasPermission($request->user(), 'reports.view')) {
@@ -171,6 +267,18 @@ class VehicleApiController extends BaseApiController
 
         if (!$result) {
             return $this->error('Araç bulunamadı veya yetkisiz erişim.', 404);
+        }
+
+        // Finansal verileri gizle (yetki yoksa)
+        if (!$this->userHasPermission($request->user(), 'financials.view')) {
+            if (isset($result['totals'])) {
+                $result['totals']['income'] = 0;
+            }
+            if (isset($result['details'])) {
+                foreach ($result['details'] as &$detail) {
+                    $detail['total_price'] = 0;
+                }
+            }
         }
 
         return $this->success('Araç raporu getirildi.', $result);

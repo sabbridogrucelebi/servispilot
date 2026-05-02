@@ -43,8 +43,17 @@ class CheckLicense
         }
 
         if (!$company->isLicenseActive()) {
+            // API Talebi ise JSON dön
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Firmanızın kullanım süresi dolmuştur. Lütfen ödeme yapınız.',
+                    'error' => 'payment_required',
+                    'billing_url' => route('billing.index'),
+                ], 402);
+            }
+
             // Lisans süresi dolmuşsa özel bir sayfaya yönlendir
-            if (!$request->routeIs('license.expired') && !$request->routeIs('logout') && !$request->routeIs('profile.*')) {
+            if (!$request->routeIs('license.expired') && !$request->routeIs('logout') && !$request->routeIs('profile.*') && !$request->routeIs('billing.*')) {
                 return redirect()->route('license.expired');
             }
         }

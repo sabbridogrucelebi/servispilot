@@ -1,216 +1,242 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import SpaceWaves from '../components/SpaceWaves';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl, Dimensions, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import Svg, { Circle, G } from 'react-native-svg';
+import Svg, { Circle, G, Path } from 'react-native-svg';
 import api from '../api/axios';
+import { Header } from '../components';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width: W } = Dimensions.get('window');
+const fmtMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(v || 0);
+const fmtShort = (v) => {
+    if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M₺';
+    if (v >= 1000) return (v / 1000).toFixed(1) + 'k₺';
+    return v + '₺';
+};
 
 export default function ReportsScreen({ navigation }) {
-    const [summary, setSummary] = useState(null);
+    const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchSummary = async (isRefresh = false) => {
-        try {
-            if (isRefresh) setRefreshing(true);
-            else setLoading(true);
-            setError(null);
+    // Animasyonlar
+    const fadeAnim = useState(new Animated.Value(0))[0];
 
-            const response = await api.get('/v1/finance/summary');
+    const fetchData = async (isRefresh = false) => {
+        try {
+            if (isRefresh) setRefreshing(true); else setLoading(true);
+            setError(null);
+            const response = await api.get('/v1/reports/summary');
             if (response.data.success) {
-                setSummary(response.data.data);
+                setData(response.data.data);
+                Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start();
             } else {
                 setError(response.data.message || 'Veri alınamadı.');
             }
         } catch (err) {
-            if (err.response?.status === 403) {
-                setError('Bu alanı görüntüleme yetkiniz yok.');
-            } else {
-                setError('Bağlantı hatası.');
-            }
+            setError(err.response?.status === 403 ? 'Yetkiniz yok.' : 'Bağlantı hatası.');
         } finally {
-            setLoading(false);
-            setRefreshing(false);
+            setLoading(false); setRefreshing(false);
         }
     };
 
-    useEffect(() => {
-        fetchSummary();
-    }, []);
-
-    const onRefresh = () => {
-        fetchSummary(true);
-    };
-
-    const formatCurrency = (amount) => {
-        if (amount === null || amount === undefined) return '- (Yetki Yok)';
-        return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
-    };
-
-    const formatShortCurrency = (amount) => {
-        if (amount === null || amount === undefined) return '-';
-        if (amount === 0) return '₺0';
-        if (amount >= 1000) return `₺${(amount / 1000).toFixed(1)}k`;
-        return `₺${amount}`;
-    };
+    useEffect(() => { fetchData(); }, []);
 
     if (loading && !refreshing) {
         return (
-            <SafeAreaView style={[s.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color="#3B82F6" />
-                <Text style={{ marginTop: 16, color: '#64748b' }}>Finansal Raporlar Yükleniyor...</Text>
+            <SafeAreaView style={st.container}>
+                <Header title="Raporlar" subtitle="Finansal Analiz & Özet" onBack={() => navigation.goBack()} />
+                <View style={st.center}>
+                    <ActivityIndicator size="large" color="#3B82F6" />
+                </View>
             </SafeAreaView>
         );
     }
 
-    if (error && !refreshing && !summary) {
+    if (error && !data) {
         return (
-            <SafeAreaView style={[s.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <Icon name="alert-circle-outline" size={48} color="#ef4444" />
-                <Text style={{ color: '#ef4444', marginTop: 12 }}>{error}</Text>
-                <TouchableOpacity onPress={() => fetchSummary()} style={s.retryBtn}>
-                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Tekrar Dene</Text>
-                </TouchableOpacity>
+            <SafeAreaView style={st.container}>
+                <Header title="Raporlar" subtitle="Finansal Analiz & Özet" onBack={() => navigation.goBack()} />
+                <View style={st.center}>
+                    <Icon name="alert-circle-outline" size={48} color="#EF4444" />
+                    <Text style={st.errorTxt}>{error}</Text>
+                    <TouchableOpacity onPress={() => fetchData()} style={st.retryBtn}>
+                        <Text style={st.retryTxt}>Tekrar Dene</Text>
+                    </TouchableOpacity>
+                </View>
             </SafeAreaView>
         );
     }
 
-    // Harcama dağılımı hesaplamaları (null kontrolü ile, null ise 0 kabul ederek grafik hatasını önleriz)
-    const fuel = summary?.expenses_detail?.fuels || 0;
-    const payroll = summary?.expenses_detail?.payrolls || 0;
-    const maint = summary?.additional_expenses?.maintenances || 0;
-    const penalty = summary?.additional_expenses?.penalties || 0;
+    const { summary, trend } = data || {};
     
-    // Grafikte genişletilmiş operasyonel giderleri gösteriyoruz
-    const totalCalc = fuel + payroll + maint + penalty; 
-    const safeTotal = totalCalc > 0 ? totalCalc : 1;
+    // Doughnut Chart Değerleri
+    const f = summary?.breakdown?.fuel || 0;
+    const p = summary?.breakdown?.payroll || 0;
+    const m = summary?.breakdown?.maintenance || 0;
+    const pn = summary?.breakdown?.penalty || 0;
+    const totalExp = f + p + m + pn;
+    const safeTotal = totalExp > 0 ? totalExp : 1;
 
-    const radius = 60;
-    const strokeWidth = 16;
-    const circumference = 2 * Math.PI * radius;
-    
-    // Yüzdeler
-    const payrollPct = payroll / safeTotal;
-    const fuelPct = fuel / safeTotal;
-    const maintPct = maint / safeTotal;
-    const penaltyPct = penalty / safeTotal;
+    const rad = 50;
+    const strokeW = 18;
+    const circ = 2 * Math.PI * rad;
 
-    const payrollStroke = circumference * payrollPct;
-    const fuelStroke = circumference * fuelPct;
-    const maintStroke = circumference * maintPct;
-    const penaltyStroke = circumference * penaltyPct;
+    const fp = f / safeTotal;
+    const pp = p / safeTotal;
+    const mp = m / safeTotal;
+    const pnp = pn / safeTotal;
 
-    // Offset hesaplamaları
-    const fuelOffset = circumference - payrollStroke;
-    const maintOffset = fuelOffset - fuelStroke;
-    const penaltyOffset = maintOffset - maintStroke;
+    const fStroke = circ * fp;
+    const pStroke = circ * pp;
+    const mStroke = circ * mp;
+    const pnStroke = circ * pnp;
 
-    const hasAnyPermissionData = summary?.operational_total_expenses !== null && summary?.total_expenses !== null;
+    const pOffset = circ - fStroke;
+    const mOffset = pOffset - pStroke;
+    const pnOffset = mOffset - mStroke;
+
+    // Bar Chart Max Değer Bulma
+    const maxVal = trend ? Math.max(...trend.map(t => Math.max(t.income, t.expense))) : 1;
 
     return (
-        <View style={s.container}>
-            <LinearGradient colors={['#0F172A', '#1E3A8A', '#3B82F6']} style={s.header}>
-                <SpaceWaves />
-                <SafeAreaView>
-                    <View style={s.hRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-                            <Icon name="chevron-left" size={28} color="#ffffff" />
-                        </TouchableOpacity>
-                        <Text style={s.hTitle}>Finansal Raporlar</Text>
-                        <View style={{width: 28}} />
-                    </View>
-                </SafeAreaView>
-            </LinearGradient>
-
+        <SafeAreaView style={st.container}>
+            <Header title="Raporlar" subtitle="Finansal Analiz & Özet" onBack={() => navigation.goBack()} />
+            
             <ScrollView 
-                contentContainerStyle={s.content} 
+                contentContainerStyle={st.scrollContent} 
                 showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor="#3B82F6" />}
             >
-                <View style={s.chartCard}>
-                    <Text style={s.cardTitle}>Gider Dağılımı (Yetkiniz Dahilinde)</Text>
-                    <Text style={s.cardSub}>{summary?.period_human}</Text>
+                <Animated.View style={{ opacity: fadeAnim }}>
                     
-                    {totalCalc > 0 && hasAnyPermissionData ? (
-                        <>
-                            <View style={s.chartBox}>
-                                <Svg width="160" height="160" viewBox="0 0 160 160">
-                                    <G rotation="-90" origin="80, 80">
-                                        {/* Ceza */}
-                                        <Circle cx="80" cy="80" r={radius} stroke="#EC4899" strokeWidth={strokeWidth} fill="transparent" strokeDasharray={`${penaltyStroke} ${circumference}`} strokeDashoffset={-penaltyOffset} strokeLinecap="round" />
-                                        {/* Bakım */}
-                                        <Circle cx="80" cy="80" r={radius} stroke="#10B981" strokeWidth={strokeWidth} fill="transparent" strokeDasharray={`${maintStroke} ${circumference}`} strokeDashoffset={-maintOffset} strokeLinecap="round" />
-                                        {/* Yakıt */}
-                                        <Circle cx="80" cy="80" r={radius} stroke="#3B82F6" strokeWidth={strokeWidth} fill="transparent" strokeDasharray={`${fuelStroke} ${circumference}`} strokeDashoffset={-fuelOffset} strokeLinecap="round" />
-                                        {/* Maaş */}
-                                        <Circle cx="80" cy="80" r={radius} stroke="#8B5CF6" strokeWidth={strokeWidth} fill="transparent" strokeDasharray={`${payrollStroke} ${circumference}`} strokeLinecap="round" />
-                                    </G>
-                                </Svg>
-                                <View style={s.chartCenter}>
-                                    <Text style={s.centerVal}>{formatShortCurrency(totalCalc)}</Text>
-                                    <Text style={s.centerLbl}>Toplam</Text>
-                                </View>
-                            </View>
+                    {/* ÖZET KARTLARI */}
+                    <View style={st.cardsRow}>
+                        <LinearGradient colors={['#3B82F6', '#2563EB']} style={st.mainCard} start={{x:0, y:0}} end={{x:1, y:1}}>
+                            <Icon name="wallet" size={24} color="#DBEAFE" style={st.cardIcon} />
+                            <Text style={st.cardLbl}>Toplam Gelir</Text>
+                            <Text style={st.cardVal} adjustsFontSizeToFit numberOfLines={1}>{fmtMoney(summary?.income)}</Text>
+                        </LinearGradient>
+                        
+                        <View style={[st.mainCard, { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0' }]}>
+                            <Icon name="receipt" size={24} color="#94A3B8" style={st.cardIcon} />
+                            <Text style={[st.cardLbl, { color: '#64748B' }]}>Toplam Gider</Text>
+                            <Text style={[st.cardVal, { color: '#0F172A' }]} adjustsFontSizeToFit numberOfLines={1}>{fmtMoney(summary?.expense)}</Text>
+                        </View>
+                    </View>
 
-                            <View style={s.legend}>
-                                {summary?.expenses_detail?.payrolls !== null && <LegendItem color="#8B5CF6" label="Bordro" value={formatCurrency(payroll)} pct={`${Math.round(payrollPct * 100)}%`} />}
-                                {summary?.expenses_detail?.fuels !== null && <LegendItem color="#3B82F6" label="Yakıt" value={formatCurrency(fuel)} pct={`${Math.round(fuelPct * 100)}%`} />}
-                                {summary?.additional_expenses?.maintenances !== null && <LegendItem color="#10B981" label="Bakım" value={formatCurrency(maint)} pct={`${Math.round(maintPct * 100)}%`} />}
-                                {summary?.additional_expenses?.penalties !== null && <LegendItem color="#EC4899" label="Cezalar" value={formatCurrency(penalty)} pct={`${Math.round(penaltyPct * 100)}%`} />}
+                    <View style={[st.fullCard, { backgroundColor: summary?.profit >= 0 ? '#10B981' : '#EF4444' }]}>
+                        <Icon name={summary?.profit >= 0 ? 'trending-up' : 'trending-down'} size={28} color="rgba(255,255,255,0.3)" style={{position: 'absolute', right: 20, top: 20}} />
+                        <Text style={[st.cardLbl, { color: 'rgba(255,255,255,0.9)' }]}>Net Kar / Zarar</Text>
+                        <Text style={[st.cardVal, { fontSize: 32 }]} adjustsFontSizeToFit numberOfLines={1}>{fmtMoney(summary?.profit)}</Text>
+                    </View>
+
+                    {/* TREND GRAFİĞİ (CUSTOM BAR CHART) */}
+                    {trend && trend.length > 0 && (
+                        <View style={st.chartBox}>
+                            <Text style={st.chartTitle}>Son 6 Aylık Finansal Trend</Text>
+                            <View style={st.barArea}>
+                                {trend.map((t, i) => {
+                                    const incH = (t.income / maxVal) * 100 || 0;
+                                    const expH = (t.expense / maxVal) * 100 || 0;
+                                    return (
+                                        <View key={i} style={st.barGroup}>
+                                            <View style={st.bars}>
+                                                <View style={st.barTrack}>
+                                                    <View style={[st.barFill, { height: `${incH}%`, backgroundColor: '#3B82F6' }]} />
+                                                </View>
+                                                <View style={st.barTrack}>
+                                                    <View style={[st.barFill, { height: `${expH}%`, backgroundColor: '#EF4444' }]} />
+                                                </View>
+                                            </View>
+                                            <Text style={st.barLabel}>{t.month.split(' ')[0]}</Text>
+                                        </View>
+                                    );
+                                })}
                             </View>
-                        </>
-                    ) : (
-                        <View style={s.emptyChart}>
-                            <Icon name="chart-pie" size={48} color="#CBD5E1" />
-                            <Text style={{color: '#94A3B8', marginTop: 12}}>Bu döneme ait geçerli veri yok veya yetkiniz kısıtlı.</Text>
+                            <View style={st.legendRow}>
+                                <View style={st.legendItem}><View style={[st.legendDot, {backgroundColor:'#3B82F6'}]}/><Text style={st.legendTxt}>Gelir</Text></View>
+                                <View style={st.legendItem}><View style={[st.legendDot, {backgroundColor:'#EF4444'}]}/><Text style={st.legendTxt}>Gider</Text></View>
+                            </View>
                         </View>
                     )}
-                </View>
+
+                    {/* GİDER DAĞILIMI DOUGHNUT */}
+                    <View style={st.chartBox}>
+                        <Text style={st.chartTitle}>Gider Dağılımı</Text>
+                        {totalExp > 0 ? (
+                            <View style={st.doughnutArea}>
+                                <View style={st.svgWrap}>
+                                    <Svg height="140" width="140" viewBox="0 0 140 140">
+                                        <G rotation="-90" origin="70, 70">
+                                            {/* Yakıt */}
+                                            {f > 0 && <Circle cx="70" cy="70" r={rad} stroke="#F97316" strokeWidth={strokeW} fill="transparent" strokeDasharray={circ} strokeDashoffset={0} />}
+                                            {/* Maaş */}
+                                            {p > 0 && <Circle cx="70" cy="70" r={rad} stroke="#3B82F6" strokeWidth={strokeW} fill="transparent" strokeDasharray={circ} strokeDashoffset={pOffset} />}
+                                            {/* Bakım */}
+                                            {m > 0 && <Circle cx="70" cy="70" r={rad} stroke="#A855F7" strokeWidth={strokeW} fill="transparent" strokeDasharray={circ} strokeDashoffset={mOffset} />}
+                                            {/* Ceza */}
+                                            {pn > 0 && <Circle cx="70" cy="70" r={rad} stroke="#EF4444" strokeWidth={strokeW} fill="transparent" strokeDasharray={circ} strokeDashoffset={pnOffset} />}
+                                        </G>
+                                    </Svg>
+                                </View>
+                                <View style={st.pieLegendWrap}>
+                                    <View style={st.pieLegend}><View style={[st.legendDot, {backgroundColor:'#F97316'}]}/><Text style={st.pieTxt}>Yakıt</Text><Text style={st.pieVal}>{fmtShort(f)}</Text></View>
+                                    <View style={st.pieLegend}><View style={[st.legendDot, {backgroundColor:'#3B82F6'}]}/><Text style={st.pieTxt}>Maaş</Text><Text style={st.pieVal}>{fmtShort(p)}</Text></View>
+                                    <View style={st.pieLegend}><View style={[st.legendDot, {backgroundColor:'#A855F7'}]}/><Text style={st.pieTxt}>Bakım</Text><Text style={st.pieVal}>{fmtShort(m)}</Text></View>
+                                    <View style={st.pieLegend}><View style={[st.legendDot, {backgroundColor:'#EF4444'}]}/><Text style={st.pieTxt}>Ceza</Text><Text style={st.pieVal}>{fmtShort(pn)}</Text></View>
+                                </View>
+                            </View>
+                        ) : (
+                            <View style={st.emptyPie}><Text style={st.emptyTxt}>Kayıtlı gider bulunmuyor</Text></View>
+                        )}
+                    </View>
+
+                </Animated.View>
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 }
 
-function LegendItem({ color, label, value, pct }) {
-    return (
-        <View style={s.lItem}>
-            <View style={s.lLeft}>
-                <View style={[s.lDot, { backgroundColor: color }]} />
-                <Text style={s.lLbl}>{label}</Text>
-            </View>
-            <View style={s.lRight}>
-                <Text style={s.lPct}>{pct}</Text>
-                <Text style={s.lVal}>{value}</Text>
-            </View>
-        </View>
-    );
-}
-
-const s = StyleSheet.create({
+const st = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8FAFC' },
-    header: { paddingBottom: 32, paddingHorizontal: 24, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
-    hRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16 },
-    backBtn: { alignItems: 'center', justifyContent: 'center' },
-    hTitle: { flex: 1, textAlign: 'center', fontSize: 20, fontWeight: '900', color: '#ffffff', letterSpacing: -0.5 },
-    content: { padding: 20, paddingBottom: 120, marginTop: -16 },
-    chartCard: { backgroundColor: '#fff', borderRadius: 28, padding: 24, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.05, shadowRadius: 20, elevation: 5 },
-    cardTitle: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
-    cardSub: { fontSize: 14, color: '#94A3B8', fontWeight: '500', marginTop: 2, marginBottom: 24 },
-    chartBox: { alignItems: 'center', justifyContent: 'center', height: 160, marginBottom: 32 },
-    chartCenter: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
-    centerVal: { fontSize: 20, fontWeight: '900', color: '#0F172A' },
-    centerLbl: { fontSize: 13, color: '#64748B', fontWeight: '600' },
-    legend: { gap: 16 },
-    lItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    lLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    lDot: { width: 12, height: 12, borderRadius: 6 },
-    lLbl: { fontSize: 16, color: '#475569', fontWeight: '700' },
-    lRight: { alignItems: 'flex-end' },
-    lPct: { fontSize: 13, color: '#94A3B8', fontWeight: '800', marginBottom: 2 },
-    lVal: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
-    emptyChart: { padding: 40, alignItems: 'center', marginTop: 20 },
-    retryBtn: { marginTop: 24, padding: 12, paddingHorizontal: 24, backgroundColor: '#3B82F6', borderRadius: 8 }
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+    errorTxt: { color: '#64748B', marginTop: 10, textAlign: 'center' },
+    retryBtn: { marginTop: 15, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: '#3B82F6', borderRadius: 8 },
+    retryTxt: { color: '#fff', fontWeight: 'bold' },
+    scrollContent: { padding: 16, gap: 16, paddingBottom: 100 },
+    
+    cardsRow: { flexDirection: 'row', gap: 12 },
+    mainCard: { flex: 1, borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: {width:0,height:4}, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },
+    fullCard: { borderRadius: 16, padding: 20, shadowColor: '#000', shadowOffset: {width:0,height:4}, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6 },
+    cardIcon: { marginBottom: 12 },
+    cardLbl: { fontSize: 11, fontWeight: '800', color: '#DBEAFE', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
+    cardVal: { fontSize: 22, fontWeight: '900', color: '#fff' },
+
+    chartBox: { backgroundColor: '#fff', borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOffset: {width:0,height:2}, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+    chartTitle: { fontSize: 15, fontWeight: '800', color: '#0F172A', marginBottom: 20 },
+    
+    barArea: { flexDirection: 'row', justifyContent: 'space-between', height: 160, alignItems: 'flex-end', borderBottomWidth: 1, borderBottomColor: '#E2E8F0', paddingBottom: 8 },
+    barGroup: { alignItems: 'center', width: (W - 80) / 6 },
+    bars: { flexDirection: 'row', gap: 4, height: 130, alignItems: 'flex-end' },
+    barTrack: { width: 8, height: '100%', backgroundColor: '#F1F5F9', borderRadius: 4, justifyContent: 'flex-end', overflow: 'hidden' },
+    barFill: { width: '100%', borderRadius: 4 },
+    barLabel: { fontSize: 10, fontWeight: '700', color: '#64748B', marginTop: 8 },
+    
+    legendRow: { flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 16 },
+    legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    legendDot: { width: 10, height: 10, borderRadius: 5 },
+    legendTxt: { fontSize: 12, fontWeight: '600', color: '#475569' },
+
+    doughnutArea: { flexDirection: 'row', alignItems: 'center' },
+    svgWrap: { width: 140, height: 140 },
+    pieLegendWrap: { flex: 1, paddingLeft: 20, gap: 12 },
+    pieLegend: { flexDirection: 'row', alignItems: 'center' },
+    pieTxt: { flex: 1, fontSize: 13, fontWeight: '600', color: '#475569', marginLeft: 8 },
+    pieVal: { fontSize: 13, fontWeight: '800', color: '#0F172A' },
+    
+    emptyPie: { height: 100, justifyContent: 'center', alignItems: 'center' },
+    emptyTxt: { color: '#94A3B8', fontSize: 13, fontWeight: '500' }
 });

@@ -40,8 +40,8 @@
                 <p class="text-sm font-bold text-blue-600 uppercase">{{ \Carbon\Carbon::parse($period)->translatedFormat('F Y') }} DÖNEMİ HAKEDİŞİ</p>
             </div>
             <div class="text-right">
-                <div class="text-xl font-black text-slate-900">ServisPilot <span class="text-blue-600">PRO</span></div>
-                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">IRMAK TURİZM TAŞIMACILIK</div>
+                <div class="text-xl font-black text-slate-900">{{ auth()->user()->company->name ?? 'Firma Adı' }}</div>
+                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">PERSONEL HAKEDİŞ DETAYI</div>
             </div>
         </div>
 
@@ -214,7 +214,7 @@
             <div class="text-center">
                 <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16 text-left">TESLİM EDEN (İŞVEREN)</div>
                 <div class="border-b border-slate-900 w-full mb-2"></div>
-                <div class="text-[10px] font-black text-slate-900">IRMAK TURİZM TAŞIMACILIK</div>
+                <div class="text-[10px] font-black text-slate-900">{{ auth()->user()->company->name ?? 'FİRMA YETKİLİSİ' }}</div>
             </div>
             <div class="text-center">
                 <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16 text-left">TESLİM ALAN (PERSONEL)</div>

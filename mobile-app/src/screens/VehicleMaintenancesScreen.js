@@ -1,162 +1,183 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, TextInput, ScrollView, RefreshControl, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, FlatList, ActivityIndicator, Alert, Text, Platform, TouchableOpacity, RefreshControl, Modal, ScrollView } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/axios';
+import { AuthContext } from '../context/AuthContext';
+import { EmptyState, FormField } from '../components';
 import DatePickerInput from '../components/DatePickerInput';
-import { toApiDate, todayUi } from '../utils/date';
+
+const fmtMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2 }).format(v || 0);
+const fmtKm = (v) => new Intl.NumberFormat('tr-TR').format(v || 0);
 
 export default function VehicleMaintenancesScreen({ route, navigation }) {
-    const { vehicleId, plate } = route.params || {};
+    const { hasPermission } = useContext(AuthContext);
+    const { vehicleId, vehicle } = route.params || {};
     const [maintenances, setMaintenances] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    
-    // Filters
-    const [search, setSearch] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [showFilters, setShowFilters] = useState(false);
 
-    useEffect(() => {
-        fetchMaintenances();
-    }, [search, startDate, endDate]);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [editingId, setEditingId] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState({
+        service_date: new Date().toISOString().split('T')[0],
+        maintenance_type: 'Periyodik',
+        title: '',
+        km: '',
+        amount: '',
+        service_name: '',
+        description: ''
+    });
+
+    const [showCategorySelect, setShowCategorySelect] = useState(false);
+    const categories = ['YAĞ BAKIMI', 'ALT YAĞLAMA', 'LASTİK BAKIMI', 'AKÜ BAKIMI', 'AĞIR BAKIM', 'ANTFRİZ BAKIMI', 'ARIZA/ONARIM', 'MUAYENE', 'DİĞER BAKIMLAR'];
 
     const fetchMaintenances = async (isRefreshing = false) => {
         if (!vehicleId) return;
         if (!isRefreshing) setLoading(true);
         try {
-            const params = { 
-                search, 
-                start_date: toApiDate(startDate), 
-                end_date: toApiDate(endDate) 
-            };
-            const r = await api.get(`/vehicles/${vehicleId}/maintenances`, { params });
-            setMaintenances(r.data.maintenances);
-        } catch (e) { console.error(e); }
-        finally { setLoading(false); setRefreshing(false); }
-    };
-
-    const onRefresh = () => {
-        setRefreshing(true);
-        fetchMaintenances(true);
-    };
-
-    const handleExportPdf = async () => {
-        try {
-            setLoading(true);
-            const token = await AsyncStorage.getItem('userToken');
-            const baseUrl = api.defaults.baseURL;
-            const queryParams = `start_date=${toApiDate(startDate) || ''}&end_date=${toApiDate(endDate) || ''}&search=${search || ''}&token=${token}`;
-            const url = `${baseUrl}/vehicles/${vehicleId}/maintenances/export-pdf?${queryParams}`;
-
-            if (Platform.OS === 'web') {
-                window.location.href = url;
-                setLoading(false);
-                return;
-            }
-
-            const fileUri = `${FileSystem.documentDirectory}${plate}_bakimlari.pdf`;
-            
-            const downloadRes = await FileSystem.downloadAsync(url, fileUri, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (downloadRes.status === 200) {
-                await Sharing.shareAsync(downloadRes.uri, { 
-                    mimeType: 'application/pdf',
-                    dialogTitle: 'PDF Raporunu Paylaş / Görüntüle'
-                });
-            } else {
-                Alert.alert('Hata', 'PDF oluşturulurken bir sorun oluştu.');
+            const r = await api.get(`/vehicles/${vehicleId}/maintenances`);
+            if (r.data) {
+                setMaintenances(r.data.maintenances || []);
             }
         } catch (e) {
             console.error(e);
-            Alert.alert('Hata', 'Dosya indirilemedi.');
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
-    const renderItem = ({ item }) => {
-        // Mock icons based on type
-        const t = (item.type || '').toLowerCase();
-        let iconName = 'wrench';
-        let iconColor = '#8B5CF6';
-        let iconBg = '#F3E8FF';
-        
-        if (t.includes('yağ')) { iconName = 'water-drop'; iconColor = '#A855F7'; iconBg = '#F3E8FF'; }
-        else if (t.includes('lastik')) { iconName = 'tire'; iconColor = '#10B981'; iconBg = '#ECFDF5'; }
-        else if (t.includes('fren')) { iconName = 'car-brake-alert'; iconColor = '#F59E0B'; iconBg = '#FEF3C7'; }
+    useEffect(() => { fetchMaintenances(); }, [vehicleId]);
 
-        const isCompleted = item.status !== 'PLANLANDI';
+    const openAdd = () => {
+        if (!hasPermission('maintenances.create')) {
+            Alert.alert('Yetki Yok', 'Bakım kaydı ekleme yetkiniz bulunmuyor.');
+            return;
+        }
+        setEditingId(null);
+        setFormData({
+            service_date: new Date().toISOString().split('T')[0],
+            maintenance_type: '',
+            title: '',
+            km: '',
+            next_service_km: '',
+            amount: '',
+            service_name: '',
+            description: ''
+        });
+        setModalVisible(true);
+    };
+
+    const handleSave = async () => {
+        if (!formData.title || !formData.service_date || !formData.maintenance_type) {
+            Alert.alert('Eksik Bilgi', 'Tarih, Kategori ve İşlem Adı zorunludur.'); return;
+        }
+
+        setSaving(true);
+        try {
+            const url = editingId ? `/v1/maintenances/${editingId}` : '/v1/maintenances';
+            const method = editingId ? 'PUT' : 'POST';
+            await api({ method, url, data: { ...formData, vehicle_id: vehicleId } });
+            setModalVisible(false);
+            fetchMaintenances();
+            Alert.alert('Başarılı', 'Bakım kaydı kaydedildi.');
+        } catch (e) {
+            Alert.alert('Hata', 'Kaydedilemedi.');
+        } finally { setSaving(false); }
+    };
+
+    const confirmDelete = (id) => {
+        if (!hasPermission('maintenances.delete')) {
+            Alert.alert('Yetki Yok', 'Bakım kaydı silme yetkiniz bulunmuyor.');
+            return;
+        }
+        Alert.alert('Silinecek', 'Bu bakım kaydını silmek istediğinize emin misiniz?', [
+            { text: 'İptal', style: 'cancel' },
+            { text: 'Sil', style: 'destructive', onPress: async () => {
+                try { await api.delete(`/v1/maintenances/${id}`); fetchMaintenances(); }
+                catch (e) { Alert.alert('Hata', 'Silinemedi.'); }
+            }}
+        ]);
+    };
+
+    const getTypeStyle = (type) => {
+        const t = (type || '').toUpperCase();
+        if (t === 'ARIZA/ONARIM' || t === 'ARIZA / ONARIM') return { color: '#EF4444', icon: 'alert-octagon-outline', bg: '#FEF2F2' };
+        if (t === 'LASTİK BAKIMI' || t === 'LASTİK') return { color: '#10B981', icon: 'tire', bg: '#ECFDF5' };
+        if (t === 'MUAYENE') return { color: '#F59E0B', icon: 'shield-check-outline', bg: '#FFFBEB' };
+        return { color: '#3B82F6', icon: 'wrench-outline', bg: '#EFF6FF' };
+    };
+
+    const toTitleCase = (str) => {
+        if (!str) return '';
+        return str.toString().split(' ').map(word => {
+            if (!word) return '';
+            const first = word.charAt(0).toLocaleUpperCase('tr-TR');
+            const rest = word.slice(1).toLocaleLowerCase('tr-TR');
+            return first + rest;
+        }).join(' ');
+    };
+
+    const renderItem = ({ item }) => {
+        const ts = getTypeStyle(item.type);
+        const hasDesc = item.description && item.description.trim() !== '';
 
         return (
-            <View style={s.card}>
-                <View style={s.cardTop}>
-                    <View style={[s.cardIconBox, { backgroundColor: iconBg }]}>
-                        <Icon name={iconName} size={28} color={iconColor} />
+            <View style={[st.card, { borderLeftColor: ts.color }]}>
+                <View style={st.cardHeader}>
+                    <View style={[st.iconBox, { backgroundColor: ts.bg }]}>
+                        <Icon name={ts.icon} size={24} color={ts.color} />
                     </View>
-                    
-                    <View style={s.cardInfo}>
-                        <View style={s.cardHeaderRow}>
-                            <Text style={s.cardTitle}>{item.title}</Text>
-                            <View style={{alignItems: 'flex-end'}}>
-                                <View style={[s.statusBadge, isCompleted ? s.statusCompleted : s.statusPlanned]}>
-                                    <Icon name={isCompleted ? "check" : "circle"} size={10} color={isCompleted ? "#10B981" : "#F59E0B"} style={{marginRight: 4}} />
-                                    <Text style={[s.statusTxt, {color: isCompleted ? '#10B981' : '#F59E0B'}]}>{isCompleted ? 'TAMAMLANDI' : 'PLANLANDI'}</Text>
-                                </View>
-                                <Text style={s.amountTxt}>{Number(item.amount || 0).toLocaleString('tr-TR')} ₺</Text>
-                            </View>
-                        </View>
-                        
-                        <View style={[s.typePill, { backgroundColor: iconBg }]}>
-                            <Text style={[s.typePillTxt, { color: iconColor }]}>{item.type || 'GENEL BAKIM'}</Text>
-                        </View>
-
-                        <View style={s.datePersonRow}>
-                            <Icon name="calendar-blank" size={14} color="#94A3B8" />
-                            <Text style={s.dpTxt}>{item.date ? new Date(item.date).toLocaleDateString('tr-TR') : '-'}</Text>
-                            <Icon name="clock-outline" size={14} color="#94A3B8" style={{marginLeft: 8}} />
-                            <Text style={s.dpTxt}>-</Text>
-                            <Icon name="account-outline" size={14} color="#94A3B8" style={{marginLeft: 8}} />
-                            <Text style={s.dpTxt}>{item.driver || 'Bilinmiyor'}</Text>
-                        </View>
+                    <View style={{ flex: 1, paddingLeft: 12, paddingRight: 8 }}>
+                        <Text style={st.cardTitle}>{toTitleCase(item.title)}</Text>
+                        <Text style={[st.cardDesc, hasDesc && { color: '#EF4444' }]}>
+                            {hasDesc ? toTitleCase(item.description) : 'Açıklama yok'}
+                        </Text>
                     </View>
+                    <Text style={st.amountText}>{fmtMoney(item.amount)}</Text>
                 </View>
 
-                <View style={s.cardDivider} />
-
-                <View style={s.cardBottom}>
-                    <View style={s.cbItem}>
-                        <Icon name="speedometer" size={16} color="#94A3B8" />
-                        <View>
-                            <Text style={s.cbLabel}>KM</Text>
-                            <Text style={s.cbVal}>{Number(item.km || 0).toLocaleString('tr-TR')} km</Text>
+                {/* 2x2 Grid for much better readability */}
+                <View style={st.cardGrid}>
+                    <View style={st.gridRow}>
+                        <View style={st.gridCol}>
+                            <View style={st.gridLabelRow}>
+                                <Icon name="tag-outline" size={14} color="#64748B" />
+                                <Text style={st.gridLabel}>TÜR</Text>
+                            </View>
+                            <Text style={st.gridValue}>{toTitleCase(item.type) || '-'}</Text>
+                        </View>
+                        <View style={st.gridDivider} />
+                        <View style={st.gridCol}>
+                            <View style={st.gridLabelRow}>
+                                <Icon name="calendar-blank-outline" size={14} color="#F59E0B" />
+                                <Text style={[st.gridLabel, { color: '#F59E0B' }]}>TARİH</Text>
+                            </View>
+                            <Text style={[st.gridValue, { color: '#D97706' }]}>{item.date ? new Date(item.date).toLocaleDateString('tr-TR') : '-'}</Text>
+                            <Text style={[st.gridSubValue, { color: '#FBBF24' }]}>{item.next_date ? `Sonraki: ${new Date(item.next_date).toLocaleDateString('tr-TR')}` : 'Sonraki tarih yok'}</Text>
                         </View>
                     </View>
-                    <View style={s.cbDivider} />
-                    <View style={s.cbItem}>
-                        <Icon name="shield-check-outline" size={16} color="#94A3B8" />
-                        <View>
-                            <Text style={s.cbLabel}>Servis</Text>
-                            <Text style={s.cbVal} numberOfLines={1}>{item.service_name || '-'}</Text>
+                    
+                    <View style={st.gridHorizontalDivider} />
+                    
+                    <View style={st.gridRow}>
+                        <View style={st.gridCol}>
+                            <View style={st.gridLabelRow}>
+                                <Icon name="store-outline" size={14} color="#64748B" />
+                                <Text style={st.gridLabel}>SERVİS</Text>
+                            </View>
+                            <Text style={st.gridValue}>{toTitleCase(item.service_name) || '-'}</Text>
                         </View>
-                    </View>
-                    <View style={s.cbDivider} />
-                    <View style={[s.cbItem, {flex: 1.5}]}>
-                        <Icon name="file-document-outline" size={16} color="#94A3B8" />
-                        <View style={{flex: 1}}>
-                            <Text style={s.cbLabel}>Not</Text>
-                            <Text style={s.cbVal} numberOfLines={2}>{item.description || '-'}</Text>
+                        <View style={st.gridDivider} />
+                        <View style={st.gridCol}>
+                            <View style={st.gridLabelRow}>
+                                <Icon name="speedometer" size={14} color="#10B981" />
+                                <Text style={[st.gridLabel, { color: '#10B981' }]}>KİLOMETRE</Text>
+                            </View>
+                            <Text style={[st.gridValue, { color: '#059669' }]}>{item.km ? `${fmtKm(item.km)} KM` : '-'}</Text>
+                            <Text style={[st.gridSubValue, { color: '#34D399' }]}>{item.next_km ? `Sonraki: ${fmtKm(item.next_km)} KM` : 'Sonraki KM yok'}</Text>
                         </View>
-                        <Icon name="chevron-right" size={20} color="#CBD5E1" />
                     </View>
                 </View>
             </View>
@@ -164,198 +185,249 @@ export default function VehicleMaintenancesScreen({ route, navigation }) {
     };
 
     return (
-        <View style={s.container}>
-            <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={s.header} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
-                <SafeAreaView edges={['top']}>
-                    <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-                            <Icon name="arrow-left" size={20} color="#fff" />
-                        </TouchableOpacity>
-                        <View style={s.headerTitleWrap}>
-                            <Text style={s.headerTitle}>{plate} · Bakımlar</Text>
-                            <View style={s.headerSubWrap}>
-                                <View style={s.statusDotSmall} />
-                                <Text style={s.headerSubTxt}>Aktif • TEMSA PRESTİJ • MİDİBÜS</Text>
-                            </View>
-                        </View>
-                        <View style={{flexDirection:'row', gap: 8}}>
-                            <TouchableOpacity onPress={handleExportPdf} style={s.topBtn}><Icon name="file-pdf-box" size={22} color="#fff" /><Text style={{color:'#fff', fontSize: 10, fontWeight: '700'}}>PDF</Text></TouchableOpacity>
-                            <TouchableOpacity style={s.topAddBtn}><Icon name="plus" size={22} color="#fff" /></TouchableOpacity>
-                        </View>
+        <View style={st.container}>
+            <View style={{ backgroundColor: '#fff', zIndex: 10, paddingTop: Platform.OS === 'android' ? 44 : 54, paddingBottom: 12 }}>
+                <View style={st.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={st.backBtn}>
+                        <Icon name="chevron-left" size={26} color="#0F172A" />
+                    </TouchableOpacity>
+                    <View style={st.headerCenter}>
+                        <Text style={st.headerTitle}>Araç Bakımları</Text>
+                        <Text style={st.headerSubtitle}>{vehicle?.plate || 'Servis Geçmişi'}</Text>
                     </View>
-
-                    {/* KPI Cards */}
-                    <View style={s.kpiWrapper}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.kpiScroll}>
-                            
-                            <View style={[s.kpiCard, { borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
-                                <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: 'rgba(56, 189, 248, 0.1)'}]}><Icon name="calendar-month" size={18} color="#38BDF8" /></View>
-                                    <Text style={s.kpiLabel}>Bu Ay Bakım</Text>
-                                </View>
-                                <Text style={s.kpiValue}>2 <Text style={{fontSize: 14, color: '#94A3B8'}}>İşlem</Text></Text>
-                                <Text style={[s.kpiSub, {color: '#10B981'}]}>+1 vs geçen ay</Text>
-                            </View>
-
-                            <View style={[s.kpiCard, { borderColor: 'rgba(20, 184, 166, 0.3)' }]}>
-                                <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: 'rgba(20, 184, 166, 0.1)'}]}><Icon name="currency-try" size={18} color="#14B8A6" /></View>
-                                    <Text style={s.kpiLabel}>Tahmini Maliyet</Text>
-                                </View>
-                                <Text style={s.kpiValue}>1.250,00 ₺</Text>
-                                <Text style={[s.kpiSub, {color: '#10B981'}]}>-250,00 ₺ vs geçen ay</Text>
-                            </View>
-
-                            <View style={[s.kpiCard, { borderColor: 'rgba(245, 158, 11, 0.3)' }]}>
-                                <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: 'rgba(245, 158, 11, 0.1)'}]}><Icon name="briefcase-outline" size={18} color="#F59E0B" /></View>
-                                    <Text style={s.kpiLabel}>Açık İş Emri</Text>
-                                </View>
-                                <Text style={s.kpiValue}>1 <Text style={{fontSize: 14, color: '#94A3B8'}}>Aktif</Text></Text>
-                                <Text style={[s.kpiSub, {color: '#F59E0B'}]}>Aksiyon bekliyor</Text>
-                            </View>
-
-                        </ScrollView>
-                    </View>
-                </SafeAreaView>
-            </LinearGradient>
-
-            <View style={s.filterWrapper}>
-                <View style={s.filterInner}>
-                    <View style={s.searchBar}>
-                        <Icon name="magnify" size={20} color="#94A3B8" />
-                        <TextInput 
-                            style={s.searchInput} 
-                            placeholder="Bakım, servis veya açıklama ara..." 
-                            value={search}
-                            onChangeText={setSearch}
-                        />
-                        <TouchableOpacity style={s.filterBtn} onPress={() => setShowFilters(!showFilters)}>
-                            <Icon name="filter-variant" size={18} color="#0F172A" />
-                            <Text style={s.filterBtnTxt}>Filtrele</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={s.pillRow}>
-                        <TouchableOpacity style={s.pillBtn}><Icon name="layers-outline" size={16} color="#64748B" /><Text style={s.pillTxt}>Tümü</Text><Icon name="chevron-down" size={16} color="#94A3B8" /></TouchableOpacity>
-                        <TouchableOpacity style={s.pillBtn}><Icon name="calendar-blank" size={16} color="#64748B" /><Text style={s.pillTxt}>Tarih</Text><Icon name="chevron-down" size={16} color="#94A3B8" /></TouchableOpacity>
-                        <TouchableOpacity style={s.pillBtn}><Icon name="wrench" size={16} color="#64748B" /><Text style={s.pillTxt}>Tür</Text><Icon name="chevron-down" size={16} color="#94A3B8" /></TouchableOpacity>
-                        <TouchableOpacity style={s.sortBtn}><Icon name="swap-vertical" size={20} color="#64748B" /></TouchableOpacity>
-                    </View>
-
-                    {showFilters && (
-                        <View style={s.dateFilters}>
-                            <View style={{flex:1}}><DatePickerInput label="Başlangıç" value={startDate} onChange={setStartDate} /></View>
-                            <View style={{flex:1}}><DatePickerInput label="Bitiş" value={endDate} onChange={setEndDate} /></View>
-                        </View>
-                    )}
+                    <TouchableOpacity style={st.addHeaderBtn} onPress={openAdd}>
+                        <Icon name="plus" size={24} color="#fff" />
+                    </TouchableOpacity>
                 </View>
             </View>
 
-            <View style={s.listHeader}>
-                <Text style={s.listTitle}>Bakım Geçmişi</Text>
-                <TouchableOpacity style={s.sortDropBtn}>
-                    <Icon name="sort" size={16} color="#64748B" />
-                    <Text style={s.sortDropTxt}>En Yeni</Text>
-                    <Icon name="chevron-down" size={16} color="#94A3B8" />
-                </TouchableOpacity>
-            </View>
-
-            {loading ? <ActivityIndicator style={{marginTop:40}} color="#8B5CF6" size="large" /> : (
+            {loading ? (
+                <View style={st.loader}><ActivityIndicator size="large" color="#3B82F6" /></View>
+            ) : (
                 <FlatList
                     data={maintenances}
                     renderItem={renderItem}
                     keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={s.list}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-                    ListEmptyComponent={
-                        <View style={s.empty}>
-                            <Icon name="wrench-outline" size={48} color="#CBD5E1" />
-                            <Text style={s.emptyTxt}>Bakım kaydı bulunamadı.</Text>
-                        </View>
-                    }
+                    contentContainerStyle={st.listContent}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchMaintenances(true)} tintColor="#3B82F6" />}
+                    ListEmptyComponent={<EmptyState title="Bakım Kaydı Yok" message="Bu araç için servis geçmişi bulunmuyor." icon="wrench-outline" />}
                 />
             )}
+
+            {/* Main Form Modal */}
+            <Modal visible={modalVisible} animationType="slide" transparent>
+                <View style={st.modalOverlay}>
+                    <View style={st.modalContent}>
+                        <View style={st.modalHeader}>
+                            <Text style={st.modalTitle}>Yeni Bakım Kaydı Ekle</Text>
+                            <TouchableOpacity onPress={() => setModalVisible(false)} style={st.modalClose}>
+                                <Icon name="close" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </View>
+                        
+                        <ScrollView style={{ padding: 20 }}>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <View style={{ flex: 1 }}>
+                                    <DatePickerInput 
+                                        label="TARİH *" 
+                                        value={formData.service_date} 
+                                        onChange={(d) => setFormData({...formData, service_date: d})}
+                                    />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>KATEGORİ *</Text>
+                                    <TouchableOpacity 
+                                        style={st.selectBtn} 
+                                        onPress={() => setShowCategorySelect(true)}
+                                    >
+                                        <Text style={[st.selectBtnText, !formData.maintenance_type && {color: '#94A3B8'}]} numberOfLines={1}>
+                                            {formData.maintenance_type || 'Kategori Seçiniz'}
+                                        </Text>
+                                        <Icon name="chevron-down" size={20} color="#64748B" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <Text style={[st.inputLabel, { marginTop: 16 }]}>ARACA YAPILAN İŞLEM ADI *</Text>
+                            <FormField 
+                                value={formData.title} 
+                                onChangeText={(t) => setFormData({...formData, title: t})}
+                                placeholder="Örn: Yağ Değişimi, Kışlık Lastik..."
+                                autoCapitalize="words"
+                            />
+
+                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>ARAÇ BAKIM KM'Sİ</Text>
+                                    <FormField 
+                                        value={formData.km} 
+                                        onChangeText={(t) => setFormData({...formData, km: t})}
+                                        keyboardType="numeric"
+                                        placeholder="Örn: 150000"
+                                    />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>BİR SONRAKİ BAKIM KM</Text>
+                                    <FormField 
+                                        value={formData.next_service_km} 
+                                        onChangeText={(t) => setFormData({...formData, next_service_km: t})}
+                                        keyboardType="numeric"
+                                        placeholder="Örn: 160000"
+                                    />
+                                </View>
+                            </View>
+
+                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>TUTAR (₺)</Text>
+                                    <FormField 
+                                        value={formData.amount} 
+                                        onChangeText={(t) => setFormData({...formData, amount: t})}
+                                        keyboardType="numeric"
+                                        placeholder="0.00"
+                                    />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>USTA / SERVİS</Text>
+                                    <FormField 
+                                        value={formData.service_name} 
+                                        onChangeText={(t) => setFormData({...formData, service_name: t})}
+                                        placeholder="Usta veya servis adı"
+                                        autoCapitalize="words"
+                                    />
+                                </View>
+                            </View>
+
+                            <Text style={[st.inputLabel, { marginTop: 16 }]}>NOT</Text>
+                            <FormField 
+                                value={formData.description} 
+                                onChangeText={(t) => setFormData({...formData, description: t})}
+                                placeholder="Yapılan işlemler hakkında detaylı bilgi..."
+                                multiline 
+                                numberOfLines={2} 
+                                style={{ height: 60, textAlignVertical: 'top' }}
+                                autoCapitalize="sentences"
+                            />
+
+                            <TouchableOpacity style={[st.saveBtn, saving && { opacity: 0.7 }]} onPress={handleSave} disabled={saving}>
+                                {saving ? <ActivityIndicator color="#fff" /> : <Text style={st.saveBtnText}>Bakım Kaydını Kaydet</Text>}
+                            </TouchableOpacity>
+                            <View style={{ height: 40 }} />
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Category Select Modal */}
+            <Modal visible={showCategorySelect} animationType="fade" transparent>
+                <TouchableOpacity style={st.modalOverlay} onPress={() => setShowCategorySelect(false)} activeOpacity={1}>
+                    <View style={[st.modalContent, { maxHeight: '60%' }]}>
+                        <View style={st.modalHeader}>
+                            <Text style={st.modalTitle}>Kategori Seçiniz</Text>
+                            <TouchableOpacity onPress={() => setShowCategorySelect(false)} style={st.modalClose}>
+                                <Icon name="close" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={{ padding: 16 }}>
+                            {categories.map((cat, idx) => (
+                                <TouchableOpacity 
+                                    key={idx} 
+                                    style={[st.categoryOption, formData.maintenance_type === cat && st.categoryOptionActive]}
+                                    onPress={() => {
+                                        // Generate auto title based on category
+                                        let newTitle = formData.title;
+                                        if (!formData.title || formData.title.endsWith('Yapıldı') || formData.title.endsWith('Bakımı')) {
+                                            if (cat === 'YAĞ BAKIMI') newTitle = 'Yağ Bakımı Yapıldı';
+                                            else if (cat === 'ALT YAĞLAMA') newTitle = 'Alt Yağlama Yapıldı';
+                                            else if (cat === 'LASTİK BAKIMI') newTitle = 'Lastik Bakımı Yapıldı';
+                                            else if (cat === 'AKÜ BAKIMI') newTitle = 'Akü Bakımı Yapıldı';
+                                            else if (cat === 'AĞIR BAKIM') newTitle = 'Ağır Bakım Yapıldı';
+                                            else if (cat === 'ANTFRİZ BAKIMI') newTitle = 'Antfriz Bakımı Yapıldı';
+                                            else if (cat === 'ARIZA/ONARIM') newTitle = 'Arıza Onarım Yapıldı';
+                                            else if (cat === 'MUAYENE') newTitle = 'Muayene Yapıldı';
+                                        }
+
+                                        setFormData({...formData, maintenance_type: cat, title: newTitle});
+                                        setShowCategorySelect(false);
+                                    }}
+                                >
+                                    <Text style={[st.categoryOptionText, formData.maintenance_type === cat && st.categoryOptionTextActive]}>
+                                        {cat}
+                                    </Text>
+                                    {formData.maintenance_type === cat && <Icon name="check-circle" size={20} color="#3B82F6" />}
+                                </TouchableOpacity>
+                            ))}
+                            <View style={{height:30}}/>
+                        </ScrollView>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
+
         </View>
     );
 }
 
-const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F4F7FA' },
+const st = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#F8FAFC' },
+    loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
+    backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' },
+    headerCenter: { flex: 1, alignItems: 'center' },
+    headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', marginTop: 8 },
+    headerSubtitle: { fontSize: 12, fontWeight: '600', color: '#64748B', marginTop: 2 },
+    addHeaderBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 4 },
     
-    // Header
-    header: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
-    headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 10, marginBottom: 20 },
-    backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-    headerTitleWrap: { alignItems: 'center' },
-    headerTitle: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
-    headerSubWrap: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
-    statusDotSmall: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981' },
-    headerSubTxt: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
-    topBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-    topAddBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(59, 130, 246, 0.4)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#3B82F6' },
-
-    // KPIs
-    kpiWrapper: { height: 120, marginBottom: 24 },
-    kpiScroll: { paddingHorizontal: 20, gap: 14 },
-    kpiCard: { backgroundColor: 'rgba(30,41,59,0.4)', borderRadius: 24, padding: 16, width: 160, borderWidth: 1 },
-    kpiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-    kpiIconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-    kpiLabel: { fontSize: 12, fontWeight: '700', color: '#CBD5E1' },
-    kpiValue: { fontSize: 22, fontWeight: '900', color: '#fff', letterSpacing: -0.5, marginBottom: 6 },
-    kpiSub: { fontSize: 11, fontWeight: '700' },
-
-    // Filters
-    filterWrapper: { paddingHorizontal: 20, marginTop: -40, zIndex: 20 },
-    filterInner: { backgroundColor: '#fff', borderRadius: 24, padding: 16, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:12}, shadowOpacity: 0.08, shadowRadius: 24, elevation: 8, borderWidth: 1, borderColor: '#F1F5F9' },
-    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 16, paddingHorizontal: 16, height: 50, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 12 },
-    searchInput: { flex: 1, fontSize: 14, color: '#0F172A', fontWeight: '600', marginLeft: 8 },
-    filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingLeft: 12, borderLeftWidth: 1, borderLeftColor: '#E2E8F0' },
-    filterBtnTxt: { fontSize: 13, fontWeight: '700', color: '#0F172A' },
+    listContent: { padding: 16, paddingBottom: 120 },
+    card: { backgroundColor: '#fff', borderRadius: 24, padding: 16, marginBottom: 16, shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4, borderLeftWidth: 5 },
+    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    iconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    cardTitle: { fontSize: 16, fontWeight: '800', color: '#0F172A', marginBottom: 2 },
+    cardDesc: { fontSize: 12, color: '#64748B', fontWeight: '500' },
+    amountText: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
     
-    pillRow: { flexDirection: 'row', gap: 8 },
-    pillBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, backgroundColor: '#F8FAFC', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0' },
-    pillTxt: { fontSize: 12, fontWeight: '700', color: '#334155' },
-    sortBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
+    cardGrid: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+    gridRow: { flexDirection: 'row', alignItems: 'flex-start' },
+    gridCol: { flex: 1, paddingVertical: 4 },
+    gridDivider: { width: 1, backgroundColor: '#E2E8F0', marginHorizontal: 12 },
+    gridHorizontalDivider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 8 },
+    gridLabelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6, gap: 4 },
+    gridLabel: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 0.5 },
+    gridValue: { fontSize: 13, fontWeight: '800', color: '#1E293B', marginBottom: 2 },
+    gridSubValue: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
 
-    dateFilters: { flexDirection: 'row', marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9', gap: 12 },
+    actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 16 },
+    actionBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
+    actionText: { fontSize: 12, fontWeight: '800', marginLeft: 4 },
 
-    listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginTop: 24, marginBottom: 12 },
-    listTitle: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
-    sortDropBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    sortDropTxt: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+    // Modal
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.6)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '90%' },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    modalTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+    modalClose: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+    inputLabel: { fontSize: 11, fontWeight: '800', color: '#64748B', marginBottom: 8, marginLeft: 4, letterSpacing: 0.5 },
+    saveBtn: { backgroundColor: '#3B82F6', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
+    saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
 
-    // List Cards
-    list: { paddingHorizontal: 20, paddingBottom: 100 },
-    card: { backgroundColor: '#fff', borderRadius: 24, padding: 16, marginBottom: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4, borderWidth: 1, borderColor: '#F1F5F9' },
-    cardTop: { flexDirection: 'row', alignItems: 'flex-start' },
-    cardIconBox: { width: 50, height: 50, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 16 },
-    cardInfo: { flex: 1 },
-    cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
-    cardTitle: { fontSize: 15, fontWeight: '900', color: '#0F172A', flex: 1, paddingRight: 8 },
-    statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginBottom: 4 },
-    statusCompleted: { backgroundColor: '#ECFDF5' },
-    statusPlanned: { backgroundColor: '#FEF3C7' },
-    statusTxt: { fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
-    amountTxt: { fontSize: 16, fontWeight: '900', color: '#0F172A', alignSelf: 'flex-end' },
+    // Dummy Tab
+    dummyTabBar: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E2E8F0', paddingBottom: Platform.OS === 'ios' ? 20 : 0, flexDirection: 'row', height: Platform.OS === 'ios' ? 85 : 65, alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 },
+    dummyTab: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' },
+    dummyTabLabel: { fontSize: 10, fontWeight: '600', marginTop: 4, color: '#94A3B8' },
+    dummyTabActiveText: { fontSize: 10, color: '#3B82F6', fontWeight: '700' },
+    dummyCenterBtn: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', marginTop: -20, shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 6 },
     
-    typePill: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 12 },
-    typePillTxt: { fontSize: 9, fontWeight: '900', letterSpacing: 0.5, textTransform: 'uppercase' },
+    // Select button styles
+    selectBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, paddingHorizontal: 16, height: 48 },
+    selectBtnText: { fontSize: 13, color: '#1E293B', fontWeight: '500', flex: 1 },
     
-    datePersonRow: { flexDirection: 'row', alignItems: 'center' },
-    dpTxt: { fontSize: 11, fontWeight: '600', color: '#64748B', marginLeft: 4 },
-
-    cardDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 16 },
+    // Category modal options
+    categoryOption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    categoryOptionActive: { backgroundColor: '#EFF6FF', borderRadius: 8, borderBottomWidth: 0 },
+    categoryOptionText: { fontSize: 14, color: '#334155', fontWeight: '500' },
+    categoryOptionTextActive: { color: '#3B82F6', fontWeight: '700' },
     
-    cardBottom: { flexDirection: 'row', alignItems: 'flex-start' },
-    cbItem: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-    cbLabel: { fontSize: 10, fontWeight: '600', color: '#94A3B8', marginBottom: 2 },
-    cbVal: { fontSize: 11, fontWeight: '800', color: '#334155' },
-    cbDivider: { width: 1, height: 30, backgroundColor: '#F1F5F9', marginHorizontal: 8 },
-
-    empty: { alignItems: 'center', marginTop: 80 },
-    emptyTxt: { color: '#94A3B8', marginTop: 16, fontWeight: '600', fontSize: 16 }
+    dummyTabCenter: { flex: 1, alignItems: 'center' },
+    dummyTabCenterInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginTop: -35, shadowColor: '#2563EB', shadowOffset: {width:0, height:4}, shadowOpacity:0.3, shadowRadius:8, elevation: 5 },
 });

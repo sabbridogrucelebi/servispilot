@@ -109,7 +109,7 @@
     @endphp
 
     <div class="a4-wrapper">
-        <div class="watermark">IRMAK TURİZM</div>
+        <div class="watermark">{{ auth()->user()->company->name ?? 'FİRMA ADI' }}</div>
 
         <div class="header-main">
             <div class="doc-title-group">
@@ -117,8 +117,8 @@
                 <p>{{ \Carbon\Carbon::parse($period)->translatedFormat('F Y') }} DÖNEMİ</p>
             </div>
             <div class="brand-group">
-                <div class="brand-name">IRMAK TURİZM</div>
-                <div class="brand-sub">SERVISPILOT PRO</div>
+                <div class="brand-name">{{ auth()->user()->company->name ?? 'Firma Adı' }}</div>
+                <div class="brand-sub">PERSONEL HAKEDİŞ DETAYI</div>
             </div>
         </div>
 
@@ -216,7 +216,7 @@
             <div class="signature-item">
                 <div class="signature-line"></div>
                 <div class="signature-tag">YETKİLİ ONAYI</div>
-                <div class="signature-name">IRMAK TURİZM</div>
+                <div class="signature-name">{{ auth()->user()->company->name ?? 'FİRMA YETKİLİSİ' }}</div>
             </div>
             <div class="signature-item">
                 <div class="signature-line"></div>

@@ -1,35 +1,52 @@
 <x-guest-layout>
-    <div class="text-center py-6">
-        <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-red-50 border-4 border-red-100 shadow-inner">
-            <svg class="h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-        </div>
+<div class="min-h-[50vh] flex items-center justify-center p-4">
+    <div class="w-full text-center relative overflow-hidden">
         
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Erişim Kilitlendi</h1>
-        <div class="mt-2 text-lg font-bold text-red-600 bg-red-50 inline-block px-4 py-1.5 rounded-full border border-red-100">
-            Lisans Süreniz Dolmuştur
-        </div>
-        
-        <p class="mt-6 text-slate-500 leading-relaxed max-w-sm mx-auto">
-            Platformu kullanmaya devam edebilmek için lisansınızı yenilemeniz gerekmektedir. Lütfen sistem yöneticisi ile iletişime geçin.
-        </p>
+        <div class="relative z-10">
+            <div class="flex justify-center mb-8">
+                <div class="relative">
+                    <div class="absolute -inset-4 rounded-full bg-rose-500/10 animate-ping"></div>
+                    <div class="relative w-24 h-24 bg-gradient-to-br from-rose-500 to-orange-500 rounded-3xl shadow-xl flex items-center justify-center text-4xl border border-rose-400">
+                        🔒
+                    </div>
+                </div>
+            </div>
 
-        <div class="mt-8 rounded-[24px] border border-slate-100 bg-slate-50 p-6 text-center shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Destek Hattı</p>
-            <p class="text-lg font-bold text-slate-800 flex items-center justify-center gap-2">
-                <span>💬</span> info@servispilot.com
+            <h1 class="text-4xl font-black text-white mb-4 tracking-tight">Erişim Süreniz Doldu</h1>
+            <p class="text-slate-400 font-medium text-lg mb-10 mx-auto leading-relaxed">
+                Platformu kullanmaya devam edebilmek için aboneliğinizi yenilemeniz gerekmektedir. Ödeme yaptıysanız lütfen onaylanmasını bekleyin.
             </p>
-        </div>
 
-        <form method="POST" action="{{ route('logout') }}" class="mt-8">
-            @csrf
-            <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 hover:shadow-slate-900/40 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 group">
-                <svg class="w-5 h-5 text-slate-300 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Güvenli Çıkış Yap
-            </button>
-        </form>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 text-left">
+                <div class="p-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Mevcut Durum</div>
+                    <div class="font-bold text-rose-500">Abonelik Pasif</div>
+                </div>
+                <div class="p-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Firma Adı</div>
+                    <div class="font-bold text-slate-300">{{ auth()->user()->company->name ?? 'Firma' }}</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <a href="{{ route('billing.index') }}" class="w-full text-center px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-500/30 hover:shadow-xl transition-all hover:-translate-y-1 active:scale-95">
+                    ABONELİK SEÇENEKLERİNİ GÖR
+                </a>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full text-center px-8 py-4 bg-white/5 text-slate-300 font-black rounded-2xl border border-white/10 hover:bg-white/10 transition-all active:scale-95">
+                        ÇIKIŞ YAP
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-8 pt-8 border-t border-white/10">
+                <p class="text-xs text-slate-500 font-bold">
+                    Yardıma mı ihtiyacınız var? <a href="mailto:destek@FiloMERKEZ.com" class="text-indigo-400">Bize ulaşın.</a>
+                </p>
+            </div>
+        </div>
     </div>
+</div>
 </x-guest-layout>
+

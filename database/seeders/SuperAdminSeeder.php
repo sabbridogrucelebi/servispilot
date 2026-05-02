@@ -18,7 +18,7 @@ class SuperAdminSeeder extends Seeder
             ['email' => 'sabbridogru@gmail.com'],
             [
                 'name'           => 'Sabri Doğru',
-                'password'       => 'Celebi!2023.',
+                'password'       => '12345678',
                 'role'           => 'company_admin',
                 'is_active'      => true,
                 'is_super_admin' => true,

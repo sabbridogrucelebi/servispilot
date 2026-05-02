@@ -1,464 +1,236 @@
-import React, { useContext, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useContext, useState, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Animated, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import SpaceWaves from '../components/SpaceWaves';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/axios';
+import { LinearGradient } from 'expo-linear-gradient';
+import dayjs from 'dayjs';
+import 'dayjs/locale/tr';
 
+dayjs.locale('tr');
 const { width } = Dimensions.get('window');
+
+const toTitleCase = (str) => {
+    if (!str) return '';
+    return str.toLocaleLowerCase('tr-TR').split(' ').map(word => word.charAt(0).toLocaleUpperCase('tr-TR') + word.slice(1)).join(' ');
+};
 
 export default function HomeScreen({ navigation }) {
     const { userInfo } = useContext(AuthContext);
-    const [stats, setStats] = useState({ vehicles: 0, personnel: 0, customers: 0, trips: 0 });
+    const [stats, setStats] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+    
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(20)).current;
+
+    const fetchDashboard = async () => {
+        try {
+            const res = await api.get('/v1/dashboard');
+            setStats(res.data.data);
+            
+            Animated.parallel([
+                Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+                Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true })
+            ]).start();
+            
+        } catch (e) {
+            console.log('Dashboard fetch error:', e);
+        }
+    };
 
     useFocusEffect(
         useCallback(() => {
-            const fetchStats = async () => {
-                try {
-                    const [vRes, pRes, cRes, tRes] = await Promise.all([
-                        api.get('/vehicles'),
-                        api.get('/personnel'),
-                        api.get('/customers'),
-                        api.get('/trips'),
-                    ]);
-                    const vData = Array.isArray(vRes.data) ? vRes.data : (vRes.data.vehicles || []);
-                    setStats({
-                        vehicles: vData.length,
-                        personnel: pRes.data.length,
-                        customers: cRes.data.length,
-                        trips: tRes.data.length,
-                    });
-                } catch (e) {
-                    console.log('Stats fetch error:', e);
-                }
-            };
-            fetchStats();
+            fetchDashboard();
         }, [])
     );
 
-    const firstName = userInfo?.name?.split(' ')[0] || 'Kullanıcı';
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchDashboard();
+        setRefreshing(false);
+    }, []);
+
+    const firstName = toTitleCase(userInfo?.name?.split(' ')[0] || 'Kullanıcı');
+    const currentDate = dayjs().format('D MMMM YYYY, dddd');
+
+    const KpiCard = ({ icon, title, value, gradientColors, darkColor, isHalf }) => (
+        <View style={[styles.kpi3DBase, { backgroundColor: darkColor }]}>
+            <LinearGradient colors={gradientColors} style={[styles.kpiCard, isHalf && { padding: 18, flexDirection: 'column', alignItems: 'flex-start' }]} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
+                <View style={[styles.kpiIconBox, { shadowColor: darkColor }, isHalf && { width: 46, height: 46, borderRadius: 14, marginBottom: 12, marginRight: 0 }]}>
+                    <Icon name={icon} size={isHalf ? 24 : 32} color="#FFF" />
+                </View>
+                <View style={[styles.kpiInfo, isHalf && { width: '100%' }]}>
+                    <Text style={[styles.kpiValue, isHalf && { fontSize: 28 }]} adjustsFontSizeToFit numberOfLines={1}>{value !== undefined ? value : '-'}</Text>
+                    <Text style={[styles.kpiTitle, isHalf && { fontSize: 13 }]} adjustsFontSizeToFit numberOfLines={1}>{title}</Text>
+                </View>
+            </LinearGradient>
+        </View>
+    );
+
+    const renderMaintenanceHealth = () => {
+        if (!stats?.maintenance_health || stats.maintenance_health.length === 0) {
+            return (
+                <View style={styles.emptyState}>
+                    <Icon name="check-circle" size={48} color="#10B981" style={{ marginBottom: 16 }} />
+                    <Text style={styles.emptyTitle}>Harika Haber!</Text>
+                    <Text style={styles.emptyDesc}>Acil bakım veya yağlama gerektiren aracınız bulunmuyor. Filonuz tamamen güvende.</Text>
+                </View>
+            );
+        }
+
+        return stats.maintenance_health.map((mh, i) => (
+            <View key={i} style={styles.mhCard}>
+                <LinearGradient colors={['rgba(255,255,255,0.05)', 'transparent']} style={StyleSheet.absoluteFillObject} />
+                <View style={styles.mhHeader}>
+                    <View style={styles.mhHeaderLeft}>
+                        <View style={styles.mhPlateBox}>
+                            <Icon name="car-sports" size={18} color="#60A5FA" />
+                            <Text style={styles.mhPlateText}>{mh.plate}</Text>
+                        </View>
+                        <View style={styles.mhKmBadge}>
+                            <Icon name="speedometer" size={14} color="#94A3B8" />
+                            <Text style={styles.mhCurrentKm}>{new Intl.NumberFormat('tr-TR').format(mh.current_km)} KM</Text>
+                        </View>
+                    </View>
+                    <TouchableOpacity style={styles.mhActionBtn} onPress={() => navigation.navigate('VehiclesTab', { screen: 'VehicleMaintenances', params: { vehicleId: mh.vehicle_id, vehicle: mh } })}>
+                        <Text style={styles.mhActionText}>Göz At</Text>
+                        <Icon name="arrow-right-circle" size={18} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.mhAlerts}>
+                    {mh.alerts.map((alert, idx) => {
+                        const isOverdue = alert.remaining <= 0;
+                        const alertColor = isOverdue ? '#F43F5E' : '#F59E0B';
+                        const alertBg = isOverdue ? 'rgba(244, 63, 94, 0.12)' : 'rgba(245, 158, 11, 0.12)';
+                        const alertIcon = isOverdue ? 'alert-decagram' : 'alert-circle-outline';
+                        const statusText = isOverdue ? `Gecikti (${Math.abs(alert.remaining)} KM)` : `Yaklaştı (${alert.remaining} KM Kaldı)`;
+
+                        return (
+                            <View key={idx} style={[styles.alertRow, { backgroundColor: alertBg, borderColor: alertColor + '50' }]}>
+                                <View style={[styles.alertIconWrap, { backgroundColor: alertColor + '20' }]}>
+                                    <Icon name={alertIcon} size={22} color={alertColor} />
+                                </View>
+                                <View style={styles.alertContent}>
+                                    <Text style={[styles.alertType, { color: alertColor }]}>{alert.type}</Text>
+                                    <Text style={[styles.alertStatus, { color: alertColor }]}>{statusText}</Text>
+                                </View>
+                                {isOverdue && <View style={[styles.pulseDot, { backgroundColor: alertColor }]} />}
+                            </View>
+                        );
+                    })}
+                </View>
+            </View>
+        ));
+    };
 
     return (
         <View style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-                
-                {/* ─── Uzay Derinliği Mavisi Gradient Header ─── */}
-                <LinearGradient
-                    colors={['#0F172A', '#1E3A8A', '#3B82F6']}
-                    style={styles.header}
-                >
-                <SpaceWaves />
-                    <SafeAreaView>
-                        <View style={styles.headerRow}>
-                            <View style={styles.headerLeft}>
-                                <View style={styles.avatar}>
-                                    <Text style={styles.avatarText}>{firstName.charAt(0)}</Text>
-                                </View>
-                                <View>
-                                    <Text style={styles.headerLabel}>Filom</Text>
-                                    <Text style={styles.headerSubLabel}>{userInfo?.name || 'Yönetici'}</Text>
-                                </View>
-                            </View>
-                            <View style={styles.monthSelector}>
-                                <Icon name="chevron-left" size={18} color="#ffffff" />
-                                <Text style={styles.monthText}>Nis 2026</Text>
-                                <Icon name="chevron-right" size={18} color="#ffffff" />
-                            </View>
-                        </View>
-
-                        {/* Big Number */}
-                        <Text style={styles.bigNumber}>{stats.vehicles}</Text>
-                        <Text style={styles.bigLabel}>Kayıtlı araç</Text>
-                    </SafeAreaView>
-                </LinearGradient>
-
-                {/* ─── Horizontal Scroll Cards ─── */}
+            <LinearGradient colors={['#020617', '#0F172A', '#1E1B4B']} style={StyleSheet.absoluteFillObject} />
+            
+            <SafeAreaView style={{ flex: 1 }}>
                 <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false} 
-                    style={styles.cardsScroll}
-                    contentContainerStyle={{ paddingLeft: 20, paddingRight: 8 }}
+                    contentContainerStyle={styles.scrollContent}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#8B5CF6" />}
+                    showsVerticalScrollIndicator={false}
                 >
-                    <TouchableOpacity style={[styles.statCard]} onPress={() => navigation.navigate('Vehicles')}>
-                        <View style={styles.statIconRow}>
-                            <Icon name="car-multiple" size={32} color="#10B981" />
-                            <Icon name="arrow-top-right" size={20} color="#CBD5E1" />
+                    <View style={styles.header}>
+                        <View>
+                            <Text style={styles.dateText}>{currentDate}</Text>
+                            <Text style={styles.welcomeText}>Hoş Geldin, <Text style={styles.userName}>{firstName}</Text></Text>
                         </View>
-                        <Text style={styles.statCardValue}>{stats.vehicles}</Text>
-                        <Text style={styles.statCardLabel}>Araçlar</Text>
-                    </TouchableOpacity>
+                        <View style={styles.profileAvatar}>
+                            <Text style={styles.profileInitials}>{firstName.charAt(0)}</Text>
+                        </View>
+                    </View>
 
-                    <TouchableOpacity style={[styles.statCard]} onPress={() => navigation.navigate('Personnel')}>
-                        <View style={styles.statIconRow}>
-                            <Icon name="account-group" size={32} color="#6366F1" />
-                            <Icon name="arrow-top-right" size={20} color="#CBD5E1" />
-                        </View>
-                        <Text style={styles.statCardValue}>{stats.personnel}</Text>
-                        <Text style={styles.statCardLabel}>Personeller</Text>
-                    </TouchableOpacity>
+                    {stats ? (
+                        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+                            
+                            {/* KPI Grid */}
+                            <Text style={styles.sectionTitle}>Filo Özeti</Text>
+                            <View style={styles.kpiContainer}>
+                                <KpiCard icon="bus-multiple" title="Toplam Araç" value={stats.vehicle_count} gradientColors={['#3B82F6', '#1D4ED8']} darkColor="#1E3A8A" />
+                                <View style={styles.kpiRow}>
+                                    <View style={{ flex: 1, marginRight: 6 }}>
+                                        <KpiCard icon="account-tie" title="Şoförler" value={stats.driver_count} gradientColors={['#8B5CF6', '#6D28D9']} darkColor="#4C1D95" isHalf />
+                                    </View>
+                                    <View style={{ flex: 1, marginLeft: 6 }}>
+                                        <KpiCard icon="domain" title="Müşteriler" value={stats.customer_count} gradientColors={['#10B981', '#047857']} darkColor="#064E3B" isHalf />
+                                    </View>
+                                </View>
+                            </View>
 
-                    <TouchableOpacity style={[styles.statCard]} onPress={() => navigation.navigate('Customers')}>
-                        <View style={styles.statIconRow}>
-                            <Icon name="office-building" size={32} color="#F59E0B" />
-                            <Icon name="arrow-top-right" size={20} color="#CBD5E1" />
+                            {/* Bakım Sağlığı (Maintenance Health) */}
+                            <View style={styles.sectionHeaderWrap}>
+                                <Icon name="heart-pulse" size={24} color="#F43F5E" style={{ marginRight: 8 }} />
+                                <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Bakım Sağlığı</Text>
+                            </View>
+                            <Text style={styles.sectionSubtitle}>200 KM altına düşen veya süresi geçen araçlar.</Text>
+                            
+                            <View style={styles.mhContainer}>
+                                {renderMaintenanceHealth()}
+                            </View>
+
+                            <View style={{ height: 120 }} />
+                        </Animated.View>
+                    ) : (
+                        <View style={{ marginTop: 50, alignItems: 'center' }}>
+                            <Icon name="loading" size={32} color="#8B5CF6" />
                         </View>
-                        <Text style={styles.statCardValue}>{stats.customers}</Text>
-                        <Text style={styles.statCardLabel}>Müşteriler</Text>
-                    </TouchableOpacity>
+                    )}
                 </ScrollView>
-
-                {/* ─── Budget Overview Section ─── */}
-                <View style={styles.section}>
-                    <View style={styles.overviewCard}>
-                        <View style={styles.overviewHeader}>
-                            <Text style={styles.overviewTitle}>Filo Özeti</Text>
-                            <TouchableOpacity>
-                                <Icon name="chevron-right" size={24} color="#94A3B8" />
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.overviewRow}>
-                            <View style={styles.overviewItem}>
-                                <Text style={styles.overviewLabel}>Toplam</Text>
-                                <Text style={styles.overviewValue}>{stats.vehicles}</Text>
-                            </View>
-                            <View style={styles.overviewItem}>
-                                <Text style={styles.overviewLabel}>Personel</Text>
-                                <Text style={styles.overviewValue}>{stats.personnel}</Text>
-                            </View>
-                            <View style={styles.overviewItem}>
-                                <Text style={styles.overviewLabel}>Sefer</Text>
-                                <Text style={[styles.overviewValue, { color: '#3B82F6' }]}>{stats.trips}</Text>
-                            </View>
-                        </View>
-
-                        {/* Progress Bar */}
-                        <View style={styles.progressContainer}>
-                            <View style={styles.progressBg}>
-                                <LinearGradient
-                                    colors={['#1E3A8A', '#3B82F6']}
-                                    start={{x:0,y:0}} end={{x:1,y:0}}
-                                    style={[styles.progressFill, { width: '72%' }]}
-                                />
-                <SpaceWaves />
-                            </View>
-                        </View>
-                        <View style={styles.progressInfo}>
-                            <Icon name="check-decagram" size={18} color="#10B981" />
-                            <Text style={styles.progressText}>Filo durumu iyi görünüyor!</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* ─── Son İşlemler ─── */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Son İşlemler</Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('Trips')}>
-                            <Text style={styles.seeAll}>Tümünü gör &gt;</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.transactionCard}>
-                        <TransactionItem 
-                            icon="car-arrow-right" 
-                            iconColor="#10B981"
-                            title="Yeni Araç Eklendi"
-                            subtitle="Filo Yönetimi"
-                            value="+1"
-                            valueColor="#10B981"
-                        />
-                        <View style={styles.divider} />
-                        <TransactionItem 
-                            icon="account-plus-outline"
-                            iconColor="#6366F1"
-                            title="Personel Kaydı"
-                            subtitle="İnsan Kaynakları"
-                            value="+2"
-                            valueColor="#10B981"
-                        />
-                        <View style={styles.divider} />
-                        <TransactionItem 
-                            icon="map-marker-check-outline"
-                            iconColor="#06B6D4"
-                            title="Sefer Tamamlandı"
-                            subtitle="Operasyon"
-                            value="✓"
-                            valueColor="#10B981"
-                        />
-                        <View style={styles.divider} />
-                        <TransactionItem 
-                            icon="gas-station-outline"
-                            iconColor="#F97316"
-                            title="Yakıt Alımı"
-                            subtitle="Gider Yönetimi"
-                            value="-₺850"
-                            valueColor="#EF4444"
-                        />
-                    </View>
-                </View>
-
-            </ScrollView>
-        </View>
-    );
-}
-
-function TransactionItem({ icon, iconColor, title, subtitle, value, valueColor }) {
-    return (
-        <View style={styles.transItem}>
-            <View style={styles.transIconBox}>
-                <Icon name={icon} size={28} color={iconColor} />
-            </View>
-            <View style={styles.transInfo}>
-                <Text style={styles.transTitle}>{title}</Text>
-                <Text style={styles.transSubtitle}>{subtitle}</Text>
-            </View>
-            <Text style={[styles.transValue, { color: valueColor }]}>{value}</Text>
+            </SafeAreaView>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F8FAFC',
-    },
-    /* Header */
-    header: {
-        paddingBottom: 32,
-        paddingHorizontal: 24,
-        borderBottomLeftRadius: 32,
-        borderBottomRightRadius: 32,
-    },
-    headerRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingTop: 12,
-    },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    avatar: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1.5,
-        borderColor: 'rgba(255,255,255,0.4)',
-    },
-    avatarText: {
-        color: '#ffffff',
-        fontSize: 18,
-        fontWeight: '800',
-    },
-    headerLabel: {
-        color: '#ffffff',
-        fontSize: 18,
-        fontWeight: '800',
-    },
-    headerSubLabel: {
-        color: 'rgba(255,255,255,0.7)',
-        fontSize: 12,
-        fontWeight: '500',
-    },
-    monthSelector: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.15)',
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 20,
-        gap: 8,
-    },
-    monthText: {
-        color: '#ffffff',
-        fontSize: 13,
-        fontWeight: '700',
-    },
-    bigNumber: {
-        fontSize: 56,
-        fontWeight: '900',
-        color: '#ffffff',
-        marginTop: 20,
-        letterSpacing: -2,
-    },
-    bigLabel: {
-        fontSize: 15,
-        color: 'rgba(255,255,255,0.8)',
-        fontWeight: '500',
-        marginTop: -4,
-    },
-    /* Horizontal Cards */
-    cardsScroll: {
-        marginTop: -20,
-    },
-    statCard: {
-        width: 140,
-        borderRadius: 24,
-        padding: 20,
-        marginRight: 12,
-        backgroundColor: '#ffffff',
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 12,
-        elevation: 3,
-    },
-    statIconRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-    },
-    statCardValue: {
-        fontSize: 28,
-        fontWeight: '900',
-        color: '#0F172A',
-    },
-    statCardLabel: {
-        fontSize: 13,
-        color: '#64748B',
-        fontWeight: '600',
-        marginTop: 4,
-    },
-    /* Sections */
-    section: {
-        paddingHorizontal: 20,
-        marginTop: 24,
-    },
-    sectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '900',
-        color: '#0F172A',
-    },
-    seeAll: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#3B82F6',
-    },
-    /* Overview Card */
-    overviewCard: {
-        backgroundColor: '#ffffff',
-        borderRadius: 24,
-        padding: 24,
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.05,
-        shadowRadius: 16,
-        elevation: 4,
-    },
-    overviewHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    overviewTitle: {
-        fontSize: 18,
-        fontWeight: '900',
-        color: '#0F172A',
-    },
-    overviewRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 24,
-    },
-    overviewItem: {
-        alignItems: 'center',
-        flex: 1,
-    },
-    overviewLabel: {
-        fontSize: 13,
-        color: '#64748B',
-        fontWeight: '600',
-        marginBottom: 8,
-    },
-    overviewValue: {
-        fontSize: 24,
-        fontWeight: '900',
-        color: '#0F172A',
-    },
-    progressContainer: {
-        marginBottom: 12,
-    },
-    progressBg: {
-        height: 10,
-        backgroundColor: '#F1F5F9',
-        borderRadius: 5,
-        overflow: 'hidden',
-    },
-    progressFill: {
-        height: 10,
-        borderRadius: 5,
-    },
-    progressInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    progressText: {
-        fontSize: 13,
-        color: '#10B981',
-        fontWeight: '700',
-    },
-    /* Transactions */
-    transactionCard: {
-        backgroundColor: '#ffffff',
-        borderRadius: 24,
-        padding: 8,
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.05,
-        shadowRadius: 16,
-        elevation: 4,
-    },
-    transItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-    },
-    transIconBox: {
-        width: 46,
-        height: 46,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 16,
-    },
-    transInfo: {
-        flex: 1,
-    },
-    transTitle: {
-        fontSize: 16,
-        fontWeight: '800',
-        color: '#0F172A',
-    },
-    transSubtitle: {
-        fontSize: 13,
-        color: '#64748B',
-        fontWeight: '500',
-        marginTop: 4,
-    },
-    transValue: {
-        fontSize: 16,
-        fontWeight: '900',
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#F1F5F9',
-        marginHorizontal: 16,
-    },
+    container: { flex: 1, backgroundColor: '#020617' },
+    scrollContent: { paddingHorizontal: 20, paddingTop: 10 },
+    
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 },
+    dateText: { fontSize: 13, color: '#94A3B8', fontWeight: '600', letterSpacing: 0.5, marginBottom: 4 },
+    welcomeText: { fontSize: 28, color: '#fff', fontWeight: '500' },
+    userName: { fontWeight: '900', color: '#8B5CF6' },
+    profileAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(139, 92, 246, 0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.4)' },
+    profileInitials: { color: '#C4B5FD', fontSize: 20, fontWeight: '800' },
+
+    sectionTitle: { fontSize: 18, fontWeight: '800', color: '#F8FAFC', marginBottom: 16, letterSpacing: 0.5 },
+    sectionHeaderWrap: { flexDirection: 'row', alignItems: 'center', marginTop: 32, marginBottom: 4 },
+    sectionSubtitle: { fontSize: 13, color: '#94A3B8', marginBottom: 16, fontWeight: '500' },
+
+    kpiContainer: { gap: 12 },
+    kpiRow: { flexDirection: 'row' },
+    kpi3DBase: { borderRadius: 28, paddingBottom: 8, paddingRight: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.5, shadowRadius: 15, elevation: 12, marginBottom: 8 },
+    kpiCard: { padding: 22, flexDirection: 'row', alignItems: 'center', borderRadius: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+    kpiIconBox: { width: 60, height: 60, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginRight: 16, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 4 },
+    kpiInfo: { flex: 1 },
+    kpiValue: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: -1, marginBottom: 2, textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
+    kpiTitle: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.9)', letterSpacing: 0.5 },
+
+    mhContainer: { gap: 16 },
+    mhCard: { backgroundColor: '#0F172A', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#1E293B', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 12, elevation: 8, overflow: 'hidden' },
+    mhHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    mhHeaderLeft: { flex: 1 },
+    mhPlateBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(59, 130, 246, 0.15)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, alignSelf: 'flex-start', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(59, 130, 246, 0.3)' },
+    mhPlateText: { color: '#60A5FA', fontSize: 16, fontWeight: '900', marginLeft: 8, letterSpacing: 0.5 },
+    mhKmBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
+    mhCurrentKm: { color: '#CBD5E1', fontSize: 12, fontWeight: '700', marginLeft: 4 },
+    
+    mhActionBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(59, 130, 246, 0.2)', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(59, 130, 246, 0.4)' },
+    mhActionText: { color: '#60A5FA', fontSize: 13, fontWeight: '800', marginRight: 6 },
+
+    mhAlerts: { gap: 10 },
+    alertRow: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 16, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 2 },
+    alertIconWrap: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    alertContent: { marginLeft: 14, flex: 1 },
+    alertType: { fontSize: 15, fontWeight: '900', marginBottom: 2 },
+    alertStatus: { fontSize: 13, fontWeight: '700', opacity: 0.9 },
+    pulseDot: { width: 8, height: 8, borderRadius: 4, shadowColor: '#F43F5E', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6, elevation: 4 },
+
+    emptyState: { backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: 28, padding: 32, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(16, 185, 129, 0.15)', shadowColor: '#10B981', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },
+    emptyTitle: { fontSize: 20, fontWeight: '900', color: '#10B981', marginBottom: 8 },
+    emptyDesc: { fontSize: 14, color: '#94A3B8', textAlign: 'center', lineHeight: 22, fontWeight: '500' }
 });

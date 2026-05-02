@@ -186,8 +186,8 @@
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Yağ Değişimi</span>
-                                <span class="text-sm font-black {{ $mStatus['oil_remaining'] < 1000 ? 'text-rose-600' : 'text-indigo-600' }}">
-                                    {{ $mStatus['oil_remaining'] !== null ? number_format($mStatus['oil_remaining'], 0, ',', '.') . ' KM KALDI' : 'KAYIT BEKLENİYOR' }}
+                                <span class="text-sm font-black {{ $mStatus['oil_remaining'] < 1000 ? 'text-rose-600' : 'text-indigo-600' }} {{ $mStatus['oil_remaining'] !== null && $mStatus['oil_remaining'] < 0 ? 'animate-pulse' : '' }}">
+                                    {{ $mStatus['oil_remaining'] !== null ? ($mStatus['oil_remaining'] < 0 ? number_format(abs($mStatus['oil_remaining']), 0, ',', '.') . ' KM GEÇTİ' : number_format($mStatus['oil_remaining'], 0, ',', '.') . ' KM KALDI') : 'KAYIT BEKLENİYOR' }}
                                 </span>
                             </div>
                             <div class="h-4 w-full rounded-full bg-slate-100 shadow-inner overflow-hidden p-1">
@@ -201,8 +201,8 @@
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Alt Yağlama</span>
-                                <span class="text-sm font-black {{ $mStatus['lube_remaining'] < 500 ? 'text-rose-600' : 'text-emerald-600' }}">
-                                    {{ $mStatus['lube_remaining'] !== null ? number_format($mStatus['lube_remaining'], 0, ',', '.') . ' KM KALDI' : 'KAYIT BEKLENİYOR' }}
+                                <span class="text-sm font-black {{ $mStatus['lube_remaining'] < 500 ? 'text-rose-600' : 'text-emerald-600' }} {{ $mStatus['lube_remaining'] !== null && $mStatus['lube_remaining'] < 0 ? 'animate-pulse' : '' }}">
+                                    {{ $mStatus['lube_remaining'] !== null ? ($mStatus['lube_remaining'] < 0 ? number_format(abs($mStatus['lube_remaining']), 0, ',', '.') . ' KM GEÇTİ' : number_format($mStatus['lube_remaining'], 0, ',', '.') . ' KM KALDI') : 'KAYIT BEKLENİYOR' }}
                                 </span>
                             </div>
                             <div class="h-4 w-full rounded-full bg-slate-100 shadow-inner overflow-hidden p-1">

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ ($title ?? '') ? $title . ' • ' : '' }}ServisPilot Admin</title>
+    <title>{{ ($title ?? '') ? $title . ' • ' : '' }}FiloMERKEZ Admin</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -37,7 +37,7 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="text-[18px] leading-none font-extrabold tracking-tight text-white whitespace-nowrap">
-                                ServisPilot
+                                FiloMERKEZ
                             </div>
                             <div class="mt-1 text-[10px] uppercase tracking-[0.14em] text-rose-300 overflow-hidden text-ellipsis whitespace-nowrap">
                                 Platform Yönetimi
@@ -52,14 +52,7 @@
                         <div class="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">Platform</div>
                         <div class="mt-3 space-y-2">
 
-                            <a href="{{ route('super-admin.dashboard') }}"
-                               class="flex items-start gap-3 rounded-2xl px-4 py-4 transition {{ request()->routeIs('super-admin.dashboard') ? 'bg-white/12 shadow-lg' : 'hover:bg-white/10' }}">
-                                <div class="mt-0.5 text-lg">📊</div>
-                                <div>
-                                    <div class="text-sm font-semibold text-white">Dashboard</div>
-                                    <div class="text-xs text-white/60">Platform istatistikleri</div>
-                                </div>
-                            </a>
+                            <!-- Dashboard link removed -->
 
                             <a href="{{ route('super-admin.companies.index') }}"
                                class="flex items-start gap-3 rounded-2xl px-4 py-4 transition {{ request()->routeIs('super-admin.companies.*') ? 'bg-white/12 shadow-lg' : 'hover:bg-white/10' }}">
@@ -70,23 +63,55 @@
                                 </div>
                             </a>
 
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">Hızlı Erişim</div>
-                        <div class="mt-3 space-y-2">
-                            <a href="{{ route('dashboard') }}"
-                               class="flex items-start gap-3 rounded-2xl px-4 py-4 transition hover:bg-white/10">
-                                <div class="mt-0.5 text-lg">🚌</div>
+                            <a href="{{ route('super-admin.plans.index') }}"
+                               class="flex items-start gap-3 rounded-2xl px-4 py-4 transition {{ request()->routeIs('super-admin.plans.*') ? 'bg-white/12 shadow-lg' : 'hover:bg-white/10' }}">
+                                <div class="mt-0.5 text-lg">💎</div>
                                 <div>
-                                    <div class="text-sm font-semibold text-white">Firma Paneli</div>
-                                    <div class="text-xs text-white/60">Normal panele geç</div>
+                                    <div class="text-sm font-semibold text-white">Paketler</div>
+                                    <div class="text-xs text-white/60">Abonelik planları</div>
                                 </div>
                             </a>
+
+                            <a href="{{ route('super-admin.finance.index') }}"
+                               class="flex items-start gap-3 rounded-2xl px-4 py-4 transition {{ request()->routeIs('super-admin.finance.*') ? 'bg-white/12 shadow-lg' : 'hover:bg-white/10' }}">
+                                <div class="mt-0.5 text-lg">💰</div>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Finans</div>
+                                    <div class="text-xs text-white/60">Ödemeler & Faturalar</div>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('super-admin.support-tickets.index') }}"
+                               class="flex items-start gap-3 rounded-2xl px-4 py-4 transition {{ request()->routeIs('super-admin.support-tickets.*') ? 'bg-white/12 shadow-lg' : 'hover:bg-white/10' }}">
+                                <div class="mt-0.5 text-lg">💬</div>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Destek Talepleri</div>
+                                    <div class="text-xs text-white/60">Firmalardan gelen biletler</div>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('super-admin.logs.index') }}"
+                               class="flex items-start gap-3 rounded-2xl px-4 py-4 transition {{ request()->routeIs('super-admin.logs.*') ? 'bg-white/12 shadow-lg' : 'hover:bg-white/10' }}">
+                                <div class="mt-0.5 text-lg">📊</div>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Platform Logları</div>
+                                    <div class="text-xs text-white/60">Tüm sistem aktivitesi</div>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('super-admin.settings.index') }}"
+                               class="flex items-start gap-3 rounded-2xl px-4 py-4 transition {{ request()->routeIs('super-admin.settings.*') ? 'bg-white/12 shadow-lg' : 'hover:bg-white/10' }}">
+                                <div class="mt-0.5 text-lg">⚙️</div>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Sistem Ayarları</div>
+                                    <div class="text-xs text-white/60">Global yapılandırmalar</div>
+                                </div>
+                            </a>
+
                         </div>
                     </div>
 
+                    <!-- Hızlı Erişim bölümü kaldırıldı -->
                 </div>
 
                 <div class="shrink-0 border-t border-white/10 p-3">

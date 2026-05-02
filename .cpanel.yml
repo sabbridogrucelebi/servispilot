@@ -1,0 +1,14 @@
+---
+deployment:
+  tasks:
+    # 1. Laravel paketlerini kurar (Gelistirici paketleri haric)
+    - composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+    
+    # 2. Veritabanini otomatik gunceller
+    - php artisan migrate --force
+    
+    # 3. Eski onbellekleri temizler ve sistemi hizlandirir
+    - php artisan optimize:clear
+    - php artisan config:cache
+    - php artisan route:cache
+    - php artisan view:cache

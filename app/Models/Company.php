@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Fleet\Driver;
 use App\Models\Fleet\Vehicle;
+use App\Enums\CompanyStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -17,6 +18,7 @@ class Company extends Model
         'tax_no',
         'city',
         'address',
+        'status',
         'is_active',
         'license_type',
         'license_expires_at',
@@ -27,10 +29,28 @@ class Company extends Model
 
     protected $casts = [
         'is_active'          => 'boolean',
+        'status'             => CompanyStatus::class,
         'license_expires_at' => 'datetime',
         'max_vehicles'       => 'integer',
         'max_users'          => 'integer',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | BOOT & EVENTS
+    |--------------------------------------------------------------------------
+    */
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($company) {
+            if ($company->isDirty('status')) {
+                $company->is_active = in_array($company->status, [CompanyStatus::Active, CompanyStatus::Trial], true);
+            }
+        });
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -78,6 +98,28 @@ class Company extends Model
         return $this->hasMany(Payroll::class);
     }
 
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function activeSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where(function($query) {
+                $query->whereNull('ends_at')
+                      ->orWhere('ends_at', '>', now());
+            })
+            ->with('plan')
+            ->first();
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
@@ -108,9 +150,15 @@ class Company extends Model
             return false;
         }
 
-        // license_expires_at null ise süresiz lisans
-        if (is_null($this->license_expires_at)) {
+        // Yeni abonelik sistemine göre kontrol et
+        $subscription = $this->activeSubscription();
+        if ($subscription) {
             return true;
+        }
+
+        // Eski sistem desteği (Geçiş aşaması için)
+        if (is_null($this->license_expires_at)) {
+            return false; // Yeni sistemde null değil, aktif abonelik olmalı
         }
 
         return $this->license_expires_at->isFuture();
@@ -175,11 +223,25 @@ class Company extends Model
 
     public function canAddVehicle(): bool
     {
-        return $this->vehicles()->count() < $this->max_vehicles;
+        $limit = $this->max_vehicles;
+        $subscription = $this->activeSubscription();
+        
+        if ($subscription && $subscription->plan) {
+            $limit = $subscription->plan->max_vehicles;
+        }
+
+        return $this->vehicles()->count() < $limit;
     }
 
     public function canAddUser(): bool
     {
-        return $this->users()->count() < $this->max_users;
+        $limit = $this->max_users;
+        $subscription = $this->activeSubscription();
+
+        if ($subscription && $subscription->plan) {
+            $limit = $subscription->plan->max_users;
+        }
+
+        return $this->users()->count() < $limit;
     }
 }

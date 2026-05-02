@@ -47,7 +47,7 @@ class Document extends Model
 
     public function isExpired(): bool
     {
-        return !is_null($this->end_date) && $this->end_date->isPast();
+        return !is_null($this->end_date) && $this->end_date->endOfDay()->isPast();
     }
 
     public function isVehicleDocument(): bool

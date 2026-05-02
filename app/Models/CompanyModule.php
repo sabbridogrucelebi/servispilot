@@ -38,6 +38,7 @@ class CompanyModule extends Model
         'maintenances'      => 'Bakım / Tamir',
         'traffic_penalties' => 'Trafik Cezaları',
         'reports'           => 'Raporlar',
+        'pilotcell'         => 'PilotCell',
     ];
 
     /*

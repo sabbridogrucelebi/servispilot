@@ -1,0 +1,8 @@
+{
+  "CFBundleDisplayName": "ServisPilot",
+  "NSLocationWhenInUseUsageDescription": "ServisPilot, filo takibi ve rota planlaması için konumunuza erişim izni ister.",
+  "NSLocationAlwaysAndWhenInUseUsageDescription": "ServisPilot, filo takibi ve rota planlaması için konumunuza erişim izni ister.",
+  "NSCameraUsageDescription": "ServisPilot, araç fotoğrafları ve belge çekimi için kameranıza erişim izni ister.",
+  "NSPhotoLibraryUsageDescription": "ServisPilot, araç belgeleri ve fiş yükleme işlemleri için fotoğraflarınıza erişim izni ister.",
+  "NSPhotoLibraryAddUsageDescription": "ServisPilot, fotoğraf kaydetme işlemi için izin ister."
+}

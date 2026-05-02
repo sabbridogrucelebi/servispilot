@@ -1,320 +1,566 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, Platform, Linking, ScrollView } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, FlatList, ActivityIndicator, Alert, Text, Platform, TouchableOpacity, RefreshControl, Modal, ScrollView, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../context/AuthContext';
+import { Header, EmptyState, FormField } from '../components';
 import DatePickerInput from '../components/DatePickerInput';
-import { toApiDate } from '../utils/date';
+import * as DocumentPicker from 'expo-document-picker';
 
-export default function VehiclePenaltiesScreen() {
-    const navigation = useNavigation();
-    const route = useRoute();
-    const { vehicleId, plate } = route.params || {};
+const fmtMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2 }).format(v || 0);
 
+const toTitleCase = (str) => {
+    if (!str) return '';
+    return str.toString().split(' ').map(word => {
+        if (!word) return '';
+        const first = word.charAt(0).toLocaleUpperCase('tr-TR');
+        const rest = word.slice(1).toLocaleLowerCase('tr-TR');
+        return first + rest;
+    }).join(' ');
+};
+
+export default function VehiclePenaltiesScreen({ route, navigation }) {
+    const { hasPermission } = useContext(AuthContext);
+    const { vehicleId, vehicle } = route.params || {};
     const [penalties, setPenalties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [search, setSearch] = useState('');
-    const [showFilters, setShowFilters] = useState(true);
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [filter, setFilter] = useState('all');
 
-    useEffect(() => {
-        fetchPenalties();
-    }, [startDate, endDate]);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [editingId, setEditingId] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState({
+        penalty_no: '',
+        penalty_date: new Date().toISOString().split('T')[0],
+        penalty_time: '',
+        penalty_article: '',
+        penalty_amount: '',
+        penalty_location: '',
+        driver_name: '',
+        payment_date: '',
+        notes: ''
+    });
 
     const fetchPenalties = async (isRefreshing = false) => {
+        if (!vehicleId) return;
+        if (!isRefreshing) setLoading(true);
         try {
-            if (!isRefreshing) setLoading(true);
-            const response = await api.get(`/v1/vehicles/${vehicleId}/penalties`, {
-                params: {
-                    start_date: toApiDate(startDate),
-                    end_date: toApiDate(endDate),
-                    search: search
+            const r = await api.get(`/v1/vehicles/${vehicleId}/penalties`);
+            
+            if (r.data && r.data.success && r.data.data) {
+                const responseData = r.data.data;
+                if (responseData.penalties) {
+                    setPenalties(responseData.penalties);
+                } else if (Array.isArray(responseData)) {
+                    setPenalties(responseData);
+                } else {
+                    setPenalties([]);
                 }
-            });
-            setPenalties(response.data.data.penalties);
+            } else if (r.data && r.data.penalties) {
+                // Fallback for non-v1 structured responses
+                setPenalties(r.data.penalties);
+            } else {
+                setPenalties([]);
+            }
         } catch (e) {
-            console.error(e);
-            Alert.alert('Hata', 'Cezalar yüklenirken bir sorun oluştu.');
+            console.error('Fetch penalties error:', e);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
     };
 
-    const onRefresh = () => {
-        setRefreshing(true);
-        fetchPenalties(true);
+    useEffect(() => { fetchPenalties(); }, [vehicleId]);
+
+    const openAdd = () => {
+        if (!hasPermission('penalties.create')) {
+            Alert.alert('Yetki Yok', 'Ceza kaydı ekleme yetkiniz bulunmuyor.');
+            return;
+        }
+        setEditingId(null);
+        setFormData({
+            penalty_no: '',
+            penalty_date: new Date().toISOString().split('T')[0],
+            penalty_time: '',
+            penalty_article: '',
+            penalty_amount: '',
+            penalty_location: '',
+            driver_name: '',
+            payment_date: '',
+            notes: '',
+            traffic_penalty_document: null,
+            payment_receipt: null
+        });
+        setModalVisible(true);
     };
 
-    const renderPenalty = ({ item }) => {
-        const isPaid = item.status === 'paid';
-        const iconBg = isPaid ? '#ECFDF5' : '#FEF2F2';
-        const iconColor = isPaid ? '#10B981' : '#EF4444';
-        const iconName = isPaid ? 'check-decagram' : 'alert-decagram';
-        const statusTxt = isPaid ? 'ÖDENDİ' : 'ÖDENMEDİ';
+    const pickDocument = async (field) => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: ['application/pdf', 'image/*'],
+                copyToCacheDirectory: true
+            });
+            if (result.canceled === false && result.assets && result.assets.length > 0) {
+                setFormData(prev => ({ ...prev, [field]: result.assets[0] }));
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!formData.penalty_no || !formData.penalty_amount || !formData.penalty_date || !formData.driver_name) {
+            Alert.alert('Eksik Bilgi', 'Ceza No, Tarih, Tutar ve Şoför Adı alanları zorunludur.'); return;
+        }
+
+        setSaving(true);
+        try {
+            const url = `/v1/vehicles/${vehicleId}/penalties` + (editingId ? `/${editingId}` : '');
+            
+            const formDataObj = new FormData();
+            formDataObj.append('penalty_no', formData.penalty_no);
+            formDataObj.append('penalty_date', formData.penalty_date);
+            if (formData.penalty_time) formDataObj.append('penalty_time', formData.penalty_time);
+            formDataObj.append('penalty_article', formData.penalty_article);
+            formDataObj.append('penalty_amount', formData.penalty_amount);
+            formDataObj.append('penalty_location', formData.penalty_location);
+            formDataObj.append('driver_name', formData.driver_name);
+            if (formData.payment_date) formDataObj.append('payment_date', formData.payment_date);
+            if (formData.notes) formDataObj.append('notes', formData.notes);
+
+            if (formData.traffic_penalty_document) {
+                formDataObj.append('traffic_penalty_document', {
+                    uri: formData.traffic_penalty_document.uri,
+                    name: formData.traffic_penalty_document.name,
+                    type: formData.traffic_penalty_document.mimeType || 'application/pdf'
+                });
+            }
+
+            if (formData.payment_receipt) {
+                formDataObj.append('payment_receipt', {
+                    uri: formData.payment_receipt.uri,
+                    name: formData.payment_receipt.name,
+                    type: formData.payment_receipt.mimeType || 'application/pdf'
+                });
+            }
+
+            await api.post(url, formDataObj, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            setModalVisible(false);
+            fetchPenalties();
+            Alert.alert('Başarılı', 'Ceza kaydı kaydedildi.');
+        } catch (e) {
+            Alert.alert('Hata', 'Kaydedilemedi.');
+            console.error('Save error:', e);
+        } finally { setSaving(false); }
+    };
+
+    const confirmDelete = (id) => {
+        if (!hasPermission('penalties.delete')) {
+            Alert.alert('Yetki Yok', 'Ceza kaydı silme yetkiniz bulunmuyor.');
+            return;
+        }
+        Alert.alert('Silinecek', 'Bu ceza kaydını silmek istediğinize emin misiniz?', [
+            { text: 'Vazgeç', style: 'cancel' },
+            { text: 'Sil', style: 'destructive', onPress: async () => {
+                try { await api.delete(`/v1/vehicles/${vehicleId}/penalties/${id}`); fetchPenalties(); }
+                catch (e) { Alert.alert('Hata', 'Silinemedi.'); }
+            }}
+        ]);
+    };
+
+    const filteredData = Array.isArray(penalties) ? penalties.filter(p => {
+        if (filter === 'paid') return p.payment_date;
+        if (filter === 'unpaid') return !p.payment_date;
+        return true;
+    }) : [];
+
+    const renderItem = ({ item }) => {
+        const isPaid = !!item.payment_date;
+        const discountDeadline = item.discount_deadline ? new Date(item.discount_deadline) : new Date(new Date(item.date).getTime() + 30 * 24 * 60 * 60 * 1000);
         
+        const now = new Date();
+        const isDiscountExpired = now > discountDeadline;
+        
+        let paymentStatusText = isPaid ? 'Ödendi' : 'Ödenmedi';
+        if (isPaid && item.paid_amount && item.discounted_amount && item.paid_amount == item.discounted_amount) {
+            paymentStatusText = '%25 İndirimli Ödendi';
+        }
+
         return (
-            <View style={s.card}>
-                <View style={s.cardTop}>
-                    <View style={[s.cardIconBox, { backgroundColor: iconBg }]}>
-                        <Icon name={iconName} size={28} color={iconColor} />
+            <View style={st.card}>
+                <View style={st.cardHeader}>
+                    <View style={[st.iconBox, { backgroundColor: isPaid ? '#ECFDF5' : '#FEF2F2' }]}>
+                        <Icon name={isPaid ? "check-circle-outline" : "alert-circle-outline"} size={20} color={isPaid ? '#10B981' : '#EF4444'} />
+                    </View>
+                    <View style={{ flex: 1, paddingLeft: 10, paddingRight: 8 }}>
+                        <Text style={st.cardTitle}>{item.penalty_no?.toUpperCase() || '-'}</Text>
+                        <Text style={st.cardDesc}>
+                            {vehicle?.plate || 'Plaka Yok'} • Şoför: {toTitleCase(item.driver_name) || '-'}
+                        </Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={[st.amountText, isPaid && { color: '#059669' }]}>
+                            {fmtMoney(isPaid && item.paid_amount ? item.paid_amount : item.amount)}
+                        </Text>
+                        {!isPaid && !isDiscountExpired && (
+                            <Text style={st.discountText}>
+                                İndirimli: {fmtMoney(item.amount * 0.75)}
+                            </Text>
+                        )}
+                    </View>
+                </View>
+
+                {/* Grid Structure - Compact */}
+                <View style={st.cardGrid}>
+                    <View style={st.gridRow}>
+                        <View style={st.gridCol}>
+                            <View style={st.gridLabelRow}>
+                                <Icon name="calendar-blank-outline" size={12} color="#F59E0B" />
+                                <Text style={[st.gridLabel, { color: '#F59E0B' }]}>TARİH</Text>
+                            </View>
+                            <Text style={[st.gridValue, { color: '#D97706' }]}>
+                                {item.date ? new Date(item.date).toLocaleDateString('tr-TR') : '-'} 
+                                {item.time ? ` ${item.time}` : ''}
+                            </Text>
+                        </View>
+                        <View style={st.gridDivider} />
+                        <View style={st.gridCol}>
+                            <View style={st.gridLabelRow}>
+                                <Icon name="file-document-outline" size={12} color="#3B82F6" />
+                                <Text style={[st.gridLabel, { color: '#3B82F6' }]}>MADDE / YER</Text>
+                            </View>
+                            <Text style={[st.gridValue, { color: '#2563EB' }]} numberOfLines={1}>
+                                {item.article?.toUpperCase() || '-'}
+                            </Text>
+                            <Text style={[st.gridSubValue, { color: '#60A5FA' }]} numberOfLines={1}>
+                                {toTitleCase(item.location) || '-'}
+                            </Text>
+                        </View>
                     </View>
                     
-                    <View style={s.cardInfo}>
-                        <View style={s.cardHeaderRow}>
-                            <Text style={s.cardTitle} numberOfLines={1}>{item.penalty_no || 'Ceza No Yok'}</Text>
-                            <View style={{alignItems: 'flex-end'}}>
-                                <View style={[s.statusBadge, isPaid ? s.statusCompleted : s.statusPlanned]}>
-                                    <Icon name={isPaid ? "check" : "circle"} size={10} color={iconColor} style={{marginRight: 4}} />
-                                    <Text style={[s.statusTxt, {color: iconColor}]}>{statusTxt}</Text>
-                                </View>
-                                <Text style={s.amountTxt}>{Number(item.amount || 0).toLocaleString('tr-TR')} ₺</Text>
+                    <View style={st.gridHorizontalDivider} />
+                    
+                    <View style={st.gridRow}>
+                        <View style={st.gridCol}>
+                            <View style={st.gridLabelRow}>
+                                <Icon name="credit-card-outline" size={12} color={isPaid ? '#10B981' : '#EF4444'} />
+                                <Text style={[st.gridLabel, { color: isPaid ? '#10B981' : '#EF4444' }]}>ÖDEME DURUMU</Text>
+                            </View>
+                            <Text style={[st.gridValue, { color: isPaid ? '#059669' : '#DC2626' }]}>
+                                {paymentStatusText}
+                            </Text>
+                            {isPaid && (
+                                <Text style={[st.gridSubValue, { color: '#34D399' }]}>
+                                    Tarih: {new Date(item.payment_date).toLocaleDateString('tr-TR')}
+                                </Text>
+                            )}
+                        </View>
+                        <View style={st.gridDivider} />
+                        <View style={[st.gridCol, { justifyContent: 'center' }]}>
+                            {/* Documents replacing Delete Button */}
+                            <View style={st.docsRow}>
+                                {item.traffic_penalty_document ? (
+                                    <TouchableOpacity style={st.docBtn} onPress={() => Linking.openURL(item.traffic_penalty_document)}>
+                                        <Icon name="file-document-outline" size={12} color="#6366F1" />
+                                        <Text style={st.docText}>Ceza</Text>
+                                    </TouchableOpacity>
+                                ) : null}
+                                {item.payment_receipt ? (
+                                    <TouchableOpacity style={st.docBtn} onPress={() => Linking.openURL(item.payment_receipt)}>
+                                        <Icon name="receipt" size={12} color="#10B981" />
+                                        <Text style={st.docText}>Dekont</Text>
+                                    </TouchableOpacity>
+                                ) : null}
+                                {!item.traffic_penalty_document && !item.payment_receipt && (
+                                    <Text style={[st.gridSubValue, { color: '#94A3B8', fontStyle: 'italic' }]}>Belge yok</Text>
+                                )}
                             </View>
                         </View>
-                        
-                        <View style={[s.typePill, { backgroundColor: '#F8FAFC' }]}>
-                            <Text style={[s.typePillTxt, { color: '#64748B' }]}>{item.article || 'Madde Yok'}</Text>
-                        </View>
-
-                        <View style={s.datePersonRow}>
-                            <Icon name="account-outline" size={14} color="#94A3B8" />
-                            <Text style={s.dpTxt}>{item.driver_name || 'Bilinmiyor'}</Text>
-                        </View>
                     </View>
                 </View>
 
-                <View style={s.cardDivider} />
-
-                <View style={s.cardBottom}>
-                    <View style={s.cbItem}>
-                        <Icon name="calendar-blank" size={16} color="#94A3B8" />
-                        <View>
-                            <Text style={s.cbLabel}>Tarih</Text>
-                            <Text style={s.cbVal}>{item.date ? new Date(item.date).toLocaleDateString('tr-TR') : '-'}</Text>
-                        </View>
+                {item.notes ? (
+                    <View style={st.notesBox}>
+                        <Icon name="information-outline" size={12} color="#64748B" />
+                        <Text style={st.notesText}>Not: {toTitleCase(item.notes)}</Text>
                     </View>
-                    <View style={s.cbDivider} />
-                    <View style={s.cbItem}>
-                        <Icon name="map-marker-outline" size={16} color="#94A3B8" />
-                        <View>
-                            <Text style={s.cbLabel}>Yer</Text>
-                            <Text style={s.cbVal} numberOfLines={1}>{item.location || '-'}</Text>
-                        </View>
-                    </View>
-                    <View style={s.cbDivider} />
-                    <View style={[s.cbItem, {flex: 1.2}]}>
-                        <Icon name="ticket-percent-outline" size={16} color="#94A3B8" />
-                        <View style={{flex: 1}}>
-                            <Text style={s.cbLabel}>İndirimli Tutar</Text>
-                            <Text style={[s.cbVal, {color: '#10B981'}]} numberOfLines={1}>{Number(item.discounted_amount || 0).toLocaleString('tr-TR')} ₺</Text>
-                        </View>
-                        <Icon name="chevron-right" size={20} color="#CBD5E1" />
-                    </View>
-                </View>
+                ) : null}
             </View>
         );
     };
 
     return (
-        <View style={s.container}>
-            <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={s.header} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
-                <SafeAreaView edges={['top']}>
-                    <View style={s.headerRow}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-                            <Icon name="arrow-left" size={20} color="#fff" />
-                        </TouchableOpacity>
-                        <View style={s.headerTitleWrap}>
-                            <Text style={s.headerTitle}>{plate} · Cezalar</Text>
-                            <View style={s.headerSubWrap}>
-                                <View style={s.statusDotSmall} />
-                                <Text style={s.headerSubTxt}>Aktif • TEMSA PRESTİJ • MİDİBÜS</Text>
-                            </View>
-                        </View>
-                        <View style={{flexDirection:'row', gap: 8}}>
-                            <TouchableOpacity style={s.topBtn}><Icon name="file-pdf-box" size={22} color="#fff" /><Text style={{color:'#fff', fontSize: 10, fontWeight: '700'}}>PDF</Text></TouchableOpacity>
-                            <TouchableOpacity style={s.topAddBtn}><Icon name="plus" size={22} color="#fff" /></TouchableOpacity>
-                        </View>
+        <SafeAreaView style={st.container} edges={['top']}>
+            <View style={{ backgroundColor: '#fff', zIndex: 10, paddingBottom: 12 }}>
+                <View style={st.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={st.backBtn}>
+                        <Icon name="chevron-left" size={26} color="#0F172A" />
+                    </TouchableOpacity>
+                    <View style={st.headerCenter}>
+                        <Text style={st.headerTitle}>Trafik Cezaları</Text>
+                        <Text style={st.headerSubtitle}>{vehicle?.plate || 'Ceza Takibi'}</Text>
                     </View>
-
-                    {/* KPI Cards */}
-                    <View style={s.kpiWrapper}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.kpiScroll}>
-                            
-                            <View style={[s.kpiCard, { borderColor: 'rgba(239, 68, 68, 0.4)' }]}>
-                                <LinearGradient colors={['rgba(220,38,38,0.15)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: '#7F1D1D'}]}><Icon name="alert" size={18} color="#F87171" /></View>
-                                    <Text style={s.kpiLabel}>Ödenmemiş</Text>
-                                </View>
-                                <Text style={s.kpiValue}>2</Text>
-                                <Text style={[s.kpiSub, {color: '#EF4444'}]}>● Aksiyon gerekli</Text>
-                            </View>
-
-                            <View style={[s.kpiCard, { borderColor: 'rgba(20, 184, 166, 0.3)' }]}>
-                                <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: 'rgba(20, 184, 166, 0.1)'}]}><Icon name="check-all" size={18} color="#14B8A6" /></View>
-                                    <Text style={s.kpiLabel}>Ödenen</Text>
-                                </View>
-                                <Text style={s.kpiValue}>14</Text>
-                                <Text style={[s.kpiSub, {color: '#10B981'}]}>Bu yıl toplam</Text>
-                            </View>
-
-                            <View style={[s.kpiCard, { borderColor: 'rgba(245, 158, 11, 0.3)' }]}>
-                                <LinearGradient colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0)']} style={StyleSheet.absoluteFillObject} borderRadius={20} />
-                                <View style={s.kpiHeader}>
-                                    <View style={[s.kpiIconWrap, {backgroundColor: 'rgba(245, 158, 11, 0.1)'}]}><Icon name="ticket-percent" size={18} color="#F59E0B" /></View>
-                                    <Text style={s.kpiLabel}>İndirim Fırsatı</Text>
-                                </View>
-                                <Text style={s.kpiValue}>1 <Text style={{fontSize: 14, color: '#94A3B8'}}>Kayıt</Text></Text>
-                                <Text style={[s.kpiSub, {color: '#F59E0B'}]}>Son gün yaklaşıyor</Text>
-                            </View>
-
-                        </ScrollView>
-                    </View>
-                </SafeAreaView>
-            </LinearGradient>
-
-            <View style={s.filterWrapper}>
-                <View style={s.filterInner}>
-                    <View style={s.searchBar}>
-                        <Icon name="magnify" size={20} color="#94A3B8" />
-                        <TextInput 
-                            style={s.searchInput} 
-                            placeholder="Ceza no, madde, yer ara..." 
-                            value={search}
-                            onChangeText={setSearch}
-                            onSubmitEditing={() => fetchPenalties()}
-                        />
-                        <TouchableOpacity style={s.filterBtn} onPress={() => setShowFilters(!showFilters)}>
-                            <Icon name="filter-variant" size={18} color="#0F172A" />
-                            <Text style={s.filterBtnTxt}>Filtrele</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={s.pillRow}>
-                        <TouchableOpacity style={s.pillBtn}><Icon name="layers-outline" size={16} color="#64748B" /><Text style={s.pillTxt}>Tümü</Text><Icon name="chevron-down" size={16} color="#94A3B8" /></TouchableOpacity>
-                        <TouchableOpacity style={s.pillBtn}><Icon name="earth" size={16} color="#64748B" /><Text style={s.pillTxt}>Durum</Text><Icon name="chevron-down" size={16} color="#94A3B8" /></TouchableOpacity>
-                        <TouchableOpacity style={s.pillBtn}><Icon name="calendar-blank" size={16} color="#64748B" /><Text style={s.pillTxt}>Tarih</Text><Icon name="chevron-down" size={16} color="#94A3B8" /></TouchableOpacity>
-                        <TouchableOpacity style={s.sortBtn}><Icon name="swap-vertical" size={20} color="#64748B" /></TouchableOpacity>
-                    </View>
-
-                    {showFilters && (
-                        <View style={s.dateFilters}>
-                            <View style={{flex:1}}><DatePickerInput label="Başlangıç" value={startDate} onChange={setStartDate} /></View>
-                            <View style={{flex:1}}><DatePickerInput label="Bitiş" value={endDate} onChange={setEndDate} /></View>
-                        </View>
-                    )}
+                    <TouchableOpacity style={st.addHeaderBtn} onPress={openAdd}>
+                        <Icon name="plus" size={24} color="#fff" />
+                    </TouchableOpacity>
                 </View>
             </View>
 
-            <View style={s.listHeader}>
-                <Text style={s.listTitle}>Ceza Geçmişi</Text>
-                <TouchableOpacity style={s.sortDropBtn}>
-                    <Icon name="sort" size={16} color="#64748B" />
-                    <Text style={s.sortDropTxt}>En Yeni</Text>
-                    <Icon name="chevron-down" size={16} color="#94A3B8" />
-                </TouchableOpacity>
+            <View style={st.filterBar}>
+                {[
+                    { label: 'Tümü', value: 'all' },
+                    { label: 'Ödenenler', value: 'paid' },
+                    { label: 'Ödenmeyenler', value: 'unpaid' },
+                ].map(chip => (
+                    <TouchableOpacity 
+                        key={chip.value} 
+                        style={[st.filterChip, filter === chip.value && st.filterChipActive]}
+                        onPress={() => setFilter(chip.value)}
+                    >
+                        <Text style={[st.filterChipText, filter === chip.value && st.filterChipTextActive]}>{chip.label}</Text>
+                    </TouchableOpacity>
+                ))}
             </View>
 
-            {loading ? <ActivityIndicator style={{marginTop:40}} color="#4F46E5" size="large" /> : (
+            {loading ? (
+                <View style={st.loader}><ActivityIndicator size="large" color="#EF4444" /></View>
+            ) : (
                 <FlatList
-                    data={penalties}
-                    renderItem={renderPenalty}
+                    data={filteredData}
+                    renderItem={renderItem}
                     keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={s.list}
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    ListEmptyComponent={
-                        <View style={s.empty}>
-                            <Icon name="alert-circle-outline" size={60} color="#E2E8F0" />
-                            <Text style={s.emptyTxt}>Kayıtlı ceza bulunamadı.</Text>
-                        </View>
-                    }
+                    contentContainerStyle={st.listContent}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchPenalties(true)} tintColor="#EF4444" />}
+                    ListEmptyComponent={<EmptyState title="Ceza Kaydı Yok" message="Bu araç için trafik cezası bulunmuyor." icon="alert-octagon-outline" />}
                 />
             )}
-        </View>
+
+            {/* Modal Form */}
+            <Modal visible={modalVisible} animationType="slide" transparent>
+                <View style={st.modalOverlay}>
+                    <View style={st.modalContent}>
+                        <View style={st.modalHeader}>
+                            <Text style={st.modalTitle}>Yeni Ceza Kaydı Ekle</Text>
+                            <TouchableOpacity onPress={() => setModalVisible(false)} style={st.modalClose}>
+                                <Icon name="close" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </View>
+                        
+                        <ScrollView style={{ padding: 20 }}>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>CEZA NO / SERİ *</Text>
+                                    <FormField 
+                                        value={formData.penalty_no} 
+                                        onChangeText={(t) => setFormData({...formData, penalty_no: t.toUpperCase()})}
+                                        placeholder="Örn: MB92600554"
+                                        autoCapitalize="characters"
+                                    />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>ŞOFÖR ADI *</Text>
+                                    <FormField 
+                                        value={formData.driver_name} 
+                                        onChangeText={(t) => setFormData({...formData, driver_name: toTitleCase(t)})}
+                                        placeholder="Ceza kesilen şoför"
+                                        autoCapitalize="words"
+                                    />
+                                </View>
+                            </View>
+
+                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+                                <View style={{ flex: 1 }}>
+                                    <DatePickerInput 
+                                        label="CEZA TARİHİ *" 
+                                        value={formData.penalty_date} 
+                                        onChange={(d) => setFormData({...formData, penalty_date: d})}
+                                    />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>SAAT</Text>
+                                    <FormField 
+                                        value={formData.penalty_time} 
+                                        onChangeText={(t) => setFormData({...formData, penalty_time: t})}
+                                        placeholder="10:30"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+                            </View>
+
+                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>CEZA MADDESİ *</Text>
+                                    <FormField 
+                                        value={formData.penalty_article} 
+                                        onChangeText={(t) => setFormData({...formData, penalty_article: t.toUpperCase()})}
+                                        placeholder="73/C HIZ SINIRI"
+                                        autoCapitalize="characters"
+                                    />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={st.inputLabel}>TUTAR (₺) *</Text>
+                                    <FormField 
+                                        value={formData.penalty_amount} 
+                                        onChangeText={(t) => setFormData({...formData, penalty_amount: t})}
+                                        keyboardType="numeric"
+                                        placeholder="0.00"
+                                    />
+                                </View>
+                            </View>
+
+                            <Text style={[st.inputLabel, { marginTop: 16 }]}>KONUM / YER</Text>
+                            <FormField 
+                                value={formData.penalty_location} 
+                                onChangeText={(t) => setFormData({...formData, penalty_location: toTitleCase(t)})}
+                                placeholder="FURGAN DEDE CADDESİ"
+                                autoCapitalize="words"
+                            />
+
+                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+                                <View style={{ flex: 1 }}>
+                                    <DatePickerInput 
+                                        label="ÖDEME TARİHİ (ÖDENDİYSE)" 
+                                        value={formData.payment_date} 
+                                        onChange={(d) => setFormData({...formData, payment_date: d})}
+                                    />
+                                </View>
+                            </View>
+
+                            {/* Smart Amount Card (Akıllı Tutar Kartı) */}
+                            <View style={st.smartCard}>
+                                <Text style={st.smartCardTitle}>Akıllı Tutar Kartı</Text>
+                                <View style={st.smartCardRow}>
+                                    <Text style={st.smartCardLabel}>NORMAL CEZA</Text>
+                                    <Text style={st.smartCardValue}>{fmtMoney(formData.penalty_amount || 0)}</Text>
+                                </View>
+                                <View style={[st.smartCardRow, { backgroundColor: '#ECFDF5', padding: 8, borderRadius: 8, marginTop: 4 }]}>
+                                    <Text style={[st.smartCardLabel, { color: '#10B981' }]}>%25 İNDİRİMLİ TUTAR</Text>
+                                    <Text style={[st.smartCardValue, { color: '#059669' }]}>{fmtMoney((formData.penalty_amount || 0) * 0.75)}</Text>
+                                </View>
+                                <Text style={st.smartCardHint}>* %25 indirimli tutar, ceza tarihinden itibaren 1 ay içerisinde ödenmesi durumunda uygulanır.</Text>
+                            </View>
+
+                            {/* Document Pickers */}
+                            <Text style={[st.inputLabel, { marginTop: 20 }]}>TRAFİK CEZASI BELGESİ</Text>
+                            <TouchableOpacity style={st.docUploadBtn} onPress={() => pickDocument('traffic_penalty_document')}>
+                                <Icon name="file-upload-outline" size={20} color="#6366F1" />
+                                <Text style={st.docUploadText}>
+                                    {formData.traffic_penalty_document ? formData.traffic_penalty_document.name : 'Ceza Belgesi Yükle (PDF, JPG)'}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <Text style={[st.inputLabel, { marginTop: 16 }]}>ÖDEME DEKONTU</Text>
+                            <TouchableOpacity style={st.docUploadBtn} onPress={() => pickDocument('payment_receipt')}>
+                                <Icon name="receipt" size={20} color="#10B981" />
+                                <Text style={st.docUploadText}>
+                                    {formData.payment_receipt ? formData.payment_receipt.name : 'Ödeme Dekontu Yükle (PDF, JPG)'}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <Text style={[st.inputLabel, { marginTop: 16 }]}>NOT / AÇIKLAMA</Text>
+                            <FormField 
+                                value={formData.notes} 
+                                onChangeText={(t) => setFormData({...formData, notes: toTitleCase(t)})}
+                                placeholder="Eklemek istediğiniz notlar..."
+                                multiline 
+                                numberOfLines={2} 
+                                style={{ height: 60, textAlignVertical: 'top' }}
+                                autoCapitalize="sentences"
+                            />
+
+                            <TouchableOpacity style={[st.saveBtn, saving && { opacity: 0.7 }]} onPress={handleSave} disabled={saving}>
+                                {saving ? <ActivityIndicator color="#fff" /> : <Text style={st.saveBtnText}>Ceza Kaydını Kaydet</Text>}
+                            </TouchableOpacity>
+                            <View style={{ height: 40 }} />
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+        </SafeAreaView>
     );
 }
 
-const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F4F7FA' },
+const st = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#F8FAFC' },
+    loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     
     // Header
-    header: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
-    headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 10, marginBottom: 20 },
-    backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-    headerTitleWrap: { alignItems: 'center' },
-    headerTitle: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
-    headerSubWrap: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
-    statusDotSmall: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981' },
-    headerSubTxt: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
-    topBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-    topAddBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: 'rgba(59, 130, 246, 0.4)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#3B82F6' },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 44 : 24 },
+    backBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+    headerCenter: { flex: 1, alignItems: 'center' },
+    headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+    headerSubtitle: { fontSize: 13, color: '#64748B', marginTop: 2, fontWeight: '500' },
+    addHeaderBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center', shadowColor: '#EF4444', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
 
-    // KPIs
-    kpiWrapper: { height: 120, marginBottom: 24 },
-    kpiScroll: { paddingHorizontal: 20, gap: 14 },
-    kpiCard: { backgroundColor: 'rgba(30,41,59,0.4)', borderRadius: 24, padding: 16, width: 160, borderWidth: 1 },
-    kpiHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-    kpiIconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-    kpiLabel: { fontSize: 12, fontWeight: '700', color: '#CBD5E1' },
-    kpiValue: { fontSize: 22, fontWeight: '900', color: '#fff', letterSpacing: -0.5, marginBottom: 6 },
-    kpiSub: { fontSize: 11, fontWeight: '700' },
+    filterBar: { flexDirection: 'row', paddingHorizontal: 16, marginVertical: 12, gap: 8 },
+    filterChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', flex: 1, alignItems: 'center' },
+    filterChipActive: { backgroundColor: '#EF4444', borderColor: '#EF4444' },
+    filterChipText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+    filterChipTextActive: { color: '#fff' },
 
-    // Filters
-    filterWrapper: { paddingHorizontal: 20, marginTop: -40, zIndex: 20 },
-    filterInner: { backgroundColor: '#fff', borderRadius: 24, padding: 16, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:12}, shadowOpacity: 0.08, shadowRadius: 24, elevation: 8, borderWidth: 1, borderColor: '#F1F5F9' },
-    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 16, paddingHorizontal: 16, height: 50, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 12 },
-    searchInput: { flex: 1, fontSize: 14, color: '#0F172A', fontWeight: '600', marginLeft: 8 },
-    filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingLeft: 12, borderLeftWidth: 1, borderLeftColor: '#E2E8F0' },
-    filterBtnTxt: { fontSize: 13, fontWeight: '700', color: '#0F172A' },
+    listContent: { padding: 16, paddingBottom: 100 },
     
-    pillRow: { flexDirection: 'row', gap: 8 },
-    pillBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, backgroundColor: '#F8FAFC', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0' },
-    pillTxt: { fontSize: 12, fontWeight: '700', color: '#334155' },
-    sortBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
+    // Card Styles Matches Soft Premium UI
+    card: { backgroundColor: '#fff', borderRadius: 24, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
+    cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+    iconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    cardTitle: { fontSize: 16, fontWeight: '800', color: '#0F172A', letterSpacing: 0.2 },
+    cardDesc: { fontSize: 13, color: '#64748B', marginTop: 2, fontWeight: '500' },
+    amountText: { fontSize: 17, fontWeight: '900', color: '#0F172A' },
+    discountText: { fontSize: 10, color: '#10B981', fontWeight: '700', marginTop: 2 },
 
-    dateFilters: { flexDirection: 'row', marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9', gap: 12 },
-
-    listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginTop: 24, marginBottom: 12 },
-    listTitle: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
-    sortDropBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    sortDropTxt: { fontSize: 13, fontWeight: '700', color: '#64748B' },
-
-    // List Cards
-    list: { paddingHorizontal: 20, paddingBottom: 100 },
-    card: { backgroundColor: '#fff', borderRadius: 24, padding: 16, marginBottom: 16, shadowColor: '#0A1A3A', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4, borderWidth: 1, borderColor: '#F1F5F9' },
-    cardTop: { flexDirection: 'row', alignItems: 'flex-start' },
-    cardIconBox: { width: 50, height: 50, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 16 },
-    cardInfo: { flex: 1 },
-    cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
-    cardTitle: { fontSize: 15, fontWeight: '900', color: '#0F172A', flex: 1, paddingRight: 8 },
-    statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginBottom: 4 },
-    statusCompleted: { backgroundColor: '#ECFDF5' },
-    statusPlanned: { backgroundColor: '#FEF2F2' },
-    statusTxt: { fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
-    amountTxt: { fontSize: 16, fontWeight: '900', color: '#0F172A', alignSelf: 'flex-end' },
+    // Card Grid Area
+    cardGrid: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+    gridRow: { flexDirection: 'row', alignItems: 'center' },
+    gridCol: { flex: 1, paddingVertical: 4, paddingHorizontal: 6 },
+    gridDivider: { width: 1, height: '100%', backgroundColor: '#E2E8F0', marginHorizontal: 8 },
+    gridHorizontalDivider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 8 },
     
-    typePill: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 12 },
-    typePillTxt: { fontSize: 9, fontWeight: '900', letterSpacing: 0.5, textTransform: 'uppercase' },
-    
-    datePersonRow: { flexDirection: 'row', alignItems: 'center' },
-    dpTxt: { fontSize: 11, fontWeight: '600', color: '#64748B', marginLeft: 4 },
+    gridLabelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 },
+    gridLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+    gridValue: { fontSize: 13, fontWeight: '700', color: '#1E293B', marginBottom: 2 },
+    gridSubValue: { fontSize: 11, fontWeight: '600' },
 
-    cardDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 16 },
-    
-    cardBottom: { flexDirection: 'row', alignItems: 'flex-start' },
-    cbItem: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-    cbLabel: { fontSize: 10, fontWeight: '600', color: '#94A3B8', marginBottom: 2 },
-    cbVal: { fontSize: 11, fontWeight: '800', color: '#334155' },
-    cbDivider: { width: 1, height: 30, backgroundColor: '#F1F5F9', marginHorizontal: 8 },
+    deleteActionBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: '#FEE2E2', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, gap: 4 },
+    deleteActionText: { color: '#EF4444', fontSize: 12, fontWeight: '700' },
 
-    empty: { alignItems: 'center', marginTop: 80 },
-    emptyTxt: { color: '#94A3B8', marginTop: 16, fontWeight: '600', fontSize: 16 }
+    // Documents & Notes
+    docsSection: { marginTop: 16, backgroundColor: '#F8FAFC', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+    docsHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 6 },
+    docsTitle: { fontSize: 11, fontWeight: '800', color: '#8B5CF6', letterSpacing: 0.5 },
+    docsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    docBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6, gap: 4, borderWidth: 1, borderColor: '#E2E8F0' },
+    docText: { fontSize: 10, fontWeight: '700', color: '#475569' },
+    
+    notesBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 12, paddingHorizontal: 4 },
+    notesText: { fontSize: 12, color: '#64748B', fontStyle: 'italic', flex: 1, lineHeight: 18 },
+
+    // Modal Form Styles
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.4)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '90%', shadowColor: '#000', shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10 },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    modalTitle: { fontSize: 20, fontWeight: '900', color: '#0F172A' },
+    modalClose: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+    
+    inputLabel: { fontSize: 12, fontWeight: '700', color: '#475569', marginBottom: 6, letterSpacing: 0.5 },
+    saveBtn: { backgroundColor: '#EF4444', paddingVertical: 16, borderRadius: 16, alignItems: 'center', marginTop: 24, shadowColor: '#EF4444', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
+    saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+
+    // Smart Card & Documents
+    smartCard: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#E2E8F0', marginTop: 24 },
+    smartCardTitle: { fontSize: 14, fontWeight: '800', color: '#1E293B', marginBottom: 12 },
+    smartCardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+    smartCardLabel: { fontSize: 11, fontWeight: '800', color: '#64748B' },
+    smartCardValue: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
+    smartCardHint: { fontSize: 10, color: '#94A3B8', marginTop: 8, fontStyle: 'italic' },
+    
+    docUploadBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', borderStyle: 'dashed', gap: 10 },
+    docUploadText: { fontSize: 13, fontWeight: '600', color: '#475569', flex: 1 }
 });

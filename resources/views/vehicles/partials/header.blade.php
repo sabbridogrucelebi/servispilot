@@ -129,7 +129,8 @@
     {{--  KPI KARTLARI - sadece genel sekme                                 --}}
     {{-- ════════════════════════════════════════════════════════════════ --}}
     @if($currentTab === 'general')
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        @if(auth()->user()->hasPermission('financials.view'))
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {{-- Hasılat --}}
             <div class="group relative overflow-hidden rounded-[24px] bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-5 text-white shadow-xl shadow-emerald-500/25 transition-all hover:-translate-y-1 hover:shadow-2xl">
                 <div class="absolute -right-2 -bottom-2 text-6xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">💰</div>
@@ -195,7 +196,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
 
         {{-- ════════════════════════════════════════════════════════════ --}}
         {{--  BİLGİ KARTLARI: Şoför / KM / Muayene / Kasko / Kapasite vs  --}}

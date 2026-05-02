@@ -1,264 +1,347 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Animated, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Animated, Alert, Image, Dimensions, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import SpaceWaves from '../components/SpaceWaves';
 import api from '../api/axios';
 
+const { width: W } = Dimensions.get('window');
+
+const getVehicleImage = (type) => {
+    const t = (type || '').toLowerCase();
+    if (t.includes('minibüs')) return require('../../assets/arac_profilleri/servis_pilot_minibüs_profil.png');
+    if (t.includes('midibüs')) return require('../../assets/arac_profilleri/servis_pilot_midibüs_profil.png');
+    if (t.includes('otobüs')) return require('../../assets/arac_profilleri/servis_pilot_otobus_profil.png');
+    if (t.includes('panelvan')) return require('../../assets/arac_profilleri/servis_pilot_panelvan_profil.png');
+    if (t.includes('kamyonet')) return require('../../assets/arac_profilleri/servis_pilot_kamyonet_profil.png');
+    if (t.includes('binek') || t.includes('sedan') || t.includes('taksi')) return require('../../assets/arac_profilleri/servis_pilot_taksi_profil.png');
+    return require('../../assets/arac_profilleri/servis_pilot_panelvan_profil.png');
+};
+
+const fmtKm = (v) => new Intl.NumberFormat('tr-TR').format(v || 0);
+const fmtMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(v || 0);
+import { AuthContext } from '../context/AuthContext';
 export default function VehicleDetailScreen({ route, navigation }) {
-    const { vehicle: initialVehicle } = route.params || {};
-    const [vehicle, setVehicle] = useState(initialVehicle);
+    const { hasPermission } = React.useContext(AuthContext);
+    const { vehicle: init } = route.params || {};
+    const [v, setV] = useState(init);
     const [stats, setStats] = useState({ revenue: 0, fuel: 0, salary: 0, net: 0 });
+    const [mh, setMh] = useState({});
     const [loading, setLoading] = useState(true);
-
     const fadeAnim = useRef(new Animated.Value(0)).current;
-    const translateY = useRef(new Animated.Value(20)).current;
-
-    const getVehicleImage = (type) => {
-        const t = (type || '').toLowerCase();
-        if (t.includes('minibüs') || t.includes('panelvan')) return 'https://img.icons8.com/?size=512&id=10543&format=png';
-        if (t.includes('midibüs')) return 'https://img.icons8.com/?size=512&id=pOSNn91pW5Hk&format=png'; 
-        if (t.includes('otobüs')) return 'https://img.icons8.com/?size=512&id=11481&format=png';
-        if (t.includes('binek') || t.includes('sedan') || t.includes('taksi')) return 'https://img.icons8.com/?size=512&id=11388&format=png';
-        return 'https://img.icons8.com/?size=512&id=11481&format=png';
-    };
+    const slideAnim = useRef(new Animated.Value(30)).current;
+    const blinkAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
-        const loadDetail = async () => {
-            if (!initialVehicle?.id) {
-                setLoading(false);
-                return;
-            }
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(blinkAnim, { toValue: 0.3, duration: 600, useNativeDriver: true }),
+                Animated.timing(blinkAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+            ])
+        ).start();
+
+        (async () => {
+            if (!init?.id) { setLoading(false); return; }
             try {
-                const r = await api.get(`/v1/vehicles/${initialVehicle.id}`);
-                setVehicle(r.data.data.vehicle);
-                setStats(r.data.data.stats);
-            } catch(e) { 
-                if (e.response?.status === 403) {
-                    Alert.alert("Erişim Engellendi", "Bu alanı görüntüleme yetkiniz yok.");
-                } else if (e.response?.status === 404) {
-                    Alert.alert("Bulunamadı", "Araç kaydı bulunamadı.");
-                } else if (!e.response) {
-                    Alert.alert("Bağlantı Hatası", "Sunucuya ulaşılamıyor.");
-                } else {
-                    console.error(e); 
-                }
-            } finally { 
+                const r = await api.get(`/v1/vehicles/${init.id}`);
+                setV(r.data.data.vehicle);
+                setStats(r.data.data.stats || {});
+                setMh(r.data.data.maintenance_health || {});
+            } catch (e) {
+                if (e.response?.status === 403) Alert.alert('Erişim Engellendi', 'Bu alanı görüntüleme yetkiniz yok.');
+                else if (e.response?.status === 404) Alert.alert('Bulunamadı', 'Araç kaydı bulunamadı.');
+                else if (!e.response) Alert.alert('Bağlantı Hatası', 'Sunucuya ulaşılamıyor.');
+            } finally {
                 setLoading(false);
                 Animated.parallel([
                     Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
-                    Animated.spring(translateY, { toValue: 0, friction: 8, tension: 40, useNativeDriver: true })
+                    Animated.spring(slideAnim, { toValue: 0, friction: 8, tension: 40, useNativeDriver: true }),
                 ]).start();
             }
-        };
-        loadDetail();
+        })();
     }, []);
 
-    const fmtMoney = (val) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(val || 0);
-    const fmtKm = (val) => (!val || val === 0) ? '0 km' : Number(val).toLocaleString('tr-TR') + ' km';
+    const daysUntil = (d) => {
+        if (!d) return { text: 'Tanımsız', days: null, color: '#94A3B8' };
+        const diff = Math.ceil((new Date(d) - new Date()) / 86400000);
+        if (diff < 0) return { text: `${Math.abs(diff)} gün geçti`, days: diff, color: '#EF4444' };
+        if (diff <= 30) return { text: `${diff} gün kaldı`, days: diff, color: '#F59E0B' };
+        return { text: `${diff} gün kaldı`, days: diff, color: '#10B981' };
+    };
+
+    const formatDate = (d) => d ? new Date(d).toLocaleDateString('tr-TR') : '-';
+
+    if (loading) return <View style={st.loaderWrap}><ActivityIndicator size="large" color="#3B82F6" /></View>;
+    if (!v) return <View style={st.loaderWrap}><Text style={{ color: '#64748B', fontSize: 16 }}>Araç bulunamadı</Text></View>;
+
+    const inspection = daysUntil(v.inspection_date);
+    const insurance = daysUntil(v.insurance_end_date);
+    const imm = daysUntil(v.imm_end_date);
+    const kasko = daysUntil(v.kasko_end_date);
+    const exhaust = daysUntil(v.exhaust_date);
+    const profit = (stats.revenue || 0) - (stats.fuel || 0) - (stats.salary || 0);
+
+    const quickStats = [
+        { icon: 'speedometer', label: 'Kilometre', value: `${fmtKm(v.current_km)} km`, color: '#3B82F6' },
+        { icon: 'gas-station', label: 'Yakıt', value: v.fuel_type || '-', color: '#F59E0B' },
+        { icon: 'calendar', label: 'Model Yılı', value: v.model_year || '-', color: '#8B5CF6' },
+        { icon: 'palette', label: 'Renk', value: v.color || '-', color: '#EC4899' },
+        { icon: 'seat', label: 'Koltuk', value: v.seat_count || '-', color: '#10B981' },
+    ];
+
+    const menuItems = [
+        { icon: 'file-document-outline', label: 'Belgeler', color: '#3B82F6', gradient: ['#3B82F6', '#2563EB'], screen: 'VehicleDocuments', perm: 'documents.view' },
+        { icon: 'gas-station-outline', label: 'Yakıt', color: '#F59E0B', gradient: ['#F59E0B', '#D97706'], screen: 'VehicleFuels', perm: 'fuels.view' },
+        { icon: 'wrench-outline', label: 'Bakım', color: '#10B981', gradient: ['#10B981', '#059669'], screen: 'VehicleMaintenances', perm: 'maintenances.view' },
+        { icon: 'alert-octagon-outline', label: 'Cezalar', color: '#EF4444', gradient: ['#EF4444', '#DC2626'], screen: 'VehiclePenalties', perm: 'penalties.view' },
+        { icon: 'image-multiple-outline', label: 'Galeri', color: '#8B5CF6', gradient: ['#8B5CF6', '#7C3AED'], screen: 'VehicleGallery', perm: 'vehicles.view' },
+        { icon: 'chart-bar', label: 'Raporlar', color: '#06B6D4', gradient: ['#06B6D4', '#0891B2'], screen: 'VehicleReports', perm: 'reports.view' },
+    ].filter(m => hasPermission(m.perm));
 
     return (
-        <View style={s.container}>
-            {/* Neo Fleet Command Premium Header */}
-            <View style={s.headerContainer}>
-                <LinearGradient colors={['#020617', '#0B1120', '#0F172A']} style={StyleSheet.absoluteFillObject} start={{x: 0, y: 0}} end={{x: 1, y: 1}} />
-                <SafeAreaView edges={['top']} style={{ paddingBottom: 90 }}>
-                    <View style={s.appBar}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }} style={s.backBtn}>
-                            <Icon name="arrow-left" size={22} color="#fff" />
-                        </TouchableOpacity>
-                        <Text style={s.appBarTitle}>Araç Profili</Text>
-                        <TouchableOpacity hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }} style={s.backBtn}>
-                            <Icon name="dots-horizontal" size={22} color="#fff" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Identity Core */}
-                    <View style={s.identityCore}>
-                        <View style={s.identityRow}>
-                            <View style={s.plateWrap}>
-                                <Text style={s.plateTxt}>{vehicle?.plate}</Text>
-                            </View>
-                            <View style={[s.statusPill, vehicle?.is_active ? s.statusPillActive : s.statusPillPassive]}>
-                                <View style={[s.statusDot, { backgroundColor: vehicle?.is_active ? '#10B981' : '#EF4444' }]} />
-                                <Text style={[s.statusTxt, { color: vehicle?.is_active ? '#10B981' : '#EF4444' }]}>{vehicle?.is_active ? 'Aktif Görevde' : 'Pasif'}</Text>
-                            </View>
-                        </View>
-                        <Text style={s.brandTxt}>{vehicle?.brand} {vehicle?.model}</Text>
-                        <View style={s.driverRow}>
-                            <Icon name="account" size={18} color="#94A3B8" />
-                            <Text style={s.driverTxt}>{vehicle?.driver || 'Şoför Atanmamış'}</Text>
-                        </View>
-                        
-                        {/* Vehicle Large Image */}
-                        <View style={s.heroImageWrap}>
-                            <Image 
-                                source={vehicle?.image_url ? { uri: vehicle.image_url } : { uri: getVehicleImage(vehicle?.type) }} 
-                                style={s.heroImage} 
-                            />
-                        </View>
-                    </View>
-                </SafeAreaView>
+        <View style={st.container}>
+            <View style={StyleSheet.absoluteFillObject}>
+                <SpaceWaves />
             </View>
-
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scrollContent}>
-                {loading ? (
-                    <View style={s.loader}><ActivityIndicator size="large" color="#0F172A" /></View>
-                ) : (
-                    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY }] }}>
-                        
-                        {/* Financial Stats Grid */}
-                        <View style={s.statsGrid}>
-                            <View style={s.statCard}>
-                                <View style={s.statHeaderRow}>
-                                    <View style={[s.statIconWrap, {backgroundColor: '#ECFDF5'}]}><Icon name="cash-plus" size={16} color="#10B981" /></View>
-                                    <Text style={s.statLbl}>HASILAT</Text>
-                                </View>
-                                <Text style={s.statVal}>{fmtMoney(stats.revenue)}</Text>
-                                <Text style={s.statPercentUp}>▲ %12,4</Text>
-                            </View>
-                            
-                            <View style={s.statCard}>
-                                <View style={s.statHeaderRow}>
-                                    <View style={[s.statIconWrap, {backgroundColor: '#FEF2F2'}]}><Icon name="gas-station" size={16} color="#EF4444" /></View>
-                                    <Text style={s.statLbl}>YAKIT GİDERİ</Text>
-                                </View>
-                                <Text style={s.statVal}>{fmtMoney(stats.fuel)}</Text>
-                                <Text style={s.statPercentDown}>▼ %3,1</Text>
-                            </View>
-                            
-                            <View style={s.statCard}>
-                                <View style={s.statHeaderRow}>
-                                    <View style={[s.statIconWrap, {backgroundColor: '#FFFBEB'}]}><Icon name="account-cash" size={16} color="#F59E0B" /></View>
-                                    <Text style={s.statLbl}>MAAŞ BORDRO</Text>
-                                </View>
-                                <Text style={s.statVal}>{fmtMoney(stats.salary)}</Text>
-                                <Text style={s.statPercentUp}>▲ %2,5</Text>
-                            </View>
-
-                            <View style={[s.statCard, s.statCardNet]}>
-                                <LinearGradient colors={['#020617', '#0F172A']} style={StyleSheet.absoluteFillObject} borderRadius={24} />
-                                <View style={s.statHeaderRow}>
-                                    <View style={[s.statIconWrap, {backgroundColor: '#1E293B'}]}><Icon name="chart-line-variant" size={16} color="#38BDF8" /></View>
-                                    <Text style={[s.statLbl, {color: '#94A3B8'}]}>NET KÂRLILIK</Text>
-                                </View>
-                                <Text style={[s.statVal, {color: '#fff'}]}>{fmtMoney(stats.net)}</Text>
-                                <Text style={[s.statPercentUp, {color: '#10B981'}]}>▲ %18,7</Text>
+            <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
+                {/* ── HERO HEADER ── */}
+                <View style={st.hero}>
+                    <SafeAreaView edges={['top']} style={st.heroContent}>
+                        <View style={st.heroTop}>
+                            <TouchableOpacity onPress={() => navigation.goBack()} style={st.backBtn}>
+                                <Icon name="chevron-left" size={26} color="#fff" />
+                            </TouchableOpacity>
+                            <View style={st.statusBadge}>
+                                <View style={[st.statusDot, { backgroundColor: v.is_active ? '#10B981' : '#EF4444' }]} />
+                                <Text style={st.statusText}>{v.is_active ? 'Aktif' : 'Pasif'}</Text>
                             </View>
                         </View>
-
-                        {/* Operational Details */}
-                        <Text style={s.sectionHeader}>OPERASYONEL BİLGİLER</Text>
-                        <View style={s.infoBlock}>
-                            <InfoRow icon="speedometer" label="Güncel Kilometre" val={fmtKm(vehicle?.current_km)} />
-                            <InfoRow icon="car-info" label="Araç Tipi" val={vehicle?.vehicle_type || '-'} />
-                            <InfoRow icon="calendar-check" label="Muayene Geçerlilik" val={vehicle?.inspection_date ? new Date(vehicle.inspection_date).toLocaleDateString('tr-TR') : '-'} />
-                            <InfoRow icon="shield-car" label="Kasko Geçerlilik" val={vehicle?.kasko_end_date ? new Date(vehicle.kasko_end_date).toLocaleDateString('tr-TR') : '-'} />
-                            <InfoRow icon="seat-passenger" label="Koltuk Kapasitesi" val={vehicle?.seat_count ? `${vehicle.seat_count} Koltuk` : '-'} last />
+                        <View style={st.heroCenter}>
+                            <View style={st.imageContainer}>
+                                <Image 
+                                    source={getVehicleImage(v.vehicle_type)} 
+                                    style={st.heroImage} 
+                                    resizeMode="contain" 
+                                />
+                            </View>
                         </View>
-
-                        {/* Modules Shortcut Grid */}
-                        <Text style={s.sectionHeader}>YÖNETİM MODÜLLERİ</Text>
-                        <View style={s.modulesGrid}>
-                            <ModuleBtn icon="file-document-multiple-outline" label="Belgeler" subLabel="Tüm belgeler" onPress={() => navigation.navigate('VehicleDocuments', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ModuleBtn icon="gas-station-outline" label="Yakıtlar" subLabel="Yakıt işlemleri" onPress={() => navigation.navigate('VehicleFuels', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ModuleBtn icon="wrench-outline" label="Bakımlar" subLabel="Bakım geçmişi" onPress={() => navigation.navigate('VehicleMaintenances', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ModuleBtn icon="alert-octagon-outline" label="Cezalar" subLabel="Ceza kayıtları" onPress={() => navigation.navigate('VehiclePenalties', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ModuleBtn icon="poll" label="Raporlar" subLabel="Analiz & raporlar" onPress={() => navigation.navigate('VehicleReports', { vehicleId: vehicle.id, plate: vehicle.plate })} />
-                            <ModuleBtn icon="image-multiple-outline" label="Galeri" subLabel="Fotoğraf & dosya" onPress={() => navigation.navigate('VehicleGallery', { vehicleId: vehicle.id, plate: vehicle.plate })} />
+                        <View style={st.heroBottom}>
+                            <Text style={st.plateText}>{v.plate}</Text>
+                            <Text style={st.brandText}>{[v.brand, v.model].filter(Boolean).join(' ') || v.vehicle_type || 'Araç'}</Text>
+                            {v.vehicle_type && <View style={st.typeBadge}><Text style={st.typeText}>{v.vehicle_type}</Text></View>}
                         </View>
-                        
-                    </Animated.View>
-                )}
+                    </SafeAreaView>
+                </View>
+
+                <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+                    {/* ── QUICK STATS ── */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={st.quickRow} contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}>
+                        {quickStats.map((s, i) => (
+                            <View key={i} style={st.quickCard}>
+                                <View style={[st.quickIcon, { backgroundColor: s.color + '15' }]}>
+                                    <Icon name={s.icon} size={18} color={s.color} />
+                                </View>
+                                <Text style={st.quickLabel}>{s.label}</Text>
+                                <Text style={st.quickValue}>{s.value}</Text>
+                            </View>
+                        ))}
+                    </ScrollView>
+
+                    {/* ── DATE STATUS CARDS ── */}
+                    <View style={st.section}>
+                        <Text style={st.sectionTitle}>Tarih Durumları</Text>
+                        <View style={st.grid3Row}>
+                            {[
+                                { label: 'Egzoz Emisyon', date: v.exhaust_date, info: exhaust, icon: 'weather-windy' },
+                                { label: 'İMM Poliçesi', date: v.imm_end_date, info: imm, icon: 'file-document-outline' },
+                                { label: 'Kasko Poliçesi', date: v.kasko_end_date, info: kasko, icon: 'car-wrench' },
+                            ].map((item, i) => (
+                                <View key={i} style={st.dateCard3}>
+                                    <View style={st.dateCardTop3}>
+                                        <Icon name={item.icon} size={16} color="#64748B" />
+                                        <Text style={st.dateCardLabel3} numberOfLines={1} adjustsFontSizeToFit>{item.label}</Text>
+                                    </View>
+                                    <Text style={st.dateCardDate3}>{formatDate(item.date)}</Text>
+                                    <View style={[st.dateBadge, { backgroundColor: item.info.color + '18' }]}>
+                                        <View style={[st.dateBadgeDot, { backgroundColor: item.info.color }]} />
+                                        <Text style={[st.dateBadgeText, { color: item.info.color }]} numberOfLines={1} adjustsFontSizeToFit>{item.info.text}</Text>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                        <View style={st.grid2RowCentered}>
+                            {[
+                                { label: 'TÜVTÜRK Muayene', date: v.inspection_date, info: inspection, icon: 'clipboard-check-outline' },
+                                { label: 'Trafik Sigortası', date: v.insurance_end_date, info: insurance, icon: 'shield-check-outline' },
+                            ].map((item, i) => (
+                                <View key={i} style={st.dateCard2}>
+                                    <View style={st.dateCardTop2}>
+                                        <Icon name={item.icon} size={20} color="#64748B" />
+                                        <Text style={st.dateCardLabel2} numberOfLines={1} adjustsFontSizeToFit>{item.label}</Text>
+                                    </View>
+                                    <Text style={st.dateCardDate2}>{formatDate(item.date)}</Text>
+                                    <View style={[st.dateBadge, { backgroundColor: item.info.color + '18' }]}>
+                                        <View style={[st.dateBadgeDot, { backgroundColor: item.info.color }]} />
+                                        <Text style={[st.dateBadgeText, { color: item.info.color }]} numberOfLines={1} adjustsFontSizeToFit>{item.info.text}</Text>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+
+                    {/* ── FINANCIAL SUMMARY ── */}
+                    {hasPermission('financials.view') && (
+                        <View style={st.section}>
+                            <Text style={st.sectionTitle}>Finansal Özet</Text>
+                        <View style={st.finRow}>
+                            {[
+                                { label: 'Gelir', value: stats.revenue, icon: 'trending-up', color: '#10B981', bg: ['#ECFDF5', '#D1FAE5'] },
+                                { label: 'Yakıt', value: stats.fuel, icon: 'gas-station', color: '#F59E0B', bg: ['#FFFBEB', '#FEF3C7'] },
+                                { label: 'Maaş', value: stats.salary, icon: 'account-cash', color: '#3B82F6', bg: ['#EFF6FF', '#DBEAFE'] },
+                            ].map((f, i) => (
+                                <LinearGradient key={i} colors={f.bg} style={st.finCard}>
+                                    <Icon name={f.icon} size={20} color={f.color} />
+                                    <Text style={[st.finValue, { color: f.color }]}>{fmtMoney(f.value)}</Text>
+                                    <Text style={st.finLabel}>{f.label}</Text>
+                                </LinearGradient>
+                            ))}
+                        </View>
+                        <LinearGradient colors={profit >= 0 ? ['#10B981', '#059669'] : ['#EF4444', '#DC2626']} style={st.profitCard}>
+                            <View style={st.profitLeft}>
+                                <Text style={st.profitLabel}>Net Kâr / Zarar</Text>
+                                <Text style={st.profitValue}>{fmtMoney(profit)}</Text>
+                            </View>
+                            <Icon name={profit >= 0 ? 'trending-up' : 'trending-down'} size={32} color="rgba(255,255,255,0.4)" />
+                        </LinearGradient>
+                    </View>
+                    )}
+
+                    {/* ── MAINTENANCE HEALTH ── */}
+                    {mh.has_setting && (
+                        <View style={st.section}>
+                            <Text style={st.sectionTitle}>Bakım Sağlığı</Text>
+                            {[
+                                { label: 'Yağ Değişimi', remaining: mh.oil_change_remaining_km, percent: mh.oil_change_percent },
+                                { label: 'Alt Yağlama', remaining: mh.bottom_lube_remaining_km, percent: mh.bottom_lube_percent },
+                            ].map((b, i) => {
+                                if (b.remaining === undefined) return null;
+                                
+                                const hasRecord = b.remaining !== null;
+                                const pct = Math.min(100, Math.max(0, b.percent || 0));
+                                const barColor = !hasRecord ? '#64748B' : (pct > 60 ? '#10B981' : pct > 30 ? '#F59E0B' : '#EF4444');
+                                
+                                return (
+                                    <View key={i} style={st.healthRow}>
+                                        <View style={st.healthTop}>
+                                            <Text style={st.healthLabel}>{b.label}</Text>
+                                            <Animated.Text style={[st.healthKm, { color: barColor, opacity: b.remaining < 0 ? blinkAnim : 1 }]}>
+                                                {hasRecord ? (b.remaining < 0 ? `${fmtKm(Math.abs(b.remaining))} km geçti` : `${fmtKm(b.remaining)} km kaldı`) : 'KAYIT BEKLENİYOR'}
+                                            </Animated.Text>
+                                        </View>
+                                        <View style={st.healthBarBg}>
+                                            <Animated.View style={[st.healthBarFill, { width: `${hasRecord ? pct : 0}%`, backgroundColor: barColor }]} />
+                                        </View>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    )}
+
+                    {/* ── ACTION MENU ── */}
+                    <View style={st.section}>
+                        <Text style={st.sectionTitle}>İşlemler</Text>
+                        <View style={st.menuGrid}>
+                            {menuItems.map((m, i) => (
+                                <TouchableOpacity key={i} style={st.menuCard} activeOpacity={0.8}
+                                    onPress={() => navigation.navigate(m.screen, { vehicleId: v.id, vehicle: v })}>
+                                    <LinearGradient colors={m.gradient} style={st.menuIcon}>
+                                        <Icon name={m.icon} size={22} color="#fff" />
+                                    </LinearGradient>
+                                    <Text style={st.menuLabel}>{m.label}</Text>
+                                    <Icon name="chevron-right" size={16} color="#CBD5E1" />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+
+                    <View style={{ height: 40 }} />
+                </Animated.View>
             </ScrollView>
         </View>
     );
 }
 
-const InfoRow = ({ icon, label, val, last }) => (
-    <View style={[s.infoRow, !last && s.infoRowBorder]}>
-        <View style={s.infoRowLeft}>
-            <View style={s.infoIconWrap}>
-                <Icon name={icon} size={20} color="#64748B" />
-            </View>
-            <Text style={s.infoLabel}>{label}</Text>
-        </View>
-        <Text style={s.infoVal}>{val}</Text>
-    </View>
-);
+const st = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#0F172A' },
+    loaderWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0F172A' },
 
-const ModuleBtn = ({ icon, label, subLabel, onPress }) => (
-    <TouchableOpacity style={s.moduleBtn} onPress={onPress} activeOpacity={0.85}>
-        <View style={s.moduleBtnInner}>
-            <View style={s.moduleIconBox}>
-                <Icon name={icon} size={24} color="#3B82F6" />
-            </View>
-            <View style={s.moduleTexts}>
-                <Text style={s.moduleLabel}>{label}</Text>
-                <Text style={s.moduleSub}>{subLabel || 'Detayları görüntüle'}</Text>
-            </View>
-            <Icon name="chevron-right" size={20} color="#CBD5E1" />
-        </View>
-    </TouchableOpacity>
-);
+    // Hero
+    hero: { paddingBottom: 30, backgroundColor: 'transparent', overflow: 'hidden' },
+    heroContent: { zIndex: 1 },
+    heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 40 : 8 },
+    backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
+    statusBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, gap: 6 },
+    statusDot: { width: 8, height: 8, borderRadius: 4 },
+    statusText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+    heroCenter: { alignItems: 'center', marginVertical: 12 },
+    imageContainer: { width: W * 0.9, height: 220, alignItems: 'center', justifyContent: 'center' },
+    heroImage: { width: '100%', height: '100%' },
+    heroBottom: { alignItems: 'center', paddingHorizontal: 20, marginTop: 4 },
+    plateText: { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: 2, textTransform: 'uppercase' },
+    brandText: { fontSize: 16, color: 'rgba(255,255,255,0.7)', fontWeight: '600', marginTop: 4 },
+    typeBadge: { marginTop: 8, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 14, paddingVertical: 4, borderRadius: 12 },
+    typeText: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '700' },
 
-const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F4F7FA' },
+    // Quick stats
+    quickRow: { marginTop: -16 },
+    quickCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, width: 110, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3, alignItems: 'center' },
+    quickIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+    quickLabel: { fontSize: 11, color: '#94A3B8', fontWeight: '600', marginBottom: 2 },
+    quickValue: { fontSize: 13, color: '#1E293B', fontWeight: '800' },
+
+    // Sections
+    section: { paddingHorizontal: 16, marginTop: 24 },
+    sectionTitle: { fontSize: 18, fontWeight: '900', color: '#FFFFFF', marginBottom: 14, letterSpacing: -0.3 },
+
+    // Date cards
+    grid3Row: { flexDirection: 'row', gap: 8, marginBottom: 10 },
+    grid2RowCentered: { flexDirection: 'row', gap: 10, justifyContent: 'center' },
+    dateCard3: { flex: 1, backgroundColor: '#fff', borderRadius: 14, padding: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, alignItems: 'center' },
+    dateCardTop3: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 },
+    dateCardLabel3: { fontSize: 10, fontWeight: '800', color: '#334155' },
+    dateCardDate3: { fontSize: 11, color: '#64748B', fontWeight: '700', marginBottom: 6 },
     
-    // Neo Fleet Command Header 2.0 - Extended
-    headerContainer: { width: '100%', shadowColor: '#020617', shadowOffset: {width:0, height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 15, zIndex: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
-    appBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 10, marginBottom: 24 },
-    backBtn: { width: 46, height: 46, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', shadowColor: '#fff', shadowOffset: {width:0, height:4}, shadowOpacity: 0.1, shadowRadius: 10 },
-    appBarTitle: { fontSize: 18, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
+    dateCard2: { flex: 1, maxWidth: '48%', backgroundColor: '#fff', borderRadius: 16, padding: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, alignItems: 'center' },
+    dateCardTop2: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+    dateCardLabel2: { fontSize: 13, fontWeight: '800', color: '#334155' },
+    dateCardDate2: { fontSize: 12, color: '#64748B', fontWeight: '700', marginBottom: 8 },
     
-    identityCore: { paddingHorizontal: 28 },
-    identityRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-    plateWrap: { backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, shadowColor: '#000', shadowOffset: {width:0,height:8}, shadowOpacity: 0.15, shadowRadius: 15, elevation: 5 },
-    plateTxt: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: 1 },
-    statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, gap: 6, backgroundColor: 'rgba(16,185,129,0.15)', borderWidth: 1, borderColor: 'rgba(16,185,129,0.3)', shadowColor: '#000', shadowOffset: {width:0,height:4}, shadowOpacity: 0.2, shadowRadius: 5 },
-    statusPillActive: { borderColor: 'rgba(16,185,129,0.3)', backgroundColor: 'rgba(16,185,129,0.15)' },
-    statusPillPassive: { borderColor: 'rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.15)' },
-    statusDot: { width: 6, height: 6, borderRadius: 3 },
-    statusTxt: { fontSize: 11, fontWeight: '800' },
-    brandTxt: { fontSize: 30, fontWeight: '900', color: '#fff', marginBottom: 6, letterSpacing: -1, textTransform: 'uppercase' },
-    driverRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    driverTxt: { fontSize: 15, fontWeight: '600', color: '#CBD5E1' },
+    dateBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 5, borderRadius: 8, gap: 4, alignSelf: 'center', width: '100%', justifyContent: 'center' },
+    dateBadgeDot: { width: 6, height: 6, borderRadius: 3 },
+    dateBadgeText: { fontSize: 9, fontWeight: '800' },
 
-    heroImageWrap: { width: '100%', height: 160, alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: -50 },
-    heroImage: { width: '90%', height: '100%', resizeMode: 'contain', opacity: 0.9 },
+    // Financial
+    finRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
+    finCard: { flex: 1, borderRadius: 16, padding: 14, alignItems: 'center' },
+    finValue: { fontSize: 14, fontWeight: '900', marginTop: 6 },
+    finLabel: { fontSize: 11, color: '#64748B', fontWeight: '600', marginTop: 2 },
+    profitCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 18, padding: 20 },
+    profitLeft: {},
+    profitLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: '600' },
+    profitValue: { color: '#fff', fontSize: 24, fontWeight: '900', marginTop: 2 },
 
-    // Scroll Area
-    scrollContent: { paddingHorizontal: 20, paddingBottom: 80, marginTop: -40, zIndex: 20 },
-    loader: { marginTop: 100, alignItems: 'center' },
+    // Health bars
+    healthRow: { marginBottom: 16 },
+    healthTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+    healthLabel: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
+    healthKm: { fontSize: 13, fontWeight: '700' },
+    healthBarBg: { height: 8, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 4, overflow: 'hidden' },
+    healthBarFill: { height: 8, borderRadius: 4 },
 
-    sectionHeader: { fontSize: 12, fontWeight: '800', color: '#64748B', letterSpacing: 1.5, marginBottom: 16, marginTop: 12, marginLeft: 6, textTransform: 'uppercase' },
-
-    // Financial Grid (3D KPI)
-    statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 14, marginBottom: 36 },
-    statCard: { width: '47.5%', backgroundColor: '#fff', borderRadius: 24, padding: 16, shadowColor: '#0A1A3A', shadowOffset: {width:0, height:12}, shadowOpacity: 0.08, shadowRadius: 24, elevation: 8 },
-    statCardNet: { shadowColor: '#0A1A3A', shadowOffset: {width:0,height:16}, shadowOpacity: 0.3, shadowRadius: 30, elevation: 12, overflow: 'hidden' },
-    statHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-    statIconWrap: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
-    statLbl: { fontSize: 11, fontWeight: '700', color: '#64748B', letterSpacing: 0.5 },
-    statVal: { fontSize: 24, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
-    statPercentUp: { fontSize: 12, fontWeight: '800', color: '#10B981', alignSelf: 'flex-end', marginTop: 4 },
-    statPercentDown: { fontSize: 12, fontWeight: '800', color: '#EF4444', alignSelf: 'flex-end', marginTop: 4 },
-
-    // Info Block
-    infoBlock: { backgroundColor: '#fff', borderRadius: 24, paddingHorizontal: 20, shadowColor: '#0A1A3A', shadowOffset: {width:0,height:12}, shadowOpacity: 0.05, shadowRadius: 24, elevation: 6, marginBottom: 36 },
-    infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 18 },
-    infoRowBorder: { borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-    infoRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-    infoIconWrap: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' },
-    infoLabel: { fontSize: 14, fontWeight: '600', color: '#64748B' },
-    infoVal: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
-
-    // Modules Grid
-    modulesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 14, marginBottom: 50 },
-    moduleBtn: { width: '47.5%', backgroundColor: '#fff', borderRadius: 24, padding: 12, shadowColor: '#0A1A3A', shadowOffset: {width:0,height:8}, shadowOpacity: 0.06, shadowRadius: 20, elevation: 4 },
-    moduleBtnInner: { flexDirection: 'row', alignItems: 'center' },
-    moduleIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
-    moduleTexts: { flex: 1 },
-    moduleLabel: { fontSize: 13, fontWeight: '800', color: '#0F172A', marginBottom: 2 },
-    moduleSub: { fontSize: 11, fontWeight: '600', color: '#94A3B8' }
+    // Menu
+    menuGrid: { gap: 8 },
+    menuCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2, gap: 14 },
+    menuIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    menuLabel: { flex: 1, fontSize: 15, fontWeight: '700', color: '#1E293B' },
 });

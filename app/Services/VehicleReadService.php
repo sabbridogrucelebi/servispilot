@@ -11,14 +11,14 @@ class VehicleReadService
 {
     public function getVehicles(int $companyId, array $filters, int $perPage = 20): array
     {
-        $query = Vehicle::query()
+        $query = Vehicle::with(['drivers'])
             ->select('vehicles.*')
             ->where('company_id', $companyId)
             ->addSelect([
-                'last_fuel_km' => \App\Models\Fuel::select('km')
-                    ->whereColumn('vehicle_id', 'vehicles.id')
-                    ->latest('date')->latest('id')
-                    ->limit(1),
+                'max_fuel_km' => \App\Models\Fuel::selectRaw('MAX(km)')
+                    ->whereColumn('vehicle_id', 'vehicles.id'),
+                'max_maintenance_km' => \App\Models\VehicleMaintenance::selectRaw('MAX(km)')
+                    ->whereColumn('vehicle_id', 'vehicles.id'),
                 'last_driver_name' => \App\Models\Fleet\Driver::select('full_name')
                     ->whereColumn('vehicle_id', 'vehicles.id')
                     ->latest('id')
@@ -58,7 +58,7 @@ class VehicleReadService
         $paginator = $query->latest()->paginate($perPage);
 
         $formattedVehicles = collect($paginator->items())->map(function ($vehicle) {
-            $currentKm = $vehicle->last_fuel_km ?? $vehicle->current_km ?? 0;
+            $currentKm = max((int)$vehicle->current_km, (int)$vehicle->max_fuel_km, (int)$vehicle->max_maintenance_km);
             $driver = $vehicle->last_driver_name;
             
             return [
@@ -98,7 +98,7 @@ class VehicleReadService
         ];
 
         return [
-            'vehicles' => $formattedVehicles,
+            'vehicles' => $formattedVehicles->toArray(),
             'kpi' => $kpi,
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
@@ -115,10 +115,10 @@ class VehicleReadService
             ->select('vehicles.*')
             ->where('company_id', $companyId)
             ->addSelect([
-                'last_fuel_km' => \App\Models\Fuel::select('km')
-                    ->whereColumn('vehicle_id', 'vehicles.id')
-                    ->latest('date')->latest('id')
-                    ->limit(1),
+                'max_fuel_km' => \App\Models\Fuel::selectRaw('MAX(km)')
+                    ->whereColumn('vehicle_id', 'vehicles.id'),
+                'max_maintenance_km' => \App\Models\VehicleMaintenance::selectRaw('MAX(km)')
+                    ->whereColumn('vehicle_id', 'vehicles.id'),
                 'last_driver_name' => \App\Models\Fleet\Driver::select('full_name')
                     ->whereColumn('vehicle_id', 'vehicles.id')
                     ->latest('id')
@@ -131,7 +131,7 @@ class VehicleReadService
             return null;
         }
 
-        $currentKm = $vehicle->last_fuel_km ?? $vehicle->current_km ?? 0;
+        $currentKm = max((int)$vehicle->current_km, (int)$vehicle->max_fuel_km, (int)$vehicle->max_maintenance_km);
 
         $income = \App\Models\Trip::where('vehicle_id', $vehicle->id)->sum('trip_price');
         $fuel = \App\Models\Fuel::where('vehicle_id', $vehicle->id)->sum('total_cost');
@@ -151,13 +151,32 @@ class VehicleReadService
             'net' => (float) $profit,
         ];
 
+        // Maintenance Health Calculation (Canlı Veri / Live Data Calculation)
+        // Web paneldeki logic ile birebir aynı olması için model üzerindeki attribute'u kullanıyoruz
+        $mStatus = $vehicle->maintenance_status;
+        
+        $maintenanceHealth = [
+            'has_setting' => current($mStatus) !== false ? $mStatus['has_setting'] : false,
+            'oil_change_remaining_km' => $mStatus['oil_remaining'] ?? null,
+            'oil_change_percent' => $mStatus['oil_percent'] ?? 0,
+            'bottom_lube_remaining_km' => $mStatus['lube_remaining'] ?? null,
+            'bottom_lube_percent' => $mStatus['lube_percent'] ?? 0,
+        ];
+
+        $immDoc = $vehicle->documents()
+            ->whereIn('document_type', ['İMM Poliçesi', 'İMM POLİÇESİ'])
+            ->latest('end_date')
+            ->first();
+
         return [
             'vehicle' => array_merge($vehicle->toArray(), [
-                'current_km' => (int) $currentKm,
+                'current_km' => (int) ($mStatus['current_km'] ?? $currentKm),
                 'driver' => $driver,
                 'image_url' => $imageUrl,
+                'imm_end_date' => $immDoc ? ($immDoc->end_date ? clone $immDoc->end_date : null) : null,
             ]),
             'stats' => $stats,
+            'maintenance_health' => $maintenanceHealth,
         ];
     }
 
@@ -177,7 +196,7 @@ class VehicleReadService
                     'file_url' => url(Storage::url($doc->file_path)),
                     'start_date' => $doc->start_date ? $doc->start_date->toDateString() : null,
                     'end_date' => $doc->end_date ? $doc->end_date->toDateString() : null,
-                    'is_expired' => $doc->end_date ? $doc->end_date->isPast() : false,
+                    'is_expired' => $doc->isExpired(),
                 ];
             });
 
@@ -358,17 +377,28 @@ class VehicleReadService
         $vehicle = Vehicle::where('company_id', $companyId)->find($vehicleId);
         if (!$vehicle) return null;
 
-        $images = $vehicle->images()->get()->map(function($img) {
+        $images = $vehicle->images()->latest()->get()->map(function($img) {
             return [
                 'id' => $img->id,
                 'title' => $img->title ?: $img->image_type_label,
                 'type_label' => $img->image_type_label,
+                'type' => $img->image_type_label,
                 'is_featured' => $img->is_featured,
+                'source' => $img->source ?? 'manual',
+                'created_at' => $img->created_at ? $img->created_at->toISOString() : null,
                 'url' => asset('storage/' . $img->file_path),
             ];
         });
 
-        return ['images' => $images];
+        $uploadLink = route('vehicles.public-images.form', [
+            'vehicle' => $vehicle->id, 
+            'token' => $vehicle->public_image_upload_token
+        ]);
+
+        return [
+            'images' => $images,
+            'driver_upload_link' => $uploadLink
+        ];
     }
 
     public function getReports(int $companyId, int $vehicleId, string $reportsMonth): ?array

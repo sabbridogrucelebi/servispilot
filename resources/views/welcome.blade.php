@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ServisPilot - Ultra Pro Filo Yönetim Sistemi</title>
+    <title>FiloMERKEZ - Ultra Pro Filo Yönetim Sistemi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -100,7 +100,7 @@
                 </h1>
 
                 <p class="text-xl text-slate-400 font-medium leading-relaxed max-w-lg">
-                    ServisPilot ile araç takibi, yakıt analizi, personel yönetimi ve yapay zeka destekli raporlama artık tek bir çatıda. Operasyonel verimliliğinizi %40 artırın.
+                    FiloMERKEZ ile araç takibi, yakıt analizi, personel yönetimi ve yapay zeka destekli raporlama artık tek bir çatıda. Operasyonel verimliliğinizi %40 artırın.
                 </p>
 
                 <div class="flex flex-wrap gap-4 pt-4">
@@ -120,7 +120,7 @@
                         <div class="h-12 w-12 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center font-bold">MT</div>
                     </div>
                     <div class="text-sm font-bold text-slate-400">
-                        <span class="text-white">500+</span> Şirket ServisPilot ile Büyüyor
+                        <span class="text-white">500+</span> Şirket FiloMERKEZ ile Büyüyor
                     </div>
                 </div>
             </div>
@@ -128,7 +128,7 @@
             <div class="relative lg:mt-0 mt-12">
                 <div class="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full"></div>
                 <div class="relative glass rounded-[48px] p-4 shadow-2xl border-white/10 transform hover:scale-[1.02] transition-transform duration-700">
-                    <img src="/assets/images/hero_fleet.png" alt="ServisPilot Dashboard" class="rounded-[40px] shadow-2xl">
+                    <img src="/assets/images/hero_fleet.png" alt="FiloMERKEZ Dashboard" class="rounded-[40px] shadow-2xl">
                     
                     {{-- Floating Metric 1 --}}
                     <div class="absolute -top-10 -right-10 glass p-6 rounded-3xl shadow-2xl animate-bounce duration-[3s]">
@@ -176,7 +176,7 @@
     {{-- Footer --}}
     <footer class="py-12 px-6 border-t border-white/5 text-center">
         <div class="text-sm font-bold text-slate-500">
-            © 2026 <span class="text-white">ServisPilot Pro</span>. Tüm hakları saklıdır.
+            © 2026 <span class="text-white">FiloMERKEZ Pro</span>. Tüm hakları saklıdır.
         </div>
     </footer>
 </body>

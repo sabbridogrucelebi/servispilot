@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform, TextInput } from 'r
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-export default function DatePickerInput({ label, value, onChange, placeholder = 'gg.aa.yyyy' }) {
+export default function DatePickerInput({ label, value, onChange, placeholder = 'gg.aa.yyyy', style }) {
     const [show, setShow] = useState(false);
     const [date, setDate] = useState(new Date());
 
@@ -14,9 +14,20 @@ export default function DatePickerInput({ label, value, onChange, placeholder = 
             const day = String(selectedDate.getDate()).padStart(2, '0');
             const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
             const year = selectedDate.getFullYear();
-            const formatted = `${day}.${month}.${year}`;
-            onChange(formatted);
+            // Backend'e yollanacak format YYYY-MM-DD
+            onChange(`${year}-${month}-${day}`);
         }
+    };
+
+    const getDisplayValue = () => {
+        if (!value) return placeholder;
+        if (value.includes('-')) {
+            const parts = value.split('-');
+            if (parts.length === 3 && parts[0].length === 4) {
+                return `${parts[2]}.${parts[1]}.${parts[0]}`;
+            }
+        }
+        return value;
     };
 
     if (Platform.OS === 'web') {
@@ -43,24 +54,16 @@ export default function DatePickerInput({ label, value, onChange, placeholder = 
                             width: '100%',
                             padding: '10px 12px',
                             borderRadius: '12px',
-                            border: '2px solid #F1F5F9',
+                            border: '2px solid rgba(255,255,255,0.1)',
                             fontSize: '13px',
                             fontWeight: '600',
                             fontFamily: 'inherit',
-                            color: '#1E293B',
-                            backgroundColor: '#F8FAFC',
+                            color: '#fff',
+                            backgroundColor: 'rgba(0,0,0,0.3)',
                             appearance: 'none',
                             outline: 'none',
                             boxSizing: 'border-box',
                             transition: 'all 0.3s ease'
-                        }}
-                        onFocus={(e) => {
-                            e.target.style.borderColor = '#4F46E5';
-                            e.target.style.backgroundColor = '#fff';
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.borderColor = '#F1F5F9';
-                            e.target.style.backgroundColor = '#F8FAFC';
                         }}
                     />
                 </div>
@@ -71,9 +74,9 @@ export default function DatePickerInput({ label, value, onChange, placeholder = 
     return (
         <View style={s.container}>
             {label ? <Text style={s.label}>{label}</Text> : null}
-            <TouchableOpacity style={s.input} onPress={() => setShow(true)} activeOpacity={0.7}>
-                <Text style={[s.value, !value && s.placeholder]}>{value || placeholder}</Text>
-                <Icon name="calendar-month" size={18} color="#4F46E5" />
+            <TouchableOpacity style={[s.input, style]} onPress={() => setShow(true)} activeOpacity={0.7}>
+                <Text style={[s.value, !value && s.placeholder, style && { color: style.color || '#1E293B' }]}>{getDisplayValue()}</Text>
+                <Icon name="calendar-month" size={18} color={style && style.color ? style.color : "#4F46E5"} />
             </TouchableOpacity>
 
             {show && (

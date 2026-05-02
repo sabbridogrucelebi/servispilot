@@ -24,6 +24,11 @@ class CompanyUserController extends Controller
     {
         abort_unless(auth()->user()->isCompanyAdmin(), 403);
 
+        $company = auth()->user()->company;
+        if (!is_null($company->max_users) && $company->users()->count() >= $company->max_users) {
+            return redirect()->route('company-users.index')->with('error', 'Lisans paketinize ait maksimum kullanıcı kotasına (' . $company->max_users . ' Kullanıcı) ulaştınız. Yeni kullanıcı ekleyebilmek için lütfen sistem yöneticisi ile iletişime geçerek lisansınızı yükseltin.');
+        }
+
         // Sidebar'daki öğelerin permission'larını al
         $navItems = config('navigation.items', []);
         $activePermissionKeys = collect($navItems)->pluck('permission')->filter()->unique()->toArray();
@@ -40,6 +45,7 @@ class CompanyUserController extends Controller
             'documents.create', 'documents.edit', 'documents.delete',
             'payrolls.create', 'payrolls.edit', 'payrolls.delete',
             'company_users.create', 'company_users.edit', 'company_users.delete',
+            'financials.view',
         ]);
 
         $permissions = Permission::whereIn('key', $activePermissionKeys)
@@ -55,7 +61,7 @@ class CompanyUserController extends Controller
 
         $company = auth()->user()->company;
         if (!is_null($company->max_users) && $company->users()->count() >= $company->max_users) {
-            return redirect()->back()->with('error', 'Kullanıcı ekleme limitinize ulaştınız. (' . $company->max_users . ' Kullanıcı). Daha fazla kullanıcı eklemek için sistem yöneticisi ile iletişime geçin.')->withInput();
+            return redirect()->back()->with('error', 'Lisans paketinize ait maksimum kullanıcı kotasına (' . $company->max_users . ' Kullanıcı) ulaştınız. Yeni kullanıcı ekleyebilmek için lütfen sistem yöneticisi ile iletişime geçerek lisansınızı yükseltin.')->withInput();
         }
 
         $validated = $request->validate([
@@ -123,6 +129,7 @@ class CompanyUserController extends Controller
             'documents.create', 'documents.edit', 'documents.delete',
             'payrolls.create', 'payrolls.edit', 'payrolls.delete',
             'company_users.create', 'company_users.edit', 'company_users.delete',
+            'financials.view',
         ]);
 
         $permissions = Permission::whereIn('key', $activePermissionKeys)

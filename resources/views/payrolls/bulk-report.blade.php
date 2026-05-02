@@ -43,8 +43,8 @@
                     <p class="text-sm font-bold text-blue-600 uppercase">{{ \Carbon\Carbon::parse($period)->translatedFormat('F Y') }} DÖNEMİ</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-xl font-black text-slate-900">ServisPilot <span class="text-blue-600">PRO</span></div>
-                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">IRMAK TURİZM TAŞIMACILIK</div>
+                    <div class="text-xl font-black text-slate-900">{{ auth()->user()->company->name ?? 'Firma Adı' }}</div>
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">PERSONEL HAKEDİŞ DETAYI</div>
                 </div>
             </div>
 

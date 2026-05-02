@@ -26,6 +26,10 @@ class CustomerContract extends Model
         'year'       => 'integer',
     ];
 
+    protected $appends = [
+        'is_active'
+    ];
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);

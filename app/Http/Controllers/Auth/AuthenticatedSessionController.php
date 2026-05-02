@@ -26,7 +26,7 @@ class AuthenticatedSessionController extends Controller
 
         // Super Admin → Super Admin Paneli
         if ($user && $user->isSuperAdmin()) {
-            return redirect()->route('super-admin.dashboard');
+            return redirect()->route('super-admin.companies.index');
         }
 
         // Müşteri Portalı

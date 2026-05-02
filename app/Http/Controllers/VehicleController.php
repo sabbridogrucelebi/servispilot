@@ -420,6 +420,11 @@ class VehicleController extends Controller
             abort(403, 'Araç ekleme yetkiniz bulunmuyor.');
         }
 
+        $company = auth()->user()->company;
+        if (!is_null($company->max_vehicles) && $company->vehicles()->count() >= $company->max_vehicles) {
+            return redirect()->route('vehicles.index')->with('error', 'Lisans paketinize ait maksimum araç kotasına (' . $company->max_vehicles . ' Araç) ulaştınız. Yeni araç ekleyebilmek için lütfen sistem yöneticisi ile iletişime geçerek lisansınızı yükseltin.');
+        }
+
         return view('vehicles.create');
     }
 
@@ -429,7 +434,7 @@ class VehicleController extends Controller
 
         $company = auth()->user()->company;
         if (!is_null($company->max_vehicles) && $company->vehicles()->count() >= $company->max_vehicles) {
-            return redirect()->back()->with('error', 'Araç ekleme limitinize ulaştınız. (' . $company->max_vehicles . ' Araç). Daha fazla araç eklemek için sistem yöneticisi ile iletişime geçin.')->withInput();
+            return redirect()->back()->with('error', 'Lisans paketinize ait maksimum araç kotasına (' . $company->max_vehicles . ' Araç) ulaştınız. Yeni araç ekleyebilmek için lütfen sistem yöneticisi ile iletişime geçerek lisansınızı yükseltin.')->withInput();
         }
 
         $data = $request->validate([
