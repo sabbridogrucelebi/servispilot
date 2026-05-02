@@ -13,8 +13,8 @@ return new class extends Migration
             $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
 
-            $table->string('module'); // fuel, fuel_station_payment, fuel_station
-            $table->string('action'); // created, updated, deleted, imported, bulk_paid
+            $table->string('module', 100); // fuel, fuel_station_payment, fuel_station
+            $table->string('action', 100); // created, updated, deleted, imported, bulk_paid
             $table->string('subject_type')->nullable();
             $table->unsignedBigInteger('subject_id')->nullable();
 
