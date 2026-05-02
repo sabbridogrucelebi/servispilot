@@ -11,8 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        try {
+            Schema::table('trips', function (Blueprint $table) {
+                $table->dropForeign(['service_route_id']);
+            });
+        } catch (\Exception $e) {
+            // Ignore if foreign key doesn't exist
+        }
+
         Schema::table('trips', function (Blueprint $table) {
-            $table->dropForeign(['service_route_id']);
             $table->foreign('service_route_id')->references('id')->on('customer_service_routes')->cascadeOnDelete();
         });
     }
