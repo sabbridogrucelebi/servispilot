@@ -53,6 +53,20 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
+| PUBLIC PAGES (Privacy Policy - required by App Store & Google Play)
+|--------------------------------------------------------------------------
+*/
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy');
+})->name('privacy-policy');
+
+Route::get('/gizlilik', function () {
+    return view('privacy-policy');
+})->name('gizlilik');
+
+
+/*
+|--------------------------------------------------------------------------
 | PUBLIC VEHICLE IMAGE UPLOAD
 |--------------------------------------------------------------------------
 */

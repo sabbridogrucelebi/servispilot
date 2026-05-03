@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gizlilik Politikası - FiloMERKEZ</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; color: #1E293B; line-height: 1.8; background: #F8FAFC; }
+        h1 { color: #0F172A; border-bottom: 3px solid #3B82F6; padding-bottom: 12px; }
+        h2 { color: #1E3A5F; margin-top: 32px; }
+        .updated { color: #64748B; font-size: 14px; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <h1>🔒 Gizlilik Politikası</h1>
+    <p class="updated">Son güncelleme: {{ date('d.m.Y') }}</p>
+
+    <h2>1. Giriş</h2>
+    <p>FiloMERKEZ ("biz", "bizim") olarak, kullanıcılarımızın gizliliğini korumayı taahhüt ediyoruz. Bu gizlilik politikası, mobil uygulamamız ve web platformumuz aracılığıyla hangi verileri topladığımızı, nasıl kullandığımızı ve koruduğumuzu açıklamaktadır.</p>
+
+    <h2>2. Toplanan Veriler</h2>
+    <p>Hizmetlerimizi sunabilmek için aşağıdaki verileri topluyoruz:</p>
+    <ul>
+        <li><strong>Kimlik Bilgileri:</strong> Ad, soyad, e-posta adresi, telefon numarası</li>
+        <li><strong>Konum Verileri:</strong> Filo takibi ve rota planlaması için hassas konum bilgileri</li>
+        <li><strong>Fotoğraf ve Medya:</strong> Yakıt fişi, araç belgesi ve doküman fotoğrafları</li>
+        <li><strong>Kullanıcı Kimliği:</strong> Hesap doğrulama ve yetkilendirme bilgileri</li>
+    </ul>
+
+    <h2>3. Verilerin Kullanımı</h2>
+    <p>Topladığımız veriler yalnızca aşağıdaki amaçlarla kullanılır:</p>
+    <ul>
+        <li>Filo ve araç yönetimi hizmetlerinin sunulması</li>
+        <li>Gerçek zamanlı araç ve rota takibi</li>
+        <li>Yakıt, bakım ve gider analizleri</li>
+        <li>Personel ve müşteri yönetimi</li>
+        <li>Kullanıcı hesabı doğrulama ve güvenlik</li>
+    </ul>
+
+    <h2>4. Veri Güvenliği</h2>
+    <p>Verileriniz SSL/TLS şifreleme ile korunur. Sunucularımızda endüstri standardı güvenlik önlemleri uygulanmaktadır. Verilerinize yalnızca yetkilendirilmiş personel erişebilir.</p>
+
+    <h2>5. Üçüncü Taraf Paylaşımı</h2>
+    <p>Kullanıcı verilerinizi hiçbir üçüncü tarafla reklam veya pazarlama amacıyla paylaşmıyoruz. Veriler yalnızca hizmet sunumu için gerekli olduğu durumlarda işlenir.</p>
+
+    <h2>6. Kullanıcı Hakları</h2>
+    <p>Kullanıcılarımız aşağıdaki haklara sahiptir:</p>
+    <ul>
+        <li>Kişisel verilerine erişim talep etme</li>
+        <li>Verilerinin düzeltilmesini isteme</li>
+        <li>Verilerinin silinmesini talep etme</li>
+        <li>Veri işleme faaliyetlerine itiraz etme</li>
+    </ul>
+
+    <h2>7. İletişim</h2>
+    <p>Gizlilik politikamız hakkında sorularınız için bizimle iletişime geçebilirsiniz:</p>
+    <ul>
+        <li><strong>E-posta:</strong> sabbridogru@gmail.com</li>
+        <li><strong>Web:</strong> app.mehmetcelebiturizm.com</li>
+    </ul>
+
+    <p style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #E2E8F0; color: #94A3B8; font-size: 13px;">
+        © {{ date('Y') }} Celebi Turizm. Tüm hakları saklıdır.
+    </p>
+</body>
+</html>
