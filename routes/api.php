@@ -56,7 +56,17 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\CheckCompanyStatus::clas
 | V1 API ROUTES (New Standard)
 |--------------------------------------------------------------------------
 */
+Route::prefix('v1')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
 Route::prefix('v1')->middleware(['auth:sanctum', \App\Http\Middleware\CheckCompanyStatus::class])->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/user/password', [AuthController::class, 'updatePassword']);
+    Route::post('/user/push-token', [AuthController::class, 'updatePushToken']);
+
     Route::get('/dashboard', [\App\Http\Controllers\Api\V1\DashboardApiController::class, 'index']);
     Route::get('/personnel', [\App\Http\Controllers\Api\V1\PersonnelApiController::class, 'index']);
     Route::get('/personnel/options', [\App\Http\Controllers\Api\V1\PersonnelApiController::class, 'options']);
@@ -255,6 +265,20 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/chat/users', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'users']);
+    Route::get('/chat/unread', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'unreadCount']);
+    Route::get('/chat/conversations', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'conversations']);
+    Route::post('/chat/conversations', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'storeConversation']);
+    Route::delete('/chat/conversations/{conversation}', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'deleteConversation']);
+    Route::post('/chat/conversations/bulk-delete', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'bulkDeleteConversations']);
+    Route::get('/chat/conversations/{conversation}/messages', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'messages']);
+    Route::post('/chat/conversations/{conversation}/messages', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'sendMessage']);
+    Route::delete('/chat/conversations/{conversation}/messages/{message}', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'deleteMessage']);
+    Route::post('/chat/profile-photo', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'uploadProfilePhoto']);
+});
+
+// V1 prefixed Chat routes (for mobile app with /api/v1 base URL)
+Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('/chat/users', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'users']);
     Route::get('/chat/unread', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'unreadCount']);
     Route::get('/chat/conversations', [\App\Http\Controllers\Api\V1\ChatApiController::class, 'conversations']);
