@@ -163,7 +163,7 @@
                 {{-- Modül Başlık Kartı (Tıklanabilir) --}}
                 <button type="button"
                         onclick="toggleModule({{ $mi }})"
-                        class="module-trigger w-full rounded-[24px] border-2 transition-all duration-500 p-5 text-center hover:-translate-y-1 hover:shadow-2xl {{ $activeCount > 0 ? $border . ' ' . $bg . ' shadow-lg ' . $shadow : 'border-slate-100 bg-slate-50/50 shadow-sm' }}">
+                        class="module-trigger w-full rounded-[24px] border-2 transition-all duration-500 p-5 text-center hover:-translate-y-1 hover:shadow-2xl {{ $activeCount > 0 ? $mod['border'] . ' ' . $mod['bg'] . ' shadow-lg ' . $mod['shadow'] : 'border-slate-100 bg-slate-50/50 shadow-sm' }}">
                     
                     {{-- 3D İkon --}}
                     <div class="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-[20px] bg-gradient-to-br {{ $mod['gradient'] }} text-3xl shadow-xl {{ $mod['shadow'] }} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
