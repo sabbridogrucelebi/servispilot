@@ -1,0 +1,43 @@
+name: Deploy to cPanel via FTP
+
+on:
+  push:
+    branches:
+      - main
+      - master # Eğer ana dalınız master ise bunu kullanır
+
+jobs:
+  web-deploy:
+    name: Deploy to cPanel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Yalnızca değişen dosyaları bulmak için gerekli
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2' # Sunucunuzdaki PHP sürümüne göre güncelleyebilirsiniz
+
+      - name: Install Dependencies (Composer)
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Sync files via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: / # Dosyalar doğrudan FTP kullanıcısının bağlandığı ana dizine yüklenecek
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            .env
+            storage/logs/**
+            storage/framework/cache/**
+            storage/framework/sessions/**
+            storage/framework/views/**
+            mobile-app/**

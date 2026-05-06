@@ -159,17 +159,17 @@ class ServiceRouteApiController extends BaseApiController
             'customer_id.exists' => 'Müşteri sistemde bulunamadı.',
         ]);
 
-        if (in_array($validated['service_type'], ['both', 'morning', 'shift'], true) && empty($validated['morning_vehicle_id'])) {
-            throw ValidationException::withMessages([
-                'morning_vehicle_id' => 'Bu servis türü için ilk araç seçilmelidir.',
-            ]);
-        }
+        // if (in_array($validated['service_type'], ['both', 'morning', 'shift'], true) && empty($validated['morning_vehicle_id'])) {
+        //     throw ValidationException::withMessages([
+        //         'morning_vehicle_id' => 'Bu servis türü için ilk araç seçilmelidir.',
+        //     ]);
+        // }
 
-        if (in_array($validated['service_type'], ['both', 'evening', 'shift'], true) && empty($validated['evening_vehicle_id'])) {
-            throw ValidationException::withMessages([
-                'evening_vehicle_id' => 'Bu servis türü için ikinci araç seçilmelidir.',
-            ]);
-        }
+        // if (in_array($validated['service_type'], ['both', 'evening', 'shift'], true) && empty($validated['evening_vehicle_id'])) {
+        //     throw ValidationException::withMessages([
+        //         'evening_vehicle_id' => 'Bu servis türü için ikinci araç seçilmelidir.',
+        //     ]);
+        // }
 
         if ($validated['fee_type'] === 'paid') {
             if (in_array($validated['service_type'], ['both', 'morning', 'shift'], true) && $validated['morning_fee'] === null) {
