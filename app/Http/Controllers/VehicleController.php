@@ -70,7 +70,7 @@ class VehicleController extends Controller
             ->when($specialFilter === 'upcoming_inspection', fn ($q) => $q->whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30)))
             ->when($specialFilter === 'upcoming_insurance', fn ($q) => $q->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(30)))
             ->latest()
-            ->paginate(24)
+            ->paginate(100)
             ->withQueryString();
 
         // KPI İstatistikleri
