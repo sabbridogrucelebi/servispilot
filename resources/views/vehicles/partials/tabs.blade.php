@@ -3,13 +3,13 @@
     $showVehicleImagePanel = $currentTab === 'general';
     
     $tabs = [
-        ['id' => 'general', 'label' => 'Analiz', 'icon' => '📊', 'color' => 'indigo', 'gradient' => 'from-indigo-600 to-blue-600'],
-        ['id' => 'documents', 'label' => 'Belgeler', 'icon' => '📁', 'color' => 'amber', 'gradient' => 'from-amber-500 to-orange-600'],
-        ['id' => 'fuels', 'label' => 'Yakıt', 'icon' => '⛽', 'color' => 'rose', 'gradient' => 'from-rose-500 to-red-600'],
-        ['id' => 'maintenances', 'label' => 'Bakım', 'icon' => '🛠️', 'color' => 'emerald', 'gradient' => 'from-emerald-500 to-teal-600'],
-        ['id' => 'penalties', 'label' => 'Cezalar', 'icon' => '🚨', 'color' => 'violet', 'gradient' => 'from-violet-500 to-purple-600'],
-        ['id' => 'reports', 'label' => 'Raporlar', 'icon' => '📈', 'color' => 'sky', 'gradient' => 'from-sky-500 to-cyan-600'],
-        ['id' => 'images', 'label' => 'Galeri', 'icon' => '🖼️', 'color' => 'fuchsia', 'gradient' => 'from-fuchsia-500 to-pink-600'],
+        ['id' => 'general', 'label' => 'Analiz', 'icon' => '<svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>', 'color' => 'indigo', 'gradient' => 'from-indigo-600 to-blue-600'],
+        ['id' => 'documents', 'label' => 'Belgeler', 'icon' => '<svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>', 'color' => 'amber', 'gradient' => 'from-amber-500 to-orange-600'],
+        ['id' => 'fuels', 'label' => 'Yakıt', 'icon' => '<svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" /></svg>', 'color' => 'rose', 'gradient' => 'from-rose-500 to-red-600'],
+        ['id' => 'maintenances', 'label' => 'Bakım', 'icon' => '<svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26" /></svg>', 'color' => 'emerald', 'gradient' => 'from-emerald-500 to-teal-600'],
+        ['id' => 'penalties', 'label' => 'Cezalar', 'icon' => '<svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>', 'color' => 'violet', 'gradient' => 'from-violet-500 to-purple-600'],
+        ['id' => 'reports', 'label' => 'Raporlar', 'icon' => '<svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>', 'color' => 'sky', 'gradient' => 'from-sky-500 to-cyan-600'],
+        ['id' => 'images', 'label' => 'Galeri', 'icon' => '<svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>', 'color' => 'fuchsia', 'gradient' => 'from-fuchsia-500 to-pink-600'],
     ];
 @endphp
 
@@ -31,7 +31,7 @@
                             <div class="absolute inset-0 rounded-[30px] border-2 border-transparent group-hover:border-{{ $tab['color'] }}-200 transition-all"></div>
                         @endif
 
-                        <span class="text-3xl transition-transform group-hover:scale-125 duration-500">{{ $tab['icon'] }}</span>
+                        <span class="text-3xl transition-transform group-hover:scale-125 duration-500">{!! $tab['icon'] !!}</span>
                         <span class="uppercase tracking-[0.2em] text-[10px] font-black">{{ $tab['label'] }}</span>
                         
                         @if($isActive)
@@ -99,7 +99,9 @@
                         @else
                             <div class="flex h-full items-center justify-center p-8 text-center">
                                 <div>
-                                    <div class="text-6xl mb-4">📸</div>
+                                    <div class="mb-4 flex justify-center text-slate-300">
+                                        <svg class="w-16 h-16 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" /></svg>
+                                    </div>
                                     <div class="text-sm font-black text-slate-800 uppercase tracking-widest">Görsel Bekleniyor</div>
                                     <p class="text-[10px] font-bold text-slate-400 mt-2">Aracın profesyonel fotoğraflarını Galeri sekmesinden yükleyebilirsiniz.</p>
                                 </div>
