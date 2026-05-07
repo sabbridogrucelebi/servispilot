@@ -734,6 +734,16 @@ Route::middleware('auth')->group(function () {
 Route::get('/invite/driver/{token}', [\App\Http\Controllers\DriverInviteController::class, 'show'])->name('invite.driver.show');
 Route::post('/invite/driver/{token}', [\App\Http\Controllers\DriverInviteController::class, 'store'])->name('invite.driver.store');
 
+// Temporary migration route for cPanel without terminal
+Route::get('/run-migration-now', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return "Veritabanı başarıyla güncellendi! (Migrations ran successfully). Bu sekmeyi kapatabilirsiniz.";
+    } catch (\Exception $e) {
+        return "Hata oluştu: " . $e->getMessage();
+    }
+});
+
 require __DIR__ . '/auth.php';
 
 /*
