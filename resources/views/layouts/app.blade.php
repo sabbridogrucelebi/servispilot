@@ -284,22 +284,33 @@
                             <div class="flex items-center gap-4 sm:gap-6">
                                 <!-- Premium Sistem Saati & Çıkış -->
                                 <div class="hidden items-center gap-3 md:flex mr-2">
-                                    <!-- Premium Clock Widget (Wallet Style) -->
+                                    <!-- Premium Clock Widget (Light Glassmorphism) -->
                                     <div class="relative group cursor-default">
-                                        <div class="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500 opacity-30 group-hover:opacity-60 blur transition duration-500"></div>
-                                        <div class="relative flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-slate-900 border border-white/10 shadow-xl transition-all">
-                                            <div class="flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                                                <svg class="w-4 h-4 animate-[spin_10s_linear_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <div class="absolute -inset-1 rounded-full bg-gradient-to-r from-slate-200 via-white to-slate-200 opacity-50 blur-sm transition duration-500"></div>
+                                        <div class="relative flex items-center gap-4 px-5 py-2.5 rounded-full bg-white/90 backdrop-blur-xl border border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+                                            
+                                            <!-- Calendar Icon -->
+                                            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 border border-slate-100 group-hover:text-indigo-500 transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                             </div>
+
                                             <div class="flex flex-col justify-center">
-                                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1" id="clock-date">{{ \Carbon\Carbon::now()->locale('tr')->translatedFormat('j F l') }}</span>
+                                                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.15em] leading-none mb-1" id="clock-date">{{ \Carbon\Carbon::now()->locale('tr')->translatedFormat('j F l') }}</span>
                                                 <div class="flex items-center gap-2 leading-none">
-                                                    <span class="text-sm font-black text-white tracking-wider font-mono" id="clock-time">{{ now()->format('H:i:s') }}</span>
-                                                    <div class="relative flex h-2 w-2">
-                                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                                    </div>
+                                                    <span class="text-sm font-black text-slate-800 tracking-tight font-mono" id="clock-time">{{ now()->format('H:i:s') }}</span>
                                                 </div>
+                                            </div>
+
+                                            <!-- Divider -->
+                                            <div class="h-6 w-[1.5px] bg-slate-200/60 rounded-full mx-1"></div>
+
+                                            <!-- Live Status -->
+                                            <div class="flex flex-col items-center justify-center">
+                                                <div class="relative flex h-2 w-2 mb-1">
+                                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                                                </div>
+                                                <span class="text-[8px] font-black text-emerald-600 uppercase tracking-widest leading-none">ON</span>
                                             </div>
                                         </div>
                                     </div>
