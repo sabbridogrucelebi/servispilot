@@ -25,11 +25,13 @@ class Company extends Model
         'max_vehicles',
         'max_users',
         'logo_path',
+        'is_driver_invite_active',
     ];
 
     protected $casts = [
-        'is_active'          => 'boolean',
-        'status'             => CompanyStatus::class,
+        'is_active'               => 'boolean',
+        'is_driver_invite_active' => 'boolean',
+        'status'                  => CompanyStatus::class,
         'license_expires_at' => 'datetime',
         'max_vehicles'       => 'integer',
         'max_users'          => 'integer',

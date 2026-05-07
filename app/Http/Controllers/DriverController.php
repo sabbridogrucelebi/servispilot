@@ -150,6 +150,20 @@ class DriverController extends Controller
         return redirect()->back()->with('success', 'Personel kaydı reddedildi ve sistemden silindi.');
     }
 
+    public function toggleInviteLink()
+    {
+        if (!auth()->user()->hasRole('super_admin') && !auth()->user()->hasRole('company_admin')) {
+            abort(403, 'Bu işlem için yetkiniz yok.');
+        }
+
+        $company = auth()->user()->company;
+        $company->update([
+            'is_driver_invite_active' => !$company->is_driver_invite_active
+        ]);
+
+        return redirect()->back()->with('success', 'Davet linki durumu güncellendi.');
+    }
+
     public function create()
     {
         if (!auth()->user()->hasPermission('drivers.create')) {

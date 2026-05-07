@@ -102,6 +102,22 @@
             </div>
             @if($user->hasPermission('drivers.create'))
             <div class="flex items-center gap-3 w-full xl:w-auto">
+                <form action="{{ route('drivers.toggle-invite-link') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" 
+                            class="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-black text-sm transition-all shadow-sm border hover:-translate-y-0.5 {{ auth()->user()->company->is_driver_invite_active ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-100' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-100' }}"
+                            title="Davet linkini açıp kapatır">
+                        @if(auth()->user()->company->is_driver_invite_active)
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                            <span>LİNKİ KAPAT</span>
+                        @else
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            <span>LİNKİ AÇ</span>
+                        @endif
+                    </button>
+                </form>
+
+                @if(auth()->user()->company->is_driver_invite_active)
                 <button type="button" 
                         onclick="copyToClipboard('{{ route('invite.driver.show', \Illuminate\Support\Facades\Crypt::encryptString(auth()->user()->company_id)) }}', this)" 
                         class="flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-5 py-3 rounded-2xl font-black text-sm transition-all shadow-sm border border-indigo-100 hover:-translate-y-0.5"
@@ -109,6 +125,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                     <span>LİNK KOPYALA</span>
                 </button>
+                @endif
                 <button @click="importOpen = true" class="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-2xl font-black text-sm transition-all shadow-sm hover:-translate-y-0.5">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     TOPLU EKLE

@@ -14,11 +14,10 @@
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
-
     <div class="w-full max-w-2xl">
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white text-3xl shadow-lg mb-4">
-                👋
+                👨‍✈️
             </div>
             <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ $company->name }}</h1>
             <p class="text-slate-500 mt-2 font-medium">Lütfen aşağıdaki bilgileri eksiksiz doldurarak personel kaydınızı tamamlayın.</p>
@@ -34,6 +33,17 @@
             </div>
         @else
 
+        @if($errors->any())
+            <div class="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-3xl mb-8 shadow-sm">
+                <h3 class="text-lg font-bold mb-2">Lütfen hataları düzeltin:</h3>
+                <ul class="list-disc pl-5 text-sm font-medium">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('invite.driver.store', $token) }}" method="POST" class="space-y-6">
             @csrf
 
@@ -41,30 +51,25 @@
                 <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4 mb-6">Kişisel Bilgileriniz</h3>
 
                 <div class="grid gap-5 md:grid-cols-2">
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="mb-2 block text-sm font-semibold text-slate-700">Adınız Soyadınız <span class="text-rose-500">*</span></label>
                         <input type="text"
                                name="full_name"
                                required
                                placeholder="Örn: Ali Yılmaz"
                                value="{{ old('full_name') }}"
-                               class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">
-                        @error('full_name')
-                            <div class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</div>
-                        @enderror
+                               class="title-case-input w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-semibold text-slate-700">TC Kimlik No</label>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">TC Kimlik No <span class="text-rose-500">*</span></label>
                         <input type="text"
                                name="tc_no"
+                               required
                                maxlength="11"
                                placeholder="11 Haneli TC Kimlik Numaranız"
                                value="{{ old('tc_no') }}"
                                class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">
-                        @error('tc_no')
-                            <div class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</div>
-                        @enderror
                     </div>
 
                     <div>
@@ -75,57 +80,58 @@
                                placeholder="Örn: 0532 123 45 67"
                                value="{{ old('phone') }}"
                                class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">
-                        @error('phone')
-                            <div class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</div>
-                        @enderror
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-semibold text-slate-700">E-posta Adresiniz</label>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">E-posta Adresiniz <span class="text-rose-500">*</span></label>
                         <input type="email"
                                name="email"
-                               placeholder="Opsiyonel"
+                               required
+                               placeholder="E-posta"
                                value="{{ old('email') }}"
                                class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">
-                        @error('email')
-                            <div class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</div>
-                        @enderror
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-semibold text-slate-700">Doğum Tarihiniz</label>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Doğum Tarihiniz <span class="text-rose-500">*</span></label>
                         <input type="date"
                                name="birth_date"
+                               required
                                value="{{ old('birth_date') }}"
                                class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">
-                        @error('birth_date')
-                            <div class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</div>
-                        @enderror
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-semibold text-slate-700">Ehliyet Sınıfı</label>
-                        <select name="license_class"
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Ehliyet Sınıfı <span class="text-rose-500">*</span></label>
+                        <select name="license_class" required
                                 class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow bg-white">
                             <option value="">Seçiniz</option>
                             <option value="D1 - Minibüs" @selected(old('license_class') == 'D1 - Minibüs')>D1 - Minibüs</option>
                             <option value="D - Otobüs" @selected(old('license_class') == 'D - Otobüs')>D - Otobüs</option>
                         </select>
-                        @error('license_class')
-                            <div class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</div>
-                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Kullandığınız Araç (Varsa)</label>
+                        <select name="vehicle_id"
+                                class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow bg-white">
+                            <option value="">Araç Seçiniz</option>
+                            @foreach($vehicles as $vehicle)
+                                <option value="{{ $vehicle->id }}" @selected(old('vehicle_id') == $vehicle->id)>
+                                    {{ $vehicle->plate }} - {{ $vehicle->model_year }} {{ $vehicle->brand }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
                 <div class="mt-5">
-                    <label class="mb-2 block text-sm font-semibold text-slate-700">Ev Adresiniz</label>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">Ev Adresiniz <span class="text-rose-500">*</span></label>
                     <textarea name="address"
                               rows="3"
+                              required
                               placeholder="Mahalle, Sokak, İlçe, İl..."
-                              class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">{{ old('address') }}</textarea>
-                    @error('address')
-                        <div class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</div>
-                    @enderror
+                              class="title-case-input w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">{{ old('address') }}</textarea>
                 </div>
             </div>
 
@@ -141,5 +147,26 @@
             <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Altyapı: FiloMERKEZ</p>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function toTitleCase(str) {
+                return str.replace(
+                    /\w\S*/g,
+                    function(txt) {
+                        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                    }
+                );
+            }
+
+            const titleCaseInputs = document.querySelectorAll('.title-case-input');
+            titleCaseInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Update as user types or pastes
+                    this.value = toTitleCase(this.value);
+                });
+            });
+        });
+    </script>
 </body>
 </html>

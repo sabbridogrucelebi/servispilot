@@ -428,6 +428,9 @@ Route::middleware('auth')->group(function () {
         ->middleware(['auth', 'permission:drivers.edit'])
         ->name('drivers.approve');
 
+    Route::post('/drivers/toggle-invite-link', [\App\Http\Controllers\DriverController::class, 'toggleInviteLink'])
+        ->name('drivers.toggle-invite-link');
+
     Route::post('/drivers/{driver}/reject', [\App\Http\Controllers\DriverController::class, 'reject'])
         ->middleware(['auth', 'permission:drivers.delete'])
         ->name('drivers.reject');

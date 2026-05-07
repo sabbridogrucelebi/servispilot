@@ -21,7 +21,13 @@ class DriverInviteController extends Controller
             abort(404, 'Firma bulunamadı.');
         }
 
-        return view('drivers.invite', compact('company', 'token'));
+        if (!$company->is_driver_invite_active) {
+            abort(403, 'Bu firma için personel kayıt alımı şu anda kapalıdır.');
+        }
+
+        $vehicles = \App\Models\Fleet\Vehicle::where('company_id', $company->id)->orderBy('plate')->get();
+
+        return view('drivers.invite', compact('company', 'token', 'vehicles'));
     }
 
     public function store(Request $request, $token)
@@ -33,18 +39,39 @@ class DriverInviteController extends Controller
             abort(404, 'Geçersiz davet linki.');
         }
 
+        if (!$company->is_driver_invite_active) {
+            abort(403, 'Bu firma için personel kayıt alımı şu anda kapalıdır.');
+        }
+
         $validated = $request->validate([
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'full_name' => 'required|string|max:255',
-            'tc_no' => 'nullable|string|max:11',
+            'tc_no' => 'required|string|max:11',
             'phone' => 'required|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'birth_date' => 'nullable|date',
-            'license_class' => 'nullable|string|max:50',
-            'address' => 'nullable|string',
+            'email' => 'required|email|max:255',
+            'birth_date' => 'required|date',
+            'license_class' => 'required|string|max:50',
+            'address' => 'required|string',
+        ], [
+            'required' => 'Bu alan zorunludur.',
+            'email' => 'Geçerli bir e-posta adresi girin.'
         ]);
 
         // Auto Title Case
         $validated['full_name'] = mb_convert_case(mb_strtolower($validated['full_name'], 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+
+        // Check Duplicates
+        $exists = Driver::where('company_id', $company->id)
+            ->where(function($q) use ($validated) {
+                $q->where('tc_no', $validated['tc_no'])
+                  ->orWhere('full_name', $validated['full_name']);
+            })->first();
+
+        if ($exists) {
+            return back()
+                ->withInput()
+                ->withErrors(['tc_no' => 'Sistemde zaten bu T.C. kimlik numarası veya bu isimle bir kayıt bulunmaktadır.']);
+        }
 
         // Force defaults for skipped fields
         $validated['company_id'] = $company->id;
