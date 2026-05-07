@@ -114,7 +114,7 @@
                     <div class="flex items-center gap-4">
                         <div class="relative group">
                             <div class="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 opacity-40 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                            <img src="/assets/images/filomerkez_logo.png" alt="FiloMERKEZ Logo" class="relative w-12 h-12 rounded-2xl border border-white/10 object-cover" />
+                            <img src="{{ asset('assets/images/filomerkez_logo.png') }}" alt="FiloMERKEZ Logo" class="relative w-12 h-12 rounded-2xl border border-white/10 object-cover" />
                         </div>
 
                         <div class="min-w-0 flex-1">

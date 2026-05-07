@@ -1,0 +1,15 @@
+node_modules/
+vendor/
+storage/
+public/build/
+dist/
+.expo/
+*.log
+*.zip
+*.tar.gz
+mobile-app/node_modules/
+mobile-app/dist/
+mobile-app/.expo/
+mobile-app/android/
+mobile-app/ios/
+public/storage

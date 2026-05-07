@@ -128,7 +128,7 @@
             <div class="relative lg:mt-0 mt-12">
                 <div class="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full"></div>
                 <div class="relative glass rounded-[48px] p-4 shadow-2xl border-white/10 transform hover:scale-[1.02] transition-transform duration-700">
-                    <img src="/assets/images/hero_fleet.png" alt="FiloMERKEZ Dashboard" class="rounded-[40px] shadow-2xl">
+                    <img src="{{ asset('assets/images/hero_fleet.png') }}" alt="FiloMERKEZ Dashboard" class="rounded-[40px] shadow-2xl">
                     
                     {{-- Floating Metric 1 --}}
                     <div class="absolute -top-10 -right-10 glass p-6 rounded-3xl shadow-2xl animate-bounce duration-[3s]">

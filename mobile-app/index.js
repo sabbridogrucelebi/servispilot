@@ -1,4 +1,3 @@
-console.log("=== INDEX.JS EVALUATING ===");
 import { registerRootComponent } from 'expo';
 import App from './App';
 

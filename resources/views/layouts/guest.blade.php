@@ -32,7 +32,7 @@
                 {{-- Left Side: Branding & Info --}}
                 <div class="hidden lg:block space-y-12">
                     <div class="inline-flex items-center gap-4">
-                        <img src="/assets/images/filomerkez_logo.png" alt="FiloMERKEZ" class="h-14 w-14 rounded-2xl shadow-2xl shadow-indigo-500/20 object-cover border border-white/10" />
+                        <img src="{{ asset('assets/images/filomerkez_logo.png') }}" alt="FiloMERKEZ" class="h-14 w-14 rounded-2xl shadow-2xl shadow-indigo-500/20 object-cover border border-white/10" />
                         <span class="text-3xl font-black tracking-tighter uppercase">Filo<span class="text-indigo-400">MERKEZ</span></span>
                     </div>
 
@@ -71,7 +71,7 @@
                         
                         {{-- Mobile Logo --}}
                         <div class="lg:hidden flex items-center gap-3 mb-10">
-                            <img src="/assets/images/filomerkez_logo.png" alt="FiloMERKEZ" class="h-10 w-10 rounded-xl object-cover border border-white/10" />
+                            <img src="{{ asset('assets/images/filomerkez_logo.png') }}" alt="FiloMERKEZ" class="h-10 w-10 rounded-xl object-cover border border-white/10" />
                             <span class="text-xl font-black tracking-tighter uppercase">FiloMERKEZ</span>
                         </div>
 

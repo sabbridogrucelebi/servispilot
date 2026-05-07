@@ -10,9 +10,9 @@ const { width: W } = Dimensions.get('window');
 
 const getVehicleImage = (type) => {
     const t = (type || '').toLowerCase();
-    if (t.includes('minibüs')) return require('../../assets/arac_profilleri/servis_pilot_minibüs_profil.png');
-    if (t.includes('midibüs')) return require('../../assets/arac_profilleri/servis_pilot_midibüs_profil.png');
-    if (t.includes('otobüs')) return require('../../assets/arac_profilleri/servis_pilot_otobus_profil.png');
+    if (t.includes('minib') || t.includes('minibüs')) return require('../../assets/arac_profilleri/servis_pilot_minibus_profil.png');
+    if (t.includes('midib') || t.includes('midibüs')) return require('../../assets/arac_profilleri/servis_pilot_midibus_profil.png');
+    if (t.includes('otob') || t.includes('otobüs')) return require('../../assets/arac_profilleri/servis_pilot_otobus_profil.png');
     if (t.includes('panelvan')) return require('../../assets/arac_profilleri/servis_pilot_panelvan_profil.png');
     if (t.includes('kamyonet')) return require('../../assets/arac_profilleri/servis_pilot_kamyonet_profil.png');
     if (t.includes('binek') || t.includes('sedan') || t.includes('taksi')) return require('../../assets/arac_profilleri/servis_pilot_taksi_profil.png');

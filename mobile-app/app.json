@@ -2,14 +2,11 @@
   "expo": {
     "name": "FiloMERKEZ",
     "slug": "mobile-app",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "locales": {
-      "tr": "./locales/tr.json"
-    },
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -17,13 +14,21 @@
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.celebiturizm.filomerkez",
+      "locales": {
+        "tr": "./locales/tr.json"
+      },
       "infoPlist": {
         "CFBundleDevelopmentRegion": "tr",
-        "CFBundleLocalizations": ["tr"],
+        "CFBundleLocalizations": [
+          "tr",
+          "tr"
+        ],
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -48,7 +53,8 @@
         "android.permission.ACCESS_MEDIA_LOCATION",
         "android.permission.READ_MEDIA_AUDIO"
       ],
-      "package": "com.sabbridogru.mobileapp"
+      "package": "com.celebiturizm.filomerkez",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png",
