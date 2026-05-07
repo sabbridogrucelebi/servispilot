@@ -33,6 +33,7 @@ class Driver extends Model
         'start_shift',
         'base_salary',
         'is_active',
+        'approval_status',
         'address',
         'notes',
     ];
