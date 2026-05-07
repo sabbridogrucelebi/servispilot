@@ -69,20 +69,20 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow FiloMERKEZ to use your location for fleet tracking and routing."
+          "locationAlwaysAndWhenInUsePermission": "FiloMERKEZ, sefer takibi ve rota oluşturma işlemleri için konumunuza erişim izni gerektirir."
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow FiloMERKEZ to access your camera for capturing vehicle photos and documents."
+          "cameraPermission": "FiloMERKEZ, araç fotoğrafları, belge ve yakıt fişlerini çekebilmeniz için kameranıza erişim izni gerektirir."
         }
       ],
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow FiloMERKEZ to access your photos for uploading vehicle documents and receipts.",
-          "savePhotosPermission": "Allow ServisPilot to save photos.",
+          "photosPermission": "FiloMERKEZ, galerinideki araç belgelerini ve fişleri yükleyebilmeniz için fotoğraflarınıza erişim izni gerektirir.",
+          "savePhotosPermission": "FiloMERKEZ, fotoğrafları cihazınıza kaydetmek için izin gerektirir.",
           "isAccessMediaLocationEnabled": true
         }
       ],
