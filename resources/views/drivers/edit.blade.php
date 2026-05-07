@@ -131,22 +131,13 @@
 
                             <div>
                                 <label class="mb-2 block text-sm font-semibold text-slate-700">Ehliyet Sınıfı</label>
-                                <input type="text"
-                                       name="license_class"
-                                       value="{{ old('license_class', $driver->license_class) }}"
-                                       class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                <select name="license_class"
+                                        class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                                    <option value="">Seçiniz</option>
+                                    <option value="D1 - Minibüs" @selected(old('license_class', $driver->license_class) == 'D1 - Minibüs')>D1 - Minibüs</option>
+                                    <option value="D - Otobüs" @selected(old('license_class', $driver->license_class) == 'D - Otobüs')>D - Otobüs</option>
+                                </select>
                                 @error('license_class')
-                                    <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label class="mb-2 block text-sm font-semibold text-slate-700">SRC Türü</label>
-                                <input type="text"
-                                       name="src_type"
-                                       value="{{ old('src_type', $driver->src_type) }}"
-                                       class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
-                                @error('src_type')
                                     <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>
                                 @enderror
                             </div>

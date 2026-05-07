@@ -240,11 +240,6 @@
                                         </div>
 
                                         <div class="rounded-2xl bg-slate-50 p-4">
-                                            <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">SRC Türü</div>
-                                            <div class="mt-2 text-base font-bold text-slate-900">{{ $driver->src_type ?: '-' }}</div>
-                                        </div>
-
-                                        <div class="rounded-2xl bg-slate-50 p-4">
                                             <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Ana Maaş</div>
                                             <div class="mt-2 text-base font-bold text-slate-900">
                                                 {{ $driver->base_salary ? number_format($driver->base_salary, 2, ',', '.') . ' ₺' : '-' }}

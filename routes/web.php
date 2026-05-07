@@ -424,7 +424,15 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('drivers', DriverController::class)
         ->middleware('permission:drivers.view');
-    Route::post('drivers/{driver}/leave-work', [DriverController::class, 'leaveWork'])->name('drivers.leave-work');
+    Route::post('/drivers/{driver}/approve', [\App\Http\Controllers\DriverController::class, 'approve'])
+        ->middleware(['auth', 'permission:drivers.edit'])
+        ->name('drivers.approve');
+
+    Route::post('/drivers/{driver}/reject', [\App\Http\Controllers\DriverController::class, 'reject'])
+        ->middleware(['auth', 'permission:drivers.delete'])
+        ->name('drivers.reject');
+
+    Route::post('drivers/{driver}/leave-work', [\App\Http\Controllers\DriverController::class, 'leaveWork'])->name('drivers.leave-work');
     Route::post('drivers/{driver}/change-vehicle', [DriverController::class, 'changeVehicle'])->name('drivers.change-vehicle');
 
     Route::resource('customers', CustomerController::class)
@@ -721,6 +729,10 @@ Route::middleware('auth')->group(function () {
         ->middleware(['auth', 'permission:pilotcell.view'])
         ->name('pilotcell.school.routes.students.users.destroy');
 });
+
+// Driver Invite Public Routes
+Route::get('/invite/driver/{token}', [\App\Http\Controllers\DriverInviteController::class, 'show'])->name('invite.driver.show');
+Route::post('/invite/driver/{token}', [\App\Http\Controllers\DriverInviteController::class, 'store'])->name('invite.driver.store');
 
 require __DIR__ . '/auth.php';
 

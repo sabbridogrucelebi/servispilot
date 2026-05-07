@@ -102,6 +102,13 @@
             </div>
             @if($user->hasPermission('drivers.create'))
             <div class="flex items-center gap-3 w-full xl:w-auto">
+                <button type="button" 
+                        onclick="copyToClipboard('{{ route('invite.driver.show', \Illuminate\Support\Facades\Crypt::encryptString(auth()->user()->company_id)) }}', this)" 
+                        class="flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-5 py-3 rounded-2xl font-black text-sm transition-all shadow-sm border border-indigo-100 hover:-translate-y-0.5"
+                        title="Personellerin kendi kaydını yapabileceği formu kopyala">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    <span>LİNK KOPYALA</span>
+                </button>
                 <button @click="importOpen = true" class="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-2xl font-black text-sm transition-all shadow-sm hover:-translate-y-0.5">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     TOPLU EKLE
@@ -160,6 +167,65 @@
             </div>
         </form>
     </div>
+
+    <!-- ONAY BEKLEYEN PERSONEL LİSTESİ -->
+    @if(isset($pendingDrivers) && $pendingDrivers->count() > 0)
+        <div class="rounded-[32px] border-2 border-amber-200 bg-amber-50/50 shadow-sm overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-amber-200/50 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600">🔔</span>
+                    <h3 class="text-lg font-black text-amber-900">Onay Bekleyen Kayıtlar</h3>
+                </div>
+                <span class="text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full">{{ $pendingDrivers->count() }} Kayıt</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-amber-100/50">
+                        <tr>
+                            <th class="py-4 px-6 text-[10px] font-black uppercase tracking-[0.1em] text-amber-800">Personel Bilgisi</th>
+                            <th class="py-4 px-4 text-[10px] font-black uppercase tracking-[0.1em] text-amber-800">TC & Telefon</th>
+                            <th class="py-4 px-4 text-[10px] font-black uppercase tracking-[0.1em] text-amber-800">Adres / Not</th>
+                            <th class="py-4 px-4 text-[10px] font-black uppercase tracking-[0.1em] text-amber-800 text-right">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-amber-200/50">
+                        @foreach($pendingDrivers as $pending)
+                            <tr class="hover:bg-amber-100/30 transition-colors">
+                                <td class="py-4 px-6">
+                                    <div class="text-sm font-black text-amber-900">{{ $pending->full_name }}</div>
+                                    <div class="mt-0.5 text-[11px] font-bold text-amber-700/70">{{ $pending->created_at->format('d.m.Y H:i') }}</div>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <div class="text-sm font-bold text-slate-700">{{ $pending->tc_no ?: '-' }}</div>
+                                    <div class="text-xs font-medium text-slate-500">{{ $pending->phone }}</div>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <div class="text-xs font-medium text-slate-600 line-clamp-2">{{ $pending->address ?: '-' }}</div>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <form action="{{ route('drivers.approve', $pending) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                KABUL ET
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('drivers.reject', $pending) }}" method="POST" class="inline" onsubmit="return confirm('Bu personelin başvurusunu reddetmek ve silmek istediğinize emin misiniz?');">
+                                            @csrf
+                                            <button type="submit" class="flex items-center justify-center bg-rose-100 hover:bg-rose-500 hover:text-white text-rose-600 w-8 h-8 rounded-lg shadow-sm transition-colors" title="Reddet ve Sil">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 
     <!-- PERSONEL LİSTESİ (TABLO) -->
     @if($drivers->count())
@@ -456,6 +522,20 @@
     @endif
 
 <script>
+    function copyToClipboard(text, btn) {
+        navigator.clipboard.writeText(text).then(function() {
+            let originalText = btn.innerHTML;
+            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> <span>KOPYALANDI!</span>`;
+            btn.classList.add('bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
+            btn.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
+                btn.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+            }, 2000);
+        });
+    }
+
     function confirmDeleteDriver(url) {
         if (confirm('Bu personeli silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm ilişkili veriler (belgeler vb.) temizlenecektir.')) {
             const form = document.getElementById('global-delete-form');

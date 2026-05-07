@@ -32,7 +32,9 @@ class DriverController extends Controller
         if (!auth()->user()->hasPermission('drivers.view')) {
             abort(403, 'Personel listesini görme yetkiniz yok.');
         }
-        $query = Driver::with(['vehicle', 'documents'])->latest();
+        $query = Driver::with(['vehicle', 'documents'])
+            ->where('approval_status', '!=', 'pending')
+            ->latest();
 
         if ($request->filled('search')) {
             $search = trim($request->search);
@@ -91,7 +93,7 @@ class DriverController extends Controller
         });
 
         $vehicles = Vehicle::orderBy('plate')->get();
-        $allDrivers = Driver::with('documents')->get()->map(function ($driver) {
+        $allDrivers = Driver::with('documents')->where('approval_status', '!=', 'pending')->get()->map(function ($driver) {
             $driver->resolved_document_status = $this->resolveDriverDocumentStatus($driver);
             return $driver;
         });
@@ -108,6 +110,8 @@ class DriverController extends Controller
             return in_array(($driver->resolved_document_status['priority'] ?? 'ok'), ['soon7', 'expiring'], true);
         })->count();
 
+        $pendingDrivers = Driver::where('approval_status', 'pending')->latest()->get();
+
         return view('drivers.index', compact(
             'drivers',
             'vehicles',
@@ -115,8 +119,35 @@ class DriverController extends Controller
             'activeDrivers',
             'passiveDrivers',
             'expiredDocumentCount',
-            'expiringSoonCount'
+            'expiringSoonCount',
+            'pendingDrivers'
         ));
+    }
+
+    public function approve(Driver $driver)
+    {
+        if (!auth()->user()->hasPermission('drivers.edit')) {
+            abort(403, 'Personel düzenleme yetkiniz yok.');
+        }
+
+        $driver->update([
+            'approval_status' => 'approved',
+            'is_active' => true,
+            'start_date' => now()->toDateString()
+        ]);
+
+        return redirect()->back()->with('success', 'Personel kaydı onaylandı ve aktif hale getirildi.');
+    }
+
+    public function reject(Driver $driver)
+    {
+        if (!auth()->user()->hasPermission('drivers.delete')) {
+            abort(403, 'Personel silme yetkiniz yok.');
+        }
+
+        $driver->delete();
+
+        return redirect()->back()->with('success', 'Personel kaydı reddedildi ve sistemden silindi.');
     }
 
     public function create()
