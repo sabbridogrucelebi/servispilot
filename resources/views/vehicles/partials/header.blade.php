@@ -143,8 +143,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {{-- Hasılat --}}
             <div class="group relative overflow-hidden rounded-[24px] bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-5 text-white shadow-xl shadow-emerald-500/25 transition-all hover:-translate-y-1 hover:shadow-2xl">
-                <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Hasılat" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
+                <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Hasılat" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
                 </div>
                 <div class="relative z-10">
                     <div class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-100/80">Toplam Hasılat</div>
@@ -161,8 +161,8 @@
 
             {{-- Yakıt Gideri --}}
             <div class="group relative overflow-hidden rounded-[24px] bg-gradient-to-br from-orange-500 via-orange-600 to-rose-600 p-5 text-white shadow-xl shadow-orange-500/25 transition-all hover:-translate-y-1 hover:shadow-2xl">
-                <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="Yakıt" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
+                <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="Yakıt" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
                 </div>
                 <div class="relative z-10">
                     <div class="text-[9px] font-black uppercase tracking-[0.2em] text-orange-100/80">Yakıt Gideri</div>
@@ -179,8 +179,8 @@
 
             {{-- Personel --}}
             <div class="group relative overflow-hidden rounded-[24px] bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 p-5 text-white shadow-xl shadow-indigo-500/25 transition-all hover:-translate-y-1 hover:shadow-2xl">
-                <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Personel" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
+                <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Personel" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
                 </div>
                 <div class="relative z-10">
                     <div class="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-100/80">Personel & Maaş</div>
@@ -197,11 +197,11 @@
 
             {{-- Karlılık --}}
             <div class="group relative overflow-hidden rounded-[24px] p-5 text-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl {{ $profit >= 0 ? 'bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 shadow-blue-500/25' : 'bg-gradient-to-br from-rose-500 via-rose-600 to-pink-700 shadow-rose-500/25' }}">
-                <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
+                <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
                     @if($profit >= 0)
-                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark%20Button.png" alt="Kâr" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
+                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark%20Button.png" alt="Kâr" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
                     @else
-                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Cross%20Mark.png" alt="Zarar" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
+                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Cross%20Mark.png" alt="Zarar" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
                     @endif
                 </div>
                 <div class="relative z-10">
