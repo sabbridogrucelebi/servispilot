@@ -788,3 +788,5 @@ Route::prefix('super-admin')
         Route::post('/finance/invoices/{invoice}/reject', [\App\Http\Controllers\SuperAdmin\FinanceController::class, 'reject'])
             ->name('finance.reject');
     });
+
+// force update routes
