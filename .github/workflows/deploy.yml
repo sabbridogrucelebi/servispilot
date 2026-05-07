@@ -35,6 +35,8 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
+            vendor/**
+            public/storage/**
             .env
             storage/logs/**
             storage/framework/cache/**
