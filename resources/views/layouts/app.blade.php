@@ -111,19 +111,12 @@
 
                 <!-- Brand Area -->
                 <div class="shrink-0 px-8 py-10">
-                    <div class="flex items-center gap-4">
-                        <div class="relative group">
-                            <div class="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 opacity-40 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                            <img src="{{ asset('assets/images/filomerkez_logo.png') }}" alt="FiloMERKEZ Logo" class="relative w-12 h-12 rounded-2xl border border-white/10 object-cover" />
+                    <div class="flex flex-col items-center justify-center text-center">
+                        <div class="text-3xl font-black tracking-tighter text-white leading-none drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]">
+                            Filo<span class="text-indigo-500">MERKEZ</span>
                         </div>
-
-                        <div class="min-w-0 flex-1">
-                              <div class="text-2xl font-black tracking-tighter text-white leading-none">
-                                  Filo<span class="text-indigo-500">MERKEZ</span>
-                              </div>
-                            <div class="mt-2 text-[9px] font-bold uppercase tracking-[0.3em] text-slate-500 whitespace-nowrap">
-                                {{ $company->name ?? 'Kurumsal Sürüm' }}
-                            </div>
+                        <div class="mt-3 text-[11px] font-extrabold uppercase tracking-[0.25em] text-indigo-300 whitespace-nowrap animate-pulse drop-shadow-[0_0_10px_rgba(165,180,252,0.8)]">
+                            {{ $company->name ?? 'Kurumsal Sürüm' }}
                         </div>
                     </div>
                 </div>
