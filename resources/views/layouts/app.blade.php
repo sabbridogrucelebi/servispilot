@@ -129,34 +129,34 @@
                                 <div class="px-4 mb-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-slate-600">Süper Admin Menü</div>
                                 <div class="space-y-1">
                                     <a href="{{ route('super-admin.dashboard') }}"
-                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('super-admin.dashboard') ? 'nav-item-active text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
-                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('super-admin.dashboard') ? 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-rose-300' }} group-hover:scale-110">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('super-admin.dashboard') ? 'bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('super-admin.dashboard') ? 'bg-gradient-to-br from-rose-500/20 to-purple-600/20 border border-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-slate-800/40 border border-white/5 group-hover:bg-slate-700/50' }}">
+                                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Control%20Knobs.png" alt="Genel Bakış" class="w-6 h-6 drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6" />
                                         </div>
                                         <div class="flex flex-col min-w-0">
-                                            <span class="text-[13px] font-bold tracking-tight truncate">Genel Bakış</span>
+                                            <span class="text-[14px] font-bold tracking-tight truncate">Genel Bakış</span>
                                             <span class="text-[9px] font-bold {{ request()->routeIs('super-admin.dashboard') ? 'text-rose-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">SİSTEM ÖZETİ</span>
                                         </div>
                                     </a>
 
                                     <a href="{{ route('super-admin.companies.index') }}"
-                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('super-admin.companies.*') ? 'nav-item-active text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
-                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('super-admin.companies.*') ? 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-rose-300' }} group-hover:scale-110">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('super-admin.companies.*') ? 'bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('super-admin.companies.*') ? 'bg-gradient-to-br from-rose-500/20 to-purple-600/20 border border-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-slate-800/40 border border-white/5 group-hover:bg-slate-700/50' }}">
+                                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png" alt="Firmalar" class="w-6 h-6 drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6" />
                                         </div>
                                         <div class="flex flex-col min-w-0">
-                                            <span class="text-[13px] font-bold tracking-tight truncate">Firmalar</span>
+                                            <span class="text-[14px] font-bold tracking-tight truncate">Firmalar</span>
                                             <span class="text-[9px] font-bold {{ request()->routeIs('super-admin.companies.*') ? 'text-rose-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">MÜŞTERİ YÖNETİMİ</span>
                                         </div>
                                     </a>
 
                                     <a href="{{ route('backups.index') }}"
-                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('backups.*') ? 'nav-item-active text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
-                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('backups.*') ? 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-rose-300' }} group-hover:scale-110">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('backups.*') ? 'bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('backups.*') ? 'bg-gradient-to-br from-rose-500/20 to-purple-600/20 border border-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-slate-800/40 border border-white/5 group-hover:bg-slate-700/50' }}">
+                                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Floppy%20Disk.png" alt="Yedeklemeler" class="w-6 h-6 drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6" />
                                         </div>
                                         <div class="flex flex-col min-w-0">
-                                            <span class="text-[13px] font-bold tracking-tight truncate">Yedeklemeler</span>
+                                            <span class="text-[14px] font-bold tracking-tight truncate">Yedeklemeler</span>
                                             <span class="text-[9px] font-bold {{ request()->routeIs('backups.*') ? 'text-rose-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">VERİ GÜVENLİĞİ</span>
                                         </div>
                                     </a>
@@ -187,13 +187,13 @@
                                             <a href="{{ route($item['route']) }}"
                                                class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500
                                                {{ $isActive
-                                                  ? 'nav-item-active text-white'
+                                                  ? 'bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] text-white'
                                                   : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
-                                                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ $isActive ? 'bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-indigo-300' }} group-hover:scale-110">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"></path></svg>
+                                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ $isActive ? 'bg-gradient-to-br from-indigo-500/20 to-purple-600/20 border border-indigo-500/30 shadow-[0_0_20px_rgba(79,70,229,0.3)]' : 'bg-slate-800/40 border border-white/5 group-hover:bg-slate-700/50' }}">
+                                                    <img src="{{ $item['image'] ?? 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Pushpin.png' }}" alt="{{ $item['label'] }}" class="w-6 h-6 drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6" />
                                                 </div>
                                                 <div class="flex flex-col min-w-0">
-                                                    <span class="text-[13px] font-bold tracking-tight truncate">{{ $item['label'] }}</span>
+                                                    <span class="text-[14px] font-bold tracking-tight truncate">{{ $item['label'] }}</span>
                                                     <span class="text-[9px] font-bold {{ $isActive ? 'text-indigo-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">{{ $item['sub'] }}</span>
                                                 </div>
                                                 @if($isActive)
