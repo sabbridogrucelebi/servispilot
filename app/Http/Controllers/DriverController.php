@@ -152,7 +152,7 @@ class DriverController extends Controller
 
     public function toggleInviteLink()
     {
-        if (!auth()->user()->hasRole('super_admin') && !auth()->user()->hasRole('company_admin')) {
+        if (!auth()->user()->isSuperAdmin() && !auth()->user()->isCompanyAdmin()) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
