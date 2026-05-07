@@ -269,8 +269,8 @@
         <div class="border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-blue-50/40 px-6 py-6">
             <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div class="flex items-start gap-4">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-[20px] bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-200/70">
-                        ⛽
+                    <div class="flex items-center justify-center rounded-[20px] shadow-sm">
+                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="Yakıt" class="w-16 h-16 drop-shadow-xl" />
                     </div>
 
                     <div>

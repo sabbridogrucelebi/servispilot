@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     drawerOverlay: { flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.8)', justifyContent: 'flex-start' },
     drawerContent: { width: '75%', height: '100%', backgroundColor: '#0F172A', borderTopRightRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
     drawerHeader: { backgroundColor: 'rgba(139, 92, 246, 0.1)', padding: 25, paddingTop: Platform.OS === 'ios' ? 60 : 40, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-    drawerAvatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', marginBottom: 12, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 10, elevation: 5 },
+    drawerAvatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', marginBottom: 12, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 10, elevation: 5 },
     drawerName: { color: 'white', fontSize: 18, fontWeight: '900', letterSpacing: 0.5 },
     drawerRole: { color: '#94A3B8', fontSize: 13, marginTop: 4, fontWeight: '600' },
     drawerBody: { flex: 1, paddingTop: 20 },

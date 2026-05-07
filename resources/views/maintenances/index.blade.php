@@ -363,8 +363,8 @@
                             </td>
                             <td class="col-arac px-6 py-5">
                                 <div class="flex items-center gap-4">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 text-lg text-white shadow">
-                                        🛠️
+                                    <div class="flex items-center justify-center rounded-2xl shadow">
+                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png" alt="Bakım" class="w-12 h-12 drop-shadow-xl" />
                                     </div>
 
                                     <div>
@@ -457,7 +457,9 @@
                         <tr>
                             <td colspan="10" class="px-6 py-10">
                                 <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-                                    <div class="mb-3 text-4xl">🛠️</div>
+                                    <div class="mb-3 flex justify-center items-center">
+                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png" alt="Bakım Yok" class="w-20 h-20 drop-shadow-xl" />
+                                    </div>
                                     <div class="text-base font-semibold text-slate-700">Henüz bakım kaydı bulunmuyor</div>
                                     <div class="mt-1 text-sm text-slate-500">Bakım ekleyerek listeyi oluşturmaya başlayabilirsin.</div>
                                 </div>

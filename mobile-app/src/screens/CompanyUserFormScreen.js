@@ -373,7 +373,7 @@ const st = StyleSheet.create({
     switchLabel: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
     switchSub: { fontSize: 12, color: '#94A3B8', marginTop: 2 },
 
-    iconBoxPurp: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: {width:0,height:4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+    iconBoxPurp: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: {width:0,height:4}, shadowopacity: 1, shadowRadius: 8, elevation: 4 },
     sectionTitleNoMargin: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
     sectionSubNoMargin: { fontSize: 12, color: '#64748B', fontWeight: '500', marginTop: 2 },
 
@@ -396,6 +396,6 @@ const st = StyleSheet.create({
     permLabel: { fontSize: 11, fontWeight: '800', color: '#64748B' },
 
     footer: { padding: 16, backgroundColor: '#FFF', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: 110 },
-    saveBtn: { backgroundColor: '#6366F1', paddingVertical: 16, borderRadius: 20, alignItems: 'center', shadowColor: '#6366F1', shadowOffset: {width:0,height:6}, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+    saveBtn: { backgroundColor: '#6366F1', paddingVertical: 16, borderRadius: 20, alignItems: 'center', shadowColor: '#6366F1', shadowOffset: {width:0,height:6}, shadowopacity: 1, shadowRadius: 12, elevation: 8 },
     saveBtnTxt: { color: '#FFF', fontSize: 16, fontWeight: '800' }
 });

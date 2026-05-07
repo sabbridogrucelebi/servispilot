@@ -23,10 +23,10 @@ class VehicleApiController extends BaseApiController
 
         $companyId = $this->getCompanyId();
         $filters = $request->only(['search', 'status', 'filter']);
-        $perPage = $request->input('per_page', 20);
+        $perPage = $request->input('per_page', 100);
 
-        if ($perPage > 50) {
-            $perPage = 50;
+        if ($perPage > 150) {
+            $perPage = 150;
         }
 
         $result = $this->vehicleService->getVehicles($companyId, $filters, $perPage);

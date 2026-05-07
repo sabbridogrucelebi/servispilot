@@ -136,7 +136,7 @@ const s = StyleSheet.create({
     listText: { flex: 1, fontSize: 14, fontWeight: '700', color: '#1E293B' },
     divider: { height: 1, backgroundColor: '#F1F5F9', marginLeft: 60 },
 
-    logoutBtn: { marginTop: 4, borderRadius: 20, overflow: 'hidden', shadowColor: '#EF4444', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6 },
+    logoutBtn: { marginTop: 4, borderRadius: 20, overflow: 'hidden', shadowColor: '#EF4444', shadowOffset: { width: 0, height: 8 }, shadowopacity: 1, shadowRadius: 10, elevation: 6 },
     logoutGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14 },
     logoutText: { fontSize: 15, fontWeight: '800', color: '#FFF', letterSpacing: 0.5 }
 });

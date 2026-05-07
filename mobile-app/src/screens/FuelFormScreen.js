@@ -337,7 +337,7 @@ const s = StyleSheet.create({
     fieldInput: { flex: 1, fontSize: 15, color: '#0F172A', fontWeight: '600', height: '100%' },
     rowFields: { flexDirection: 'row', justifyContent: 'space-between' },
 
-    saveBtn: { flexDirection: 'row', backgroundColor: '#0F172A', height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 24, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+    saveBtn: { flexDirection: 'row', backgroundColor: '#0F172A', height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 24, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 5 },
     saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
 
     modalOverlayCenter: { flex: 1, backgroundColor: 'rgba(15,23,42,0.6)', justifyContent: 'center', padding: 20 },

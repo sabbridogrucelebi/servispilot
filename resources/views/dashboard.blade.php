@@ -63,7 +63,15 @@
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
             <h2 class="text-3xl font-black text-slate-800 tracking-tight">{{ $greeting }}, {{ explode(' ', auth()->user()->name)[0] }}! 👋</h2>
-            <p class="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">Sistem durumu şu an stabil. İşte bugünün özeti.</p>
+            <div class="flex flex-wrap items-center gap-4 mt-2">
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Sistem durumu şu an stabil. İşte bugünün özeti.</p>
+                @if($lastBackupDate)
+                <div class="flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-lg shadow-sm">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Floppy%20Disk.png" alt="Backup" class="w-4 h-4 drop-shadow-sm" />
+                    <span class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Son Yedek: {{ $lastBackupDate }} ({{ $lastBackupSize }})</span>
+                </div>
+                @endif
+            </div>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('trips.create') }}" class="group relative flex items-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95">
@@ -79,7 +87,7 @@
         <!-- Kart 1: Araçlar -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-8 text-white shadow-xl shadow-blue-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bus.png" alt="Araçlar" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bus.png" alt="Araçlar" class="w-24 h-24 drop-shadow-2xl" />
             </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
@@ -99,7 +107,7 @@
         <!-- Kart 2: Gelir -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-8 text-white shadow-xl shadow-emerald-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Gelir" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Gelir" class="w-24 h-24 drop-shadow-2xl" />
             </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
@@ -119,7 +127,7 @@
         <!-- Kart 3: Şoförler -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-violet-500 via-purple-600 to-fuchsia-700 p-8 text-white shadow-xl shadow-violet-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Şoför" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Şoför" class="w-24 h-24 drop-shadow-2xl" />
             </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
@@ -139,7 +147,7 @@
         <!-- Kart 4: Müşteriler -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 p-8 text-white shadow-xl shadow-amber-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png" alt="Müşteriler" class="w-24 h-24 opacity-90 drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png" alt="Müşteriler" class="w-24 h-24 drop-shadow-2xl" />
             </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>

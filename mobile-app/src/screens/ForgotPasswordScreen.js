@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     
     headerArea: { marginBottom: 30, alignItems: 'center' },
     logoWrap: { flexDirection: 'row', alignItems: 'center' },
-    logoIcon: { width: 52, height: 52, backgroundColor: '#1E293B', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.4)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 8 },
+    logoIcon: { width: 52, height: 52, backgroundColor: '#1E293B', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.4)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 10, elevation: 8 },
     brandWhite: { fontSize: 32, fontWeight: '900', color: '#fff', marginLeft: 14, letterSpacing: -1 },
     brandPurple: { color: '#8B5CF6' },
 

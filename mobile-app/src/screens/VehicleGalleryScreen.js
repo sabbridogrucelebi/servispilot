@@ -322,7 +322,7 @@ const s = StyleSheet.create({
     headerCenter: { flex: 1, alignItems: 'center' },
     headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
     headerSubtitle: { fontSize: 13, color: '#64748B', marginTop: 2, fontWeight: '500' },
-    addHeaderBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+    addHeaderBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 4 },
 
     listContent: { padding: 16, paddingBottom: 100 },
     listHeader: { marginBottom: 20 },
@@ -378,6 +378,6 @@ const s = StyleSheet.create({
     checkboxActive: { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
     checkboxText: { fontSize: 14, fontWeight: '500', color: '#475569' },
     
-    saveBtn: { backgroundColor: '#8B5CF6', paddingVertical: 16, borderRadius: 16, alignItems: 'center', marginTop: 24, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
+    saveBtn: { backgroundColor: '#8B5CF6', paddingVertical: 16, borderRadius: 16, alignItems: 'center', marginTop: 24, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 6 }, shadowopacity: 1, shadowRadius: 10, elevation: 5 },
     saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' }
 });

@@ -67,7 +67,9 @@
     @if(!$selectedCustomer)
         {{-- BOŞ DURUM --}}
         <div class="flex flex-col items-center justify-center rounded-[32px] border border-slate-200/60 bg-white/50 py-24 shadow-sm backdrop-blur no-print">
-            <div class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-indigo-50 text-4xl">🏢</div>
+            <div class="mb-6 flex items-center justify-center">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png" alt="Müşteri Seçilmedi" class="w-32 h-32  drop-shadow-2xl" />
+            </div>
             <h3 class="text-xl font-bold text-slate-900">Müşteri Seçilmedi</h3>
             <p class="mt-2 max-w-sm text-center text-sm text-slate-500">Puantaj tablosunu görüntülemek ve veri girişi yapmak için lütfen yukarıdan bir müşteri seçiniz.</p>
         </div>
@@ -263,7 +265,7 @@
         {{-- TEVKİFAT KARTI --}}
         <div class="mt-5 rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50 to-white p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 text-xl">✂️</div>
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Scissors.png" alt="Tevkifat" class="w-16 h-16 drop-shadow-xl" />
                 <div>
                     <div class="text-sm font-bold text-amber-800">Tevkifat Tutarı (%{{ $summary['withholding_rate'] }})</div>
                     <p class="text-xs font-medium text-amber-600 mt-0.5">Bu tutar faturada KDV'den düşülecektir.</p>
@@ -278,7 +280,9 @@
     <div x-show="isConfirmModalOpen" x-transition.opacity class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm" style="display:none;">
         <div @click.away="closeModals()" class="w-full max-w-md overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-2xl">
             <div class="p-6 text-center">
-                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-3xl">🚌</div>
+                <div class="mx-auto mb-4 flex items-center justify-center">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bus.png" alt="Sefer" class="w-20 h-20 drop-shadow-2xl" />
+                </div>
                 <h3 class="text-xl font-black text-slate-900" x-text="activeCell.display_date + ' Seferi'"></h3>
                 <p class="mt-2 text-sm text-slate-500 font-medium">Bu seferi <b>varsayılan/tanımlı araçlar</b> mı yaptı?</p>
                 

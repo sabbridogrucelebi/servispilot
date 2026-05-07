@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     headerTitle: { fontSize: 18, fontWeight: '900', color: '#FFF', letterSpacing: 0.5, flex: 1, textAlign: 'center', marginHorizontal: 10 },
     
     mapContainer: { flex: 1, marginHorizontal: 16, marginTop: 10, borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', backgroundColor: '#0F172A' },
-    mapTitleContainer: { flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 16, left: 16, right: 16, backgroundColor: 'rgba(15, 23, 42, 0.95)', padding: 12, borderRadius: 12, zIndex: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+    mapTitleContainer: { flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 16, left: 16, right: 16, backgroundColor: 'rgba(15, 23, 42, 0.95)', padding: 12, borderRadius: 12, zIndex: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 5 },
     mapTitle: { fontSize: 15, fontWeight: '800', color: '#FFF', marginLeft: 8, letterSpacing: 0.5 },
     map: { flex: 1 },
 

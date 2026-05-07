@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, TextInput, Alert, Animated, PanResponder, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Linking } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, TextInput, Alert, Animated, PanResponder, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Linking, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -199,6 +199,20 @@ export default function PersonnelScreen({ navigation }) {
         setShowForm(true);
     };
 
+    const handlePhoneChange = (text) => {
+        let val = text.replace(/\D/g, '');
+        if (val.length > 0 && val[0] !== '0') {
+            val = '0' + val;
+        }
+        let formatted = '';
+        if (val.length > 0) formatted += val.substring(0, 1);
+        if (val.length > 1) formatted += ' ' + val.substring(1, 4);
+        if (val.length > 4) formatted += ' ' + val.substring(4, 7);
+        if (val.length > 7) formatted += ' ' + val.substring(7, 9);
+        if (val.length > 9) formatted += ' ' + val.substring(9, 11);
+        setFormData({...formData, phone: formatted});
+    };
+
     const handleSave = async () => {
         if (!formData.full_name) {
             Alert.alert('Eksik Bilgi', 'Personel adı zorunludur.');
@@ -329,7 +343,7 @@ export default function PersonnelScreen({ navigation }) {
                 <View style={{ paddingHorizontal: 20, paddingBottom: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
                     <TouchableOpacity activeOpacity={0.8} style={s.kpiWrapper} onPress={() => setFilterStatus('all')}>
                         <LinearGradient colors={['#1E293B', '#0F172A']} style={s.kpiCardFix}>
-                            <View style={s.kpiIconWrap}><Icon name="account-group" size={20} color="#3B82F6" /></View>
+                            <View style={[s.kpiIconWrap, {backgroundColor: 'transparent'}]}><Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Construction%20Worker.png' }} style={{width: 24, height: 24}} resizeMode="contain" /></View>
                             <Text style={s.kpiValue}>{kpi.total}</Text>
                             <Text style={s.kpiLabel}>Toplam</Text>
                         </LinearGradient>
@@ -337,7 +351,7 @@ export default function PersonnelScreen({ navigation }) {
                     
                     <TouchableOpacity activeOpacity={0.8} style={[s.kpiWrapper, { marginHorizontal: 8 }]} onPress={() => setFilterStatus(filterStatus === 'inactive' ? 'all' : 'inactive')}>
                         <LinearGradient colors={filterStatus === 'inactive' ? ['#F59E0B', '#B45309'] : ['#F59E0B', '#D97706']} style={s.kpiCardFix}>
-                            <View style={s.kpiIconWrap}><Icon name="account-off" size={20} color="#FEF3C7" /></View>
+                            <View style={[s.kpiIconWrap, {backgroundColor: 'transparent'}]}><Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Prohibited.png' }} style={{width: 24, height: 24}} resizeMode="contain" /></View>
                             <Text style={s.kpiValue}>{kpi.inactive}</Text>
                             <Text style={s.kpiLabel}>Pasif</Text>
                         </LinearGradient>
@@ -345,7 +359,7 @@ export default function PersonnelScreen({ navigation }) {
 
                     <View style={s.kpiWrapper}>
                         <LinearGradient colors={['#3B82F6', '#2563EB']} style={s.kpiCardFix}>
-                            <View style={s.kpiIconWrap}><Icon name="steering" size={20} color="#DBEAFE" /></View>
+                            <View style={[s.kpiIconWrap, {backgroundColor: 'transparent'}]}><Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Automobile.png' }} style={{width: 24, height: 24}} resizeMode="contain" /></View>
                             <Text style={s.kpiValue}>{personnel.filter(p => p.vehicle_id).length}</Text>
                             <Text style={s.kpiLabel}>Araçlı</Text>
                         </LinearGradient>
@@ -362,7 +376,7 @@ export default function PersonnelScreen({ navigation }) {
                         renderItem={renderCard}
                         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
                         showsVerticalScrollIndicator={false}
-                        ListEmptyComponent={<View style={s.empty}><Icon name="account-search" size={48} color="#CBD5E1" /><Text style={s.emptyText}>Sonuç bulunamadı.</Text></View>}
+                        ListEmptyComponent={<View style={s.empty}><Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Construction%20Worker.png' }} style={{width: 64, height: 64, opacity: 0.8}} resizeMode="contain" /><Text style={s.emptyText}>Sonuç bulunamadı.</Text></View>}
                     />
                 )}
                 {/* Birthday Alert Modal */}
@@ -370,14 +384,14 @@ export default function PersonnelScreen({ navigation }) {
                 <View style={s.modalOverlayCenter}>
                     <View style={s.birthdayModal}>
                         <LinearGradient colors={['#FDF2F8', '#FCE7F3']} style={s.birthdayHeader}>
-                            <Icon name="party-popper" size={48} color="#DB2777" />
+                            <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/Party%20Popper.png' }} style={{width: 64, height: 64}} resizeMode="contain" />
                             <Text style={s.birthdayTitle}>Bugün Doğum Günü!</Text>
                         </LinearGradient>
                         <View style={s.birthdayContent}>
                             <Text style={s.birthdayDesc}>Aşağıdaki personellerinizin bugün doğum günü. Onları tebrik etmeyi unutmayın!</Text>
                             {birthdayPersonnel.map(p => (
                                 <View key={p.id} style={s.birthdayItem}>
-                                    <View style={s.birthdayIcon}><Icon name="cake-variant" size={20} color="#DB2777" /></View>
+                                    <View style={[s.birthdayIcon, {backgroundColor: 'transparent'}]}><Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Food%20and%20drink/Birthday%20Cake.png' }} style={{width: 28, height: 28}} resizeMode="contain" /></View>
                                     <Text style={s.birthdayName}>{p.full_name}</Text>
                                 </View>
                             ))}
@@ -451,7 +465,7 @@ export default function PersonnelScreen({ navigation }) {
                                 </View>
                                 <View style={s.fieldWrap}>
                                     <Icon name="phone-outline" size={20} color="#94A3B8" style={s.fieldIcon} />
-                                    <TextInput style={s.fieldInput} placeholder="Telefon Numarası" value={formData.phone} onChangeText={t => setFormData({...formData, phone: t})} keyboardType="phone-pad" />
+                                    <TextInput style={s.fieldInput} placeholder="Telefon Numarası" value={formData.phone} onChangeText={handlePhoneChange} keyboardType="phone-pad" maxLength={15} />
                                 </View>
                                 
                                 <Text style={s.sectionTitle}>İş Bilgileri</Text>
@@ -528,7 +542,7 @@ const s = StyleSheet.create({
     
     card: { flex: 1, flexDirection: 'row', alignItems: 'center' },
     cardLeft: { marginRight: 12 },
-    premiumIconWrap: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+    premiumIconWrap: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 5 },
     premiumIconShadow: { textShadowColor: 'rgba(0, 0, 0, 0.25)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
     premiumIconGlow: { position: 'absolute', top: -10, right: -10, width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.15)' },
     avatar: { width: 48, height: 48, borderRadius: 16 },
@@ -653,6 +667,6 @@ const s = StyleSheet.create({
     formActions: { flexDirection: 'row', padding: 20, borderTopWidth: 1, borderTopColor: '#F1F5F9', backgroundColor: '#FFF' },
     cancelBtn: { flex: 1, paddingVertical: 16, borderRadius: 16, backgroundColor: '#F1F5F9', alignItems: 'center', marginRight: 12 },
     cancelBtnText: { color: '#475569', fontSize: 15, fontWeight: '700' },
-    saveBtn: { flex: 2, paddingVertical: 16, borderRadius: 16, backgroundColor: '#8B5CF6', alignItems: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    saveBtn: { flex: 2, paddingVertical: 16, borderRadius: 16, backgroundColor: '#8B5CF6', alignItems: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 6 },
     saveBtnText: { color: '#FFF', fontSize: 15, fontWeight: '800' }
 });

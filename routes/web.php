@@ -139,6 +139,31 @@ Route::get('/dashboard', function () {
         ->take(6)
         ->get();
 
+    // Son Yedekleme Bilgisi
+    $companyId = auth()->user()->company_id;
+    $baseDir = storage_path("app/YEDEKLEMELER");
+    $dirs = glob($baseDir . "/firma_{$companyId}_*");
+    $backupDir = !empty($dirs) ? $dirs[0] : null;
+
+    $lastBackupDate = null;
+    $lastBackupSize = null;
+
+    if ($backupDir && \Illuminate\Support\Facades\File::exists($backupDir)) {
+        $files = \Illuminate\Support\Facades\File::files($backupDir);
+        $latestFile = null;
+        $latestTime = 0;
+        foreach ($files as $file) {
+            if ($file->getExtension() === 'zip' && $file->getMTime() > $latestTime) {
+                $latestTime = $file->getMTime();
+                $latestFile = $file;
+            }
+        }
+        if ($latestFile) {
+            $lastBackupDate = \Carbon\Carbon::createFromTimestamp($latestFile->getMTime())->format('d.m.Y H:i');
+            $lastBackupSize = round($latestFile->getSize() / 1024, 2) . ' KB';
+        }
+    }
+
     return view('dashboard', compact(
         'vehicleCount',
         'driverCount',
@@ -157,7 +182,9 @@ Route::get('/dashboard', function () {
         'totalSalary',
         'netProfit',
         'recentTrips',
-        'recentActivity'
+        'recentActivity',
+        'lastBackupDate',
+        'lastBackupSize'
     ));
 
 })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
@@ -384,6 +411,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->middleware('permission:reports.view')
         ->name('activity-logs.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | BACKUPS
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/backups', [\App\Http\Controllers\BackupController::class, 'index'])
+        ->name('backups.index');
+    Route::get('/backups/download/{file}', [\App\Http\Controllers\BackupController::class, 'download'])
+        ->name('backups.download');
+    Route::post('/backups/restore', [\App\Http\Controllers\BackupController::class, 'restore'])
+        ->name('backups.restore');
 
     /*
     |--------------------------------------------------------------------------

@@ -473,7 +473,7 @@ const st = StyleSheet.create({
     headerCenter: { flex: 1, alignItems: 'center' },
     headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
     headerSubtitle: { fontSize: 13, color: '#64748B', marginTop: 2, fontWeight: '500' },
-    addHeaderBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#E11D48', alignItems: 'center', justifyContent: 'center', shadowColor: '#E11D48', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+    addHeaderBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#E11D48', alignItems: 'center', justifyContent: 'center', shadowColor: '#E11D48', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 4 },
 
     // Stats (3D Premium)
     statsContainer: { paddingHorizontal: 12, paddingTop: 16, paddingBottom: 16 },

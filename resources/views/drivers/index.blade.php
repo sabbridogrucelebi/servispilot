@@ -23,11 +23,12 @@
     <!-- ÜST KARTLAR (KPI) -->
     <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
         <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
-            <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-indigo-50 opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Toplam Filo" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
             <div class="relative z-10 flex flex-col justify-between h-full">
                 <div class="flex items-center justify-between">
-                    <div class="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-xl shadow-inner">🧑‍✈️</div>
-                    <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Toplam Filo</span>
+                    <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-xl">Toplam Filo</span>
                 </div>
                 <div class="mt-6">
                     <div class="text-3xl font-black text-slate-900">{{ $totalDrivers }}</div>
@@ -37,11 +38,12 @@
         </div>
 
         <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
-            <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-emerald-50 opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark%20Button.png" alt="Aktif Görev" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
             <div class="relative z-10 flex flex-col justify-between h-full">
                 <div class="flex items-center justify-between">
-                    <div class="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-xl shadow-inner">🟢</div>
-                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Aktif Görev</span>
+                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-xl">Aktif Görev</span>
                 </div>
                 <div class="mt-6">
                     <div class="text-3xl font-black text-slate-900">{{ $activeDrivers }}</div>
@@ -51,11 +53,12 @@
         </div>
 
         <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
-            <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-slate-50 opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Zzz.png" alt="Pasif Durum" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
             <div class="relative z-10 flex flex-col justify-between h-full">
                 <div class="flex items-center justify-between">
-                    <div class="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-xl shadow-inner">⚪</div>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pasif Durum</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-xl">Pasif Durum</span>
                 </div>
                 <div class="mt-6">
                     <div class="text-3xl font-black text-slate-900">{{ $passiveDrivers }}</div>
@@ -65,11 +68,12 @@
         </div>
 
         <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
-            <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-rose-50 opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Cross%20Mark.png" alt="Kritik Belge" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
             <div class="relative z-10 flex flex-col justify-between h-full">
                 <div class="flex items-center justify-between">
-                    <div class="h-12 w-12 rounded-2xl bg-rose-50 flex items-center justify-center text-xl shadow-inner">⚠️</div>
-                    <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest">Kritik Belge</span>
+                    <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded-xl">Kritik Belge</span>
                 </div>
                 <div class="mt-6">
                     <div class="text-3xl font-black text-slate-900">{{ $expiredDocumentCount }}</div>
@@ -79,11 +83,12 @@
         </div>
 
         <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
-            <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-amber-50 opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Tear-Off%20Calendar.png" alt="Takip Gereken" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
             <div class="relative z-10 flex flex-col justify-between h-full">
                 <div class="flex items-center justify-between">
-                    <div class="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center text-xl shadow-inner">📅</div>
-                    <span class="text-[10px] font-black text-amber-600 uppercase tracking-widest">Takip Gereken</span>
+                    <span class="text-[10px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 px-3 py-1.5 rounded-xl">Takip Gereken</span>
                 </div>
                 <div class="mt-6">
                     <div class="text-3xl font-black text-slate-900">{{ $expiringSoonCount }}</div>
@@ -385,8 +390,10 @@
             </div>
         @endif
     @else
-        <div class="rounded-[40px] border border-dashed border-slate-200 bg-white p-20 text-center shadow-sm">
-            <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-slate-50 text-4xl">🔎</div>
+        <div class="rounded-[40px] border border-dashed border-slate-200 bg-white p-20 text-center shadow-sm relative overflow-hidden">
+            <div class="mx-auto flex items-center justify-center mb-6">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Magnifying%20Glass%20Tilted%20Right.png" alt="Bulunamadı" class="w-32 h-32  drop-shadow-2xl" />
+            </div>
             <h3 class="mt-6 text-xl font-black text-slate-900">Aradığınız kriterlere uygun personel bulunamadı.</h3>
             <p class="mt-2 text-sm font-medium text-slate-500">Filtreleri temizlemeyi veya yeni bir arama yapmayı deneyin.</p>
             <div class="mt-8">

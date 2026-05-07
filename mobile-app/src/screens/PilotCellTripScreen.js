@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     statNum: { fontSize: 22, fontWeight: '900' },
     statLabel: { color: '#94A3B8', fontSize: 11, fontWeight: '600', marginTop: 2 },
 
-    startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+    startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 5 },
     startBtnText: { color: '#FFF', fontSize: 17, fontWeight: '900', letterSpacing: 0.5 },
 
     listTitle: { color: '#FFF', fontSize: 16, fontWeight: '800', paddingHorizontal: 20, marginBottom: 12 },

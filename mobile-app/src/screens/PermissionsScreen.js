@@ -134,7 +134,7 @@ const s = StyleSheet.create({
     progressWrap: { flexDirection: 'row', gap: 8 },
     dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E2E8F0' },
     dotActive: { width: 24, backgroundColor: '#3B82F6' },
-    dotDone: { backgroundColor: '#3B82F6', opacity: 0.5 },
+    dotDone: { backgroundColor: '#3B82F6', opacity: 1 },
 
     footer: { marginBottom: 20 },
     btn: { backgroundColor: '#3B82F6', paddingVertical: 18, borderRadius: 20, alignItems: 'center', marginBottom: 16 },

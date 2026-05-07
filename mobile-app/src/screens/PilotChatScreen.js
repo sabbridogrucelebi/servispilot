@@ -192,7 +192,7 @@ export default function PilotChatScreen({ navigation }) {
                     renderItem={({ item }) => (
                         <TouchableOpacity activeOpacity={0.8} onLongPress={() => !item.is_deleted && setSelectedMsg(item)}
                             style={[st.msgRow, item.is_mine ? st.msgRowMine : st.msgRowOther]}>
-                            <View style={[st.bubble, item.is_mine ? st.bubbleMine : st.bubbleOther, item.is_deleted && { opacity: 0.5 }]}>
+                            <View style={[st.bubble, item.is_mine ? st.bubbleMine : st.bubbleOther, item.is_deleted && { opacity: 1 }]}>
                                 {activeChat.type === 'group' && !item.is_mine && <Text style={st.senderLabel}>{item.sender_name}</Text>}
                                 {item.attachments?.map(att => (
                                     att.mime_type?.startsWith('image/') ?
@@ -223,7 +223,7 @@ export default function PilotChatScreen({ navigation }) {
                         { text: 'İptal', style: 'cancel' }
                     ])} style={st.iconBtn}><Icon name="plus" size={24} color="#8696A0" /></TouchableOpacity>
                     <View style={st.inputWrap}><TextInput style={st.input} placeholder="Bir mesaj yazın" placeholderTextColor="#8696A0" value={newMessage} onChangeText={setNewMessage} multiline maxLength={2000} /></View>
-                    <TouchableOpacity style={[st.sendBtn, !newMessage.trim() && { opacity: 0.5 }]} onPress={sendMsg} disabled={!newMessage.trim()}><Icon name="send" size={18} color="#fff" style={{ marginLeft: 2 }} /></TouchableOpacity>
+                    <TouchableOpacity style={[st.sendBtn, !newMessage.trim() && { opacity: 1 }]} onPress={sendMsg} disabled={!newMessage.trim()}><Icon name="send" size={18} color="#fff" style={{ marginLeft: 2 }} /></TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
 
@@ -305,7 +305,7 @@ export default function PilotChatScreen({ navigation }) {
                                 <Text style={st.userName}>{item.name}</Text>
                             </TouchableOpacity>
                         );}} />
-                    <View style={{ padding: 20 }}><TouchableOpacity style={[st.createBtn, !selectedUsers.length && { opacity: 0.5 }]} onPress={createConversation} disabled={creating || !selectedUsers.length}>{creating ? <ActivityIndicator color="#fff" /> : <Text style={st.createBtnText}>Sohbeti Başlat</Text>}</TouchableOpacity></View>
+                    <View style={{ padding: 20 }}><TouchableOpacity style={[st.createBtn, !selectedUsers.length && { opacity: 1 }]} onPress={createConversation} disabled={creating || !selectedUsers.length}>{creating ? <ActivityIndicator color="#fff" /> : <Text style={st.createBtnText}>Sohbeti Başlat</Text>}</TouchableOpacity></View>
                 </View></View>
             </Modal>
         </SafeAreaView>
@@ -318,7 +318,7 @@ const st = StyleSheet.create({
     avatarFallbackText: { fontWeight: '700', color: '#64748B' },
     listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 44 : 16, paddingBottom: 8, minHeight: 56 },
     listTitle: { fontSize: 32, fontWeight: '900', color: '#000', letterSpacing: -0.5 },
-    newChatBtn: { borderRadius: 20, overflow: 'hidden', shadowColor: '#25D366', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    newChatBtn: { borderRadius: 20, overflow: 'hidden', shadowColor: '#25D366', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 6 },
     newChatGrad: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
     searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F2F5', marginHorizontal: 20, borderRadius: 12, paddingHorizontal: 12, height: 40, marginBottom: 8 },
     searchInput: { flex: 1, marginLeft: 8, fontSize: 15, color: '#000', fontWeight: '500' },
@@ -370,7 +370,7 @@ const st = StyleSheet.create({
     userCheck: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#CBD5E1', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
     userCheckActive: { backgroundColor: '#25D366', borderColor: '#25D366' },
     userName: { fontSize: 16, fontWeight: '600', color: '#000', marginLeft: 12 },
-    createBtn: { backgroundColor: '#25D366', paddingVertical: 16, borderRadius: 16, alignItems: 'center', shadowColor: '#25D366', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    createBtn: { backgroundColor: '#25D366', paddingVertical: 16, borderRadius: 16, alignItems: 'center', shadowColor: '#25D366', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 6 },
     createBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
     actionSheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 40 },
     actionTitle: { fontSize: 14, color: '#94A3B8', marginBottom: 16, fontWeight: '500' },

@@ -48,7 +48,7 @@ export default function VehiclesScreen({ navigation }) {
         else if (pageNumber > 1) setLoadingMore(true);
 
         try {
-            const params = { page: pageNumber, per_page: 20 };
+            const params = { page: pageNumber, per_page: 100 };
             if (statusFilter !== 'all') params.status = statusFilter;
             if (kpiFilter) params.filter = kpiFilter;
             if (debouncedSearch) params.search = debouncedSearch;
@@ -240,7 +240,7 @@ export default function VehiclesScreen({ navigation }) {
                             activeOpacity={0.8} 
                             onPress={() => { setKpiFilter(null); setStatusFilter('all'); }}>
                             <LinearGradient colors={['#0F172A', '#1E293B']} style={[s.kpiCard, kpiFilter === null && s.kpiCardActive]}>
-                                <Icon name="car-multiple" size={20} color="#3B82F6" style={s.kpiIcon} />
+                                <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Oncoming%20Bus.png' }} style={[s.kpiIcon, {width: 24, height: 24}]} resizeMode="contain" />
                                 <Text style={s.kpiValue} adjustsFontSizeToFit numberOfLines={1}>{kpi?.total || 0}</Text>
                                 <Text style={s.kpiTitle} numberOfLines={1}>Toplam</Text>
                             </LinearGradient>
@@ -251,7 +251,7 @@ export default function VehiclesScreen({ navigation }) {
                             activeOpacity={0.8} 
                             onPress={() => { setKpiFilter('upcoming_inspection'); setStatusFilter('all'); }}>
                             <LinearGradient colors={['#F59E0B', '#D97706']} style={[s.kpiCard, kpiFilter === 'upcoming_inspection' && s.kpiCardActive]}>
-                                <Icon name="alert-circle" size={20} color="#FEF3C7" style={s.kpiIcon} />
+                                <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Warning.png' }} style={[s.kpiIcon, {width: 24, height: 24}]} resizeMode="contain" />
                                 <Text style={s.kpiValue} adjustsFontSizeToFit numberOfLines={1}>{kpi?.upcoming_inspection || 0}</Text>
                                 <Text style={s.kpiTitle} numberOfLines={1}>Muayene</Text>
                             </LinearGradient>
@@ -262,7 +262,7 @@ export default function VehiclesScreen({ navigation }) {
                             activeOpacity={0.8} 
                             onPress={() => { setKpiFilter('upcoming_insurance'); setStatusFilter('all'); }}>
                             <LinearGradient colors={['#EF4444', '#DC2626']} style={[s.kpiCard, kpiFilter === 'upcoming_insurance' && s.kpiCardActive]}>
-                                <Icon name="shield-alert" size={20} color="#FEE2E2" style={s.kpiIcon} />
+                                <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png' }} style={[s.kpiIcon, {width: 24, height: 24}]} resizeMode="contain" />
                                 <Text style={s.kpiValue} adjustsFontSizeToFit numberOfLines={1}>{kpi?.upcoming_insurance || 0}</Text>
                                 <Text style={s.kpiTitle} numberOfLines={1}>Sigorta</Text>
                             </LinearGradient>
@@ -315,8 +315,8 @@ export default function VehiclesScreen({ navigation }) {
                         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchVehicles(1); }} tintColor="#3B82F6" />}
                         ListEmptyComponent={
                             <View style={s.emptyState}>
-                                <View style={s.emptyIconWrap}>
-                                    <Icon name="car-off" size={48} color="#94A3B8" />
+                                <View style={[s.emptyIconWrap, {backgroundColor: 'transparent'}]}>
+                                    <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Automobile.png' }} style={{width: 64, height: 64}} resizeMode="contain" />
                                 </View>
                                 <Text style={s.emptyTitle}>Araç Bulunamadı</Text>
                                 <Text style={s.emptyText}>Arama kriterlerinize uygun araç listelenemedi.</Text>
@@ -364,12 +364,12 @@ const s = StyleSheet.create({
     header: { flexDirection: 'row', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 24 : 40, paddingBottom: 20, alignItems: 'center' },
     headerTitle: { fontSize: 28, fontWeight: '900', color: '#0F172A', letterSpacing: -0.5 },
     headerSub: { fontSize: 13, color: '#64748B', fontWeight: '500', marginTop: 4 },
-    addBtn: { borderRadius: 16, overflow: 'hidden', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+    addBtn: { borderRadius: 16, overflow: 'hidden', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 8 }, shadowopacity: 1, shadowRadius: 12, elevation: 8 },
     addBtnGradient: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
 
     kpiCard: { padding: 12, borderRadius: 20, justifyContent: 'space-between', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 },
     kpiCardActive: { borderWidth: 2, borderColor: '#FFFFFF' },
-    kpiIcon: { marginBottom: 8, opacity: 0.9 },
+    kpiIcon: { marginBottom: 8, opacity: 1 },
     kpiValue: { fontSize: 20, fontWeight: '900', color: '#FFF', letterSpacing: -0.5 },
     kpiTitle: { fontSize: 10, color: 'rgba(255,255,255,0.8)', fontWeight: '600', marginTop: 2 },
 

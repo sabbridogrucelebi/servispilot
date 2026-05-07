@@ -60,42 +60,45 @@
         
         {{-- Toplam Araç --}}
         <a href="{{ route('vehicles.index') }}" class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <div class="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-blue-500/10 to-indigo-500/10 transition-transform group-hover:scale-150"></div>
-            <div class="relative flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Toplam Araç Sayısı</p>
-                    <p class="mt-2 text-3xl font-black text-slate-800">{{ $kpi['total'] }}</p>
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bus.png" alt="Toplam Araç" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-xl">Toplam Araç Sayısı</span>
                 </div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 17l2-2m-2 2l-2-2m2 2v-4m-4 0h-4m4 0v4m-4 0H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4v-4z"></path></svg>
+                <div class="mt-6">
+                    <div class="text-3xl font-black text-slate-900">{{ $kpi['total'] }}</div>
                 </div>
             </div>
         </a>
 
         {{-- Muayenesi Yaklaşan --}}
         <a href="{{ route('vehicles.index', ['filter' => 'upcoming_inspection']) }}" class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <div class="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-amber-500/10 to-orange-500/10 transition-transform group-hover:scale-150"></div>
-            <div class="relative flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Muayenesi Yaklaşan</p>
-                    <p class="mt-2 text-3xl font-black text-slate-800">{{ $kpi['upcoming_inspection'] }}</p>
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wrench.png" alt="Muayene" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 px-3 py-1.5 rounded-xl">Muayenesi Yaklaşan</span>
                 </div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div class="mt-6">
+                    <div class="text-3xl font-black text-slate-900">{{ $kpi['upcoming_inspection'] }}</div>
                 </div>
             </div>
         </a>
 
         {{-- Sigortası Yaklaşan --}}
         <a href="{{ route('vehicles.index', ['filter' => 'upcoming_insurance']) }}" class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <div class="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-to-br from-rose-500/10 to-pink-500/10 transition-transform group-hover:scale-150"></div>
-            <div class="relative flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Sigortası Yaklaşan</p>
-                    <p class="mt-2 text-3xl font-black text-slate-800">{{ $kpi['upcoming_insurance'] }}</p>
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="Sigorta" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded-xl">Sigortası Yaklaşan</span>
                 </div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/30">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <div class="mt-6">
+                    <div class="text-3xl font-black text-slate-900">{{ $kpi['upcoming_insurance'] }}</div>
                 </div>
             </div>
         </a>
@@ -105,7 +108,7 @@
                 types: {{ json_encode($kpi['types']) }}, 
                 keys: Object.keys({{ json_encode($kpi['types']) }}).length ? Object.keys({{ json_encode($kpi['types']) }}) : ['Belirsiz'],
                 currentIndex: 0,
-                colors: ['from-emerald-500 to-teal-600', 'from-purple-500 to-violet-600', 'from-cyan-500 to-blue-600', 'from-fuchsia-500 to-pink-600'],
+                colors: ['text-emerald-600 bg-emerald-50', 'text-purple-600 bg-purple-50', 'text-cyan-600 bg-cyan-50', 'text-fuchsia-600 bg-fuchsia-50'],
                 init() { 
                     if(this.keys.length > 1) {
                         setInterval(() => { this.currentIndex = (this.currentIndex + 1) % this.keys.length; }, 5000);
@@ -113,16 +116,17 @@
                 }
              }" 
              class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300">
-            <div class="absolute inset-0 opacity-10 transition-colors duration-1000 bg-gradient-to-br" :class="colors[currentIndex % colors.length]"></div>
-            <div class="relative flex items-center justify-between">
-                <div class="flex flex-col">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all duration-500">
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Automobile.png" alt="Araç Tipi" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black uppercase tracking-widest transition-all duration-500 px-3 py-1.5 rounded-xl" :class="colors[currentIndex % colors.length]">
                         <span x-text="'Toplam ' + keys[currentIndex] + ' Sayısı'"></span>
-                    </p>
-                    <p class="mt-2 text-3xl font-black text-slate-800 transition-all duration-500" x-text="types[keys[currentIndex]] || 0"></p>
+                    </span>
                 </div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg transition-all duration-1000 bg-gradient-to-br" :class="colors[currentIndex % colors.length]">
-                    <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <div class="mt-6">
+                    <div class="text-3xl font-black text-slate-900 transition-all duration-500" x-text="types[keys[currentIndex]] || 0"></div>
                 </div>
             </div>
         </div>
@@ -457,8 +461,8 @@
                     @empty
                         <tr>
                             <td colspan="6" class="p-12 text-center text-slate-400">
-                                <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 border border-slate-100 text-slate-300">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" /></svg>
+                                <div class="mx-auto flex items-center justify-center mb-6">
+                                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Magnifying%20Glass%20Tilted%20Right.png" alt="Bulunamadı" class="w-24 h-24  drop-shadow-xl" />
                                 </div>
                                 <div class="text-sm font-bold uppercase tracking-widest">Kayıt Bulunamadı</div>
                             </td>

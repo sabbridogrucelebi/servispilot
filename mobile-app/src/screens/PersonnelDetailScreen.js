@@ -510,7 +510,7 @@ export default function PersonnelDetailScreen({ route, navigation }) {
 
                             <View style={s.formActions}>
                                 <TouchableOpacity style={s.cancelBtn} onPress={() => { setShowDocModal(false); setSelectedDoc(null); }}><Text style={s.cancelBtnText}>İptal</Text></TouchableOpacity>
-                                <TouchableOpacity style={[s.saveBtn, !selectedDoc && { opacity: 0.5 }]} onPress={() => uploadFile(activeTab === 'resim' ? 'image' : 'document')} disabled={uploading || !selectedDoc}>
+                                <TouchableOpacity style={[s.saveBtn, !selectedDoc && { opacity: 1 }]} onPress={() => uploadFile(activeTab === 'resim' ? 'image' : 'document')} disabled={uploading || !selectedDoc}>
                                     {uploading ? <ActivityIndicator color="#FFF" /> : <Text style={s.saveBtnText}>Yükle</Text>}
                                 </TouchableOpacity>
                             </View>
@@ -649,6 +649,6 @@ const s = StyleSheet.create({
     modalActions: { flexDirection: 'row', gap: 12, marginTop: 24 },
     cancelBtn: { flex: 1, paddingVertical: 16, borderRadius: 16, backgroundColor: '#F1F5F9', alignItems: 'center' },
     cancelBtnText: { color: '#475569', fontSize: 15, fontWeight: '800' },
-    saveBtn: { flex: 2, paddingVertical: 16, borderRadius: 16, backgroundColor: '#8B5CF6', alignItems: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    saveBtn: { flex: 2, paddingVertical: 16, borderRadius: 16, backgroundColor: '#8B5CF6', alignItems: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 6 },
     saveBtnText: { color: '#FFF', fontSize: 15, fontWeight: '900' }
 });

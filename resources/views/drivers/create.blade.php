@@ -50,6 +50,9 @@
                             <input type="text"
                                    name="phone"
                                    value="{{ old('phone') }}"
+                                   placeholder="0 555 555 55 55"
+                                   @input="let v=$event.target.value.replace(/\D/g,''); if(v.length>0 && v[0]!=='0') v='0'+v; let f=''; if(v.length>0) f+=v.substring(0,1); if(v.length>1) f+=' '+v.substring(1,4); if(v.length>4) f+=' '+v.substring(4,7); if(v.length>7) f+=' '+v.substring(7,9); if(v.length>9) f+=' '+v.substring(9,11); $event.target.value=f;"
+                                   maxlength="15"
                                    class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
                             @error('phone')
                                 <div class="mt-1 text-xs text-rose-600">{{ $message }}</div>

@@ -96,7 +96,7 @@ const s = StyleSheet.create({
     content: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 80 },
     
     // Glassmorphism card for dark background
-    supportCard: { width: '100%', backgroundColor: 'rgba(15, 23, 42, 0.7)', borderRadius: 32, padding: 30, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowOpacity: 0.5, shadowRadius: 40, elevation: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+    supportCard: { width: '100%', backgroundColor: 'rgba(15, 23, 42, 0.7)', borderRadius: 32, padding: 30, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowopacity: 1, shadowRadius: 40, elevation: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
     
     avatarContainer: { position: 'relative', marginBottom: 20 },
     avatarBg: { width: 90, height: 90, borderRadius: 45, alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.4, shadowRadius: 20, elevation: 10, borderWidth: 3, borderColor: 'rgba(15, 23, 42, 1)' },
@@ -110,7 +110,7 @@ const s = StyleSheet.create({
     descText: { fontSize: 14, color: '#94A3B8', textAlign: 'center', lineHeight: 22, marginBottom: 30, paddingHorizontal: 10 },
 
     buttonRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-between' },
-    whatsappBtn: { flex: 1, flexDirection: 'row', backgroundColor: '#10B981', paddingVertical: 14, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 10, shadowColor: '#10B981', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+    whatsappBtn: { flex: 1, flexDirection: 'row', backgroundColor: '#10B981', paddingVertical: 14, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 10, shadowColor: '#10B981', shadowOffset: { width: 0, height: 8 }, shadowopacity: 1, shadowRadius: 12, elevation: 8 },
     whatsappBtnText: { fontSize: 14, fontWeight: '800', color: '#FFF' },
     
     emailBtn: { flex: 1, flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', paddingVertical: 14, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginLeft: 10 },

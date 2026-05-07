@@ -194,7 +194,7 @@ const s = StyleSheet.create({
     errorBox: { flexDirection: 'row', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: 16, borderRadius: 16, marginBottom: 20, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.3)' },
     errorText: { marginLeft: 10, fontSize: 13, color: '#FCA5A5', fontWeight: '600', flex: 1 },
 
-    formCard: { backgroundColor: 'rgba(15, 23, 42, 0.7)', borderRadius: 24, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowOpacity: 0.5, shadowRadius: 40, elevation: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 24 },
+    formCard: { backgroundColor: 'rgba(15, 23, 42, 0.7)', borderRadius: 24, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowopacity: 1, shadowRadius: 40, elevation: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 24 },
     divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginVertical: 20, marginHorizontal: -20 },
     
     inputGroup: { marginBottom: 16 },
@@ -208,7 +208,7 @@ const s = StyleSheet.create({
     submitText: { fontSize: 16, fontWeight: '800', color: '#FFF', letterSpacing: 0.5 },
 
     modalOverlay: { flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-    modalCard: { width: '100%', maxWidth: 360, backgroundColor: '#0F172A', borderRadius: 32, padding: 30, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowOpacity: 0.5, shadowRadius: 40, elevation: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+    modalCard: { width: '100%', maxWidth: 360, backgroundColor: '#0F172A', borderRadius: 32, padding: 30, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowopacity: 1, shadowRadius: 40, elevation: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
     modalIconWrap: { marginBottom: 20 },
     modalIconBg: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(16, 185, 129, 0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#10B981' },
     modalTitle: { fontSize: 26, fontWeight: '900', color: '#FFFFFF', marginBottom: 12, letterSpacing: -0.5 },

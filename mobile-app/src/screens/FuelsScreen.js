@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Animated, PanResponder, Dimensions, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Animated, PanResponder, Dimensions, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -272,7 +272,7 @@ export default function FuelsScreen({ navigation }) {
             <View style={s.kpiGrid}>
                 <View style={[s.statCardContainer, { width: '48%' }]}>
                     <LinearGradient colors={['#3B82F6', '#2563EB']} start={{x:0, y:0}} end={{x:1, y:1}} style={s.statCard}>
-                        <Icon name="cash" size={60} color="rgba(255,255,255,0.15)" style={s.statCardBgIcon} />
+                        <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png' }} style={[s.statCardBgIcon, { width: 70, height: 70, opacity: 1 }]} resizeMode="contain" />
                         <View style={s.statCardInner}>
                             <Text style={s.statCardLabel}>Toplam Tutar</Text>
                             <Text style={s.statCardVal} numberOfLines={1}>₺{formatCurrency(kpi.totalCost)}</Text>
@@ -282,7 +282,7 @@ export default function FuelsScreen({ navigation }) {
 
                 <View style={[s.statCardContainer, { width: '48%' }]}>
                     <LinearGradient colors={['#10B981', '#059669']} start={{x:0, y:0}} end={{x:1, y:1}} style={s.statCard}>
-                        <Icon name="water-outline" size={60} color="rgba(255,255,255,0.15)" style={s.statCardBgIcon} />
+                        <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png' }} style={[s.statCardBgIcon, { width: 70, height: 70, opacity: 1 }]} resizeMode="contain" />
                         <View style={s.statCardInner}>
                             <Text style={s.statCardLabel}>Toplam Litre</Text>
                             <Text style={s.statCardVal} numberOfLines={1}>{formatCurrency(kpi.totalLiters)}</Text>
@@ -292,7 +292,7 @@ export default function FuelsScreen({ navigation }) {
 
                 <View style={[s.statCardContainer, { width: '48%' }]}>
                     <LinearGradient colors={['#8B5CF6', '#6D28D9']} start={{x:0, y:0}} end={{x:1, y:1}} style={s.statCard}>
-                        <Icon name="file-document-outline" size={60} color="rgba(255,255,255,0.15)" style={s.statCardBgIcon} />
+                        <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20with%20Curl.png' }} style={[s.statCardBgIcon, { width: 70, height: 70, opacity: 1 }]} resizeMode="contain" />
                         <View style={s.statCardInner}>
                             <Text style={s.statCardLabel}>Kayıt Adedi</Text>
                             <Text style={s.statCardVal} numberOfLines={1}>{kpi.count}</Text>
@@ -302,7 +302,7 @@ export default function FuelsScreen({ navigation }) {
 
                 <View style={[s.statCardContainer, { width: '48%' }]}>
                     <LinearGradient colors={kpi.debt < 0 ? ['#10B981', '#059669'] : ['#EC4899', '#BE185D']} start={{x:0, y:0}} end={{x:1, y:1}} style={s.statCard}>
-                        <Icon name="bank-outline" size={60} color="rgba(255,255,255,0.15)" style={s.statCardBgIcon} />
+                        <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bank.png' }} style={[s.statCardBgIcon, { width: 70, height: 70, opacity: 1 }]} resizeMode="contain" />
                         <View style={s.statCardInner}>
                             <Text style={s.statCardLabel}>İstasyon Borcu</Text>
                             <Text style={s.statCardVal} numberOfLines={1}>{kpi.debt < 0 ? '-' : ''}₺{formatCurrency(Math.abs(kpi.debt))}</Text>
@@ -373,7 +373,7 @@ export default function FuelsScreen({ navigation }) {
                 onRefresh={() => { setRefreshing(true); fetchData(false); }}
                 ListEmptyComponent={
                     <View style={s.empty}>
-                        <Icon name="database-off" size={48} color="#CBD5E1" />
+                        <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png' }} style={{ width: 64, height: 64, opacity: 0.7 }} resizeMode="contain" />
                         <Text style={s.emptyText}>Kriterlere uygun kayıt bulunamadı.</Text>
                     </View>
                 }
@@ -484,6 +484,6 @@ const s = StyleSheet.create({
     cellLabel: { fontSize: 10, color: '#94A3B8', fontWeight: '600', textTransform: 'uppercase', marginBottom: 2 },
     cellVal: { fontSize: 12, color: '#334155', fontWeight: '700' },
 
-    fab: { position: 'absolute', right: 20, bottom: 24, borderRadius: 28, shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 8 },
+    fab: { position: 'absolute', right: 20, bottom: 24, borderRadius: 28, shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 6 }, shadowopacity: 1, shadowRadius: 10, elevation: 8 },
     fabGradient: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
 });

@@ -215,7 +215,7 @@ const st = StyleSheet.create({
     sumFooter: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     sumDot: { width: 6, height: 6, borderRadius: 3 },
     sumFooterText: { fontSize: 12, fontWeight: '600' },
-    bgIcon: { position: 'absolute', right: -10, top: -5, opacity: 0.5, transform: [{ scale: 1.2 }] },
+    bgIcon: { position: 'absolute', right: -10, top: -5, opacity: 1, transform: [{ scale: 1.2 }] },
 
     listHeader: { marginBottom: 12 },
     listTitle: { fontSize: 16, fontWeight: '700', color: '#334155' },

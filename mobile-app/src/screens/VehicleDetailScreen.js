@@ -83,11 +83,11 @@ export default function VehicleDetailScreen({ route, navigation }) {
     const profit = (stats.revenue || 0) - (stats.fuel || 0) - (stats.salary || 0);
 
     const quickStats = [
-        { icon: 'speedometer', label: 'Kilometre', value: `${fmtKm(v.current_km)} km`, color: '#3B82F6' },
-        { icon: 'gas-station', label: 'Yakıt', value: v.fuel_type || '-', color: '#F59E0B' },
-        { icon: 'calendar', label: 'Model Yılı', value: v.model_year || '-', color: '#8B5CF6' },
-        { icon: 'palette', label: 'Renk', value: v.color || '-', color: '#EC4899' },
-        { icon: 'seat', label: 'Koltuk', value: v.seat_count || '-', color: '#10B981' },
+        { img: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Police%20Car%20Light.png', label: 'Kilometre', value: `${fmtKm(v.current_km)} km`, color: '#3B82F6' },
+        { img: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png', label: 'Yakıt', value: v.fuel_type || '-', color: '#F59E0B' },
+        { img: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Tear-Off%20Calendar.png', label: 'Model Yılı', value: v.model_year || '-', color: '#8B5CF6' },
+        { img: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/Artist%20Palette.png', label: 'Renk', value: v.color || '-', color: '#EC4899' },
+        { img: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Seat.png', label: 'Koltuk', value: v.seat_count || '-', color: '#10B981' },
     ];
 
     const menuItems = [
@@ -139,8 +139,8 @@ export default function VehicleDetailScreen({ route, navigation }) {
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={st.quickRow} contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}>
                         {quickStats.map((s, i) => (
                             <View key={i} style={st.quickCard}>
-                                <View style={[st.quickIcon, { backgroundColor: s.color + '15' }]}>
-                                    <Icon name={s.icon} size={18} color={s.color} />
+                                <View style={[st.quickIcon, { backgroundColor: 'transparent' }]}>
+                                    <Image source={{ uri: s.img }} style={{ width: 28, height: 28 }} resizeMode="contain" />
                                 </View>
                                 <Text style={st.quickLabel}>{s.label}</Text>
                                 <Text style={st.quickValue}>{s.value}</Text>
@@ -196,12 +196,12 @@ export default function VehicleDetailScreen({ route, navigation }) {
                             <Text style={st.sectionTitle}>Finansal Özet</Text>
                         <View style={st.finRow}>
                             {[
-                                { label: 'Gelir', value: stats.revenue, icon: 'trending-up', color: '#10B981', bg: ['#ECFDF5', '#D1FAE5'] },
-                                { label: 'Yakıt', value: stats.fuel, icon: 'gas-station', color: '#F59E0B', bg: ['#FFFBEB', '#FEF3C7'] },
-                                { label: 'Maaş', value: stats.salary, icon: 'account-cash', color: '#3B82F6', bg: ['#EFF6FF', '#DBEAFE'] },
+                                { label: 'Gelir', value: stats.revenue, img: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png', color: '#10B981', bg: ['#ECFDF5', '#D1FAE5'] },
+                                { label: 'Yakıt', value: stats.fuel, img: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png', color: '#F59E0B', bg: ['#FFFBEB', '#FEF3C7'] },
+                                { label: 'Maaş', value: stats.salary, img: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png', color: '#3B82F6', bg: ['#EFF6FF', '#DBEAFE'] },
                             ].map((f, i) => (
                                 <LinearGradient key={i} colors={f.bg} style={st.finCard}>
-                                    <Icon name={f.icon} size={20} color={f.color} />
+                                    <Image source={{ uri: f.img }} style={{ width: 32, height: 32, marginBottom: 4 }} resizeMode="contain" />
                                     <Text style={[st.finValue, { color: f.color }]}>{fmtMoney(f.value)}</Text>
                                     <Text style={st.finLabel}>{f.label}</Text>
                                 </LinearGradient>
@@ -212,7 +212,7 @@ export default function VehicleDetailScreen({ route, navigation }) {
                                 <Text style={st.profitLabel}>Net Kâr / Zarar</Text>
                                 <Text style={st.profitValue}>{fmtMoney(profit)}</Text>
                             </View>
-                            <Icon name={profit >= 0 ? 'trending-up' : 'trending-down'} size={32} color="rgba(255,255,255,0.4)" />
+                            <Image source={{ uri: profit >= 0 ? 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark%20Button.png' : 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Cross%20Mark.png' }} style={{ width: 48, height: 48 }} resizeMode="contain" />
                         </LinearGradient>
                     </View>
                     )}
@@ -305,10 +305,10 @@ const st = StyleSheet.create({
     sectionTitle: { fontSize: 18, fontWeight: '900', color: '#FFFFFF', marginBottom: 14, letterSpacing: -0.3 },
 
     // Date cards
-    grid3Row: { flexDirection: 'row', gap: 8, marginBottom: 10 },
+    grid3Row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
     grid2RowCentered: { flexDirection: 'row', gap: 10, justifyContent: 'center' },
-    dateCard3: { flex: 1, backgroundColor: '#fff', borderRadius: 14, padding: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, alignItems: 'center' },
-    dateCardTop3: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 },
+    dateCard3: { width: '48%', flexGrow: 1, backgroundColor: '#fff', borderRadius: 14, padding: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, alignItems: 'center' },
+    dateCardTop3: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 6 },
     dateCardLabel3: { fontSize: 10, fontWeight: '800', color: '#334155' },
     dateCardDate3: { fontSize: 11, color: '#64748B', fontWeight: '700', marginBottom: 6 },
     
@@ -322,8 +322,8 @@ const st = StyleSheet.create({
     dateBadgeText: { fontSize: 9, fontWeight: '800' },
 
     // Financial
-    finRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-    finCard: { flex: 1, borderRadius: 16, padding: 14, alignItems: 'center' },
+    finRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+    finCard: { width: '31%', flexGrow: 1, borderRadius: 16, padding: 14, alignItems: 'center' },
     finValue: { fontSize: 14, fontWeight: '900', marginTop: 6 },
     finLabel: { fontSize: 11, color: '#64748B', fontWeight: '600', marginTop: 2 },
     profitCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 18, padding: 20 },

@@ -282,7 +282,7 @@ export default function TripsScreen({ route, navigation }) {
                         </View>
                         <View style={{ flexDirection: 'row', gap: 8 }}>
                             <TouchableOpacity 
-                                style={[styles.exportBtn, exportingType === 'pdf' && { opacity: 0.5 }]}
+                                style={[styles.exportBtn, exportingType === 'pdf' && { opacity: 1 }]}
                                 onPress={() => exportReport('pdf')}
                                 disabled={exportingType !== null}
                             >
@@ -290,7 +290,7 @@ export default function TripsScreen({ route, navigation }) {
                                 <Text style={[styles.exportBtnText, { color: '#DC2626' }]}>PDF</Text>
                             </TouchableOpacity>
                             <TouchableOpacity 
-                                style={[styles.exportBtn, exportingType === 'excel' && { opacity: 0.5 }]}
+                                style={[styles.exportBtn, exportingType === 'excel' && { opacity: 1 }]}
                                 onPress={() => exportReport('excel')}
                                 disabled={exportingType !== null}
                             >
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
 
     modalActions: { flexDirection: 'row', marginTop: 32, gap: 12 },
     deleteBtn: { width: 60, height: 60, borderRadius: 16, backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FEE2E2' },
-    saveBtn: { flex: 1, height: 60, borderRadius: 16, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+    saveBtn: { flex: 1, height: 60, borderRadius: 16, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 4 },
     saveBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', letterSpacing: 0.5 },
 
     selectionListItem: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },

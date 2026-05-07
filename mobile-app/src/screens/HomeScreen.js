@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Animated, Dimensions, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -55,11 +55,20 @@ export default function HomeScreen({ navigation }) {
     const firstName = toTitleCase(userInfo?.name?.split(' ')[0] || 'Kullanıcı');
     const currentDate = dayjs().format('D MMMM YYYY, dddd');
 
+    const get3DIcon = (iconName) => {
+        switch (iconName) {
+            case 'bus-multiple': return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Oncoming%20Bus.png';
+            case 'account-tie': return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Construction%20Worker.png';
+            case 'domain': return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png';
+            default: return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Automobile.png';
+        }
+    };
+
     const KpiCard = ({ icon, title, value, gradientColors, darkColor, isHalf }) => (
         <View style={[styles.kpi3DBase, { backgroundColor: darkColor }]}>
             <LinearGradient colors={gradientColors} style={[styles.kpiCard, isHalf && { padding: 18, flexDirection: 'column', alignItems: 'flex-start' }]} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
-                <View style={[styles.kpiIconBox, { shadowColor: darkColor }, isHalf && { width: 46, height: 46, borderRadius: 14, marginBottom: 12, marginRight: 0 }]}>
-                    <Icon name={icon} size={isHalf ? 24 : 32} color="#FFF" />
+                <View style={[styles.kpiIconBox, { shadowColor: darkColor, backgroundColor: 'transparent' }, isHalf && { width: 46, height: 46, borderRadius: 14, marginBottom: 12, marginRight: 0 }]}>
+                    <Image source={{ uri: get3DIcon(icon) }} style={{ width: isHalf ? 36 : 48, height: isHalf ? 36 : 48 }} resizeMode="contain" />
                 </View>
                 <View style={[styles.kpiInfo, isHalf && { width: '100%' }]}>
                     <Text style={[styles.kpiValue, isHalf && { fontSize: 28 }]} adjustsFontSizeToFit numberOfLines={1}>{value !== undefined ? value : '-'}</Text>
@@ -203,15 +212,15 @@ const styles = StyleSheet.create({
 
     kpiContainer: { gap: 12 },
     kpiRow: { flexDirection: 'row' },
-    kpi3DBase: { borderRadius: 28, paddingBottom: 8, paddingRight: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.5, shadowRadius: 15, elevation: 12, marginBottom: 8 },
+    kpi3DBase: { borderRadius: 28, paddingBottom: 8, paddingRight: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowopacity: 1, shadowRadius: 15, elevation: 12, marginBottom: 8 },
     kpiCard: { padding: 22, flexDirection: 'row', alignItems: 'center', borderRadius: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-    kpiIconBox: { width: 60, height: 60, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginRight: 16, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 4 },
+    kpiIconBox: { width: 60, height: 60, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginRight: 16, shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 6, elevation: 4 },
     kpiInfo: { flex: 1 },
     kpiValue: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: -1, marginBottom: 2, textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
     kpiTitle: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.9)', letterSpacing: 0.5 },
 
     mhContainer: { gap: 16 },
-    mhCard: { backgroundColor: '#0F172A', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#1E293B', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 12, elevation: 8, overflow: 'hidden' },
+    mhCard: { backgroundColor: '#0F172A', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#1E293B', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowopacity: 1, shadowRadius: 12, elevation: 8, overflow: 'hidden' },
     mhHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
     mhHeaderLeft: { flex: 1 },
     mhPlateBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(59, 130, 246, 0.15)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, alignSelf: 'flex-start', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(59, 130, 246, 0.3)' },
@@ -227,7 +236,7 @@ const styles = StyleSheet.create({
     alertIconWrap: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
     alertContent: { marginLeft: 14, flex: 1 },
     alertType: { fontSize: 15, fontWeight: '900', marginBottom: 2 },
-    alertStatus: { fontSize: 13, fontWeight: '700', opacity: 0.9 },
+    alertStatus: { fontSize: 13, fontWeight: '700', opacity: 1 },
     pulseDot: { width: 8, height: 8, borderRadius: 4, shadowColor: '#F43F5E', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6, elevation: 4 },
 
     emptyState: { backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: 28, padding: 32, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(16, 185, 129, 0.15)', shadowColor: '#10B981', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },

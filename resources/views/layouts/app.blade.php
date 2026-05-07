@@ -156,6 +156,17 @@
                                             <span class="text-[9px] font-bold {{ request()->routeIs('super-admin.companies.*') ? 'text-rose-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">MÜŞTERİ YÖNETİMİ</span>
                                         </div>
                                     </a>
+
+                                    <a href="{{ route('backups.index') }}"
+                                       class="group relative flex items-center gap-4 rounded-2xl px-4 py-2.5 transition-all duration-500 {{ request()->routeIs('backups.*') ? 'nav-item-active text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white' }}">
+                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-500 {{ request()->routeIs('backups.*') ? 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.5)] text-white' : 'bg-slate-800/60 text-slate-400 group-hover:bg-slate-700 group-hover:text-rose-300' }} group-hover:scale-110">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        </div>
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-[13px] font-bold tracking-tight truncate">Yedeklemeler</span>
+                                            <span class="text-[9px] font-bold {{ request()->routeIs('backups.*') ? 'text-rose-200/60' : 'text-slate-500' }} uppercase tracking-widest truncate">VERİ GÜVENLİĞİ</span>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
                         @else

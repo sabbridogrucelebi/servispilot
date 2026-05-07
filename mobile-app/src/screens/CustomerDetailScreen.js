@@ -713,7 +713,7 @@ export default function CustomerDetailScreen({ route, navigation }) {
                                 <Icon name="bank-minus" size={24} color="#94A3B8" />
                             </View>
 
-                            <LinearGradient colors={['#312E81', '#0F172A']} style={{ borderRadius: 16, padding: 20, shadowColor: '#312E81', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                            <LinearGradient colors={['#312E81', '#0F172A']} style={{ borderRadius: 16, padding: 20, shadowColor: '#312E81', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                                 <View>
                                     <Text style={{ fontSize: 11, fontWeight: '800', color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Net Fatura Tutarı</Text>
                                     <Text style={{ fontSize: 24, fontWeight: '900', color: '#FFF' }}>₺{formatMoney(invoiceSummary.net_total)}</Text>
@@ -751,7 +751,7 @@ export default function CustomerDetailScreen({ route, navigation }) {
                                     borderRadius: 12,
                                     shadowColor: '#2563EB',
                                     shadowOffset: { width: 0, height: 4 },
-                                    shadowOpacity: 0.3,
+                                    shadowopacity: 1,
                                     shadowRadius: 6,
                                     elevation: 5,
                                     borderWidth: 1,
@@ -1298,7 +1298,7 @@ const styles = StyleSheet.create({
 
     routeKpiRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
     routeKpiCard: { flex: 1, padding: 12, borderRadius: 16, justifyContent: 'center', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', ...Platform.select({ ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 }, android: { elevation: 6 } }) },
-    routeKpiBgIcon: { position: 'absolute', right: -10, bottom: -10, opacity: 0.5 },
+    routeKpiBgIcon: { position: 'absolute', right: -10, bottom: -10, opacity: 1 },
     routeKpiLabel: { color: 'rgba(255,255,255,0.9)', fontSize: 10, fontWeight: '800', letterSpacing: 0.5, marginBottom: 4 },
     routeKpiValue: { color: '#FFF', fontSize: 24, fontWeight: '900' },
 

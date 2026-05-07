@@ -16,28 +16,28 @@
             'count' => $customers->where('customer_type', 'Fabrika')->count(),
             'note' => 'Fabrika türündeki müşteriler',
             'gradient' => 'from-orange-500 to-amber-500',
-            'icon' => '🏭',
+            'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Factory.png" class="w-12 h-12" />',
         ],
         [
             'label' => 'Okul Müşteri Sayısı',
             'count' => $customers->where('customer_type', 'Okul')->count(),
             'note' => 'Okul türündeki müşteriler',
             'gradient' => 'from-blue-500 to-cyan-500',
-            'icon' => '🏫',
+            'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/School.png" class="w-12 h-12" />',
         ],
         [
             'label' => 'Resmi Daire Sayısı',
             'count' => $customers->where('customer_type', 'Resmi Daire')->count(),
             'note' => 'Resmi kurum müşterileri',
             'gradient' => 'from-violet-500 to-fuchsia-500',
-            'icon' => '🏛️',
+            'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Classical%20Building.png" class="w-12 h-12" />',
         ],
         [
             'label' => 'Diğer Servisler',
             'count' => $customers->where('customer_type', 'Diğer Servisler')->count(),
             'note' => 'Diğer hizmet müşterileri',
             'gradient' => 'from-emerald-500 to-teal-500',
-            'icon' => '🧾',
+            'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Receipt.png" class="w-12 h-12" />',
         ],
     ];
 
@@ -75,57 +75,70 @@
 
     <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
 
-        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-500 to-indigo-600 p-5 text-white shadow-xl">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
-            <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
-            <div class="relative">
-                <div class="text-sm font-medium text-white/80">Toplam Müşteri</div>
-                <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ $totalCustomers }}</div>
-                <div class="mt-2 text-xs text-white/75">Sistemde kayıtlı tüm müşteriler</div>
+        <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png" alt="Müşteri" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-xl">Toplam Müşteri</span>
+                </div>
+                <div class="mt-6">
+                    <div class="text-3xl font-black text-slate-900">{{ $totalCustomers }}</div>
+                    <div class="mt-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Sistemde Kayıtlı</div>
+                </div>
             </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
-            <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
-            <div class="relative">
-                <div class="text-sm font-medium text-white/80">Aktif Müşteri</div>
-                <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ $activeCustomers }}</div>
-                <div class="mt-2 text-xs text-white/75">Aktif sözleşme veya aktif kayıt durumu</div>
+        <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark%20Button.png" alt="Aktif" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-xl">Aktif Müşteri</span>
+                </div>
+                <div class="mt-6">
+                    <div class="text-3xl font-black text-slate-900">{{ $activeCustomers }}</div>
+                    <div class="mt-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Aktif Sözleşme</div>
+                </div>
             </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-rose-500 to-pink-500 p-5 text-white shadow-xl">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
-            <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
-            <div class="relative">
-                <div class="text-sm font-medium text-white/80">Pasif Müşteri</div>
-                <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ $passiveCustomers }}</div>
-                <div class="mt-2 text-xs text-white/75">Pasif duruma alınmış müşteri kayıtları</div>
+        <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Zzz.png" alt="Pasif" class="w-24 h-24  drop-shadow-2xl" />
+            </div>
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-xl">Pasif Müşteri</span>
+                </div>
+                <div class="mt-6">
+                    <div class="text-3xl font-black text-slate-900">{{ $passiveCustomers }}</div>
+                    <div class="mt-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pasif Durumda</div>
+                </div>
             </div>
         </div>
 
         <div id="customer-type-kpi-card"
-             class="relative overflow-hidden rounded-[28px] bg-gradient-to-br {{ $customerTypeStats[0]['gradient'] }} p-5 text-white shadow-xl transition-all duration-700">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
-            <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
-
-            <div class="relative flex items-start justify-between gap-3">
-                <div>
-                    <div id="customer-type-kpi-label" class="text-sm font-medium text-white/80">
+             class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all duration-700 hover:shadow-xl hover:-translate-y-1">
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0" id="customer-type-kpi-icon-container">
+                {!! $customerTypeStats[0]['icon'] !!}
+            </div>
+            
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span id="customer-type-kpi-label" class="text-[10px] font-black text-fuchsia-600 uppercase tracking-widest bg-fuchsia-50 px-3 py-1.5 rounded-xl">
                         {{ $customerTypeStats[0]['label'] }}
-                    </div>
-                    <div id="customer-type-kpi-count" class="mt-3 text-3xl font-extrabold tracking-tight">
+                    </span>
+                </div>
+                <div class="mt-6">
+                    <div id="customer-type-kpi-count" class="text-3xl font-black text-slate-900">
                         {{ $customerTypeStats[0]['count'] }}
                     </div>
-                    <div id="customer-type-kpi-note" class="mt-2 text-xs text-white/75">
+                    <div id="customer-type-kpi-note" class="mt-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                         {{ $customerTypeStats[0]['note'] }}
                     </div>
-                </div>
-
-                <div id="customer-type-kpi-icon"
-                     class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-sm">
-                    {{ $customerTypeStats[0]['icon'] }}
                 </div>
             </div>
         </div>
@@ -200,8 +213,8 @@
                         <tr class="transition duration-200 hover:bg-indigo-50/40">
                             <td class="px-6 py-5">
                                 <div class="flex items-center gap-4">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 text-lg text-white shadow">
-                                        🏢
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100 text-lg shadow-inner">
+                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png" class="w-8 h-8 drop-shadow-md">
                                     </div>
 
                                     <div>
@@ -294,7 +307,9 @@
                         <tr>
                             <td colspan="7" class="px-6 py-14 text-center">
                                 <div class="mx-auto max-w-md">
-                                    <div class="mb-3 text-4xl">🏢</div>
+                                    <div class="mb-6 flex justify-center">
+                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Magnifying%20Glass%20Tilted%20Right.png" alt="Bulunamadı" class="w-24 h-24 drop-shadow-xl " />
+                                    </div>
                                     <div class="text-base font-semibold text-slate-700">Henüz müşteri kaydı yok</div>
                                     <div class="mt-1 text-sm text-slate-500">
                                         İlk müşteri kaydını oluşturarak müşteri yönetimine başlayın.
@@ -349,7 +364,7 @@
             label.textContent = item.label;
             count.textContent = item.count;
             note.textContent = item.note;
-            icon.textContent = item.icon;
+            document.getElementById('customer-type-kpi-icon-container').innerHTML = item.icon;
         }
 
         renderCard(currentIndex);

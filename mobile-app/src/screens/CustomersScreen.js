@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
-import { Modal, View, StyleSheet, FlatList, ActivityIndicator, Alert, TextInput, Text, TouchableOpacity, Animated, Platform, ScrollView, Switch } from 'react-native';
+import { Modal, View, StyleSheet, FlatList, ActivityIndicator, Alert, TextInput, Text, TouchableOpacity, Animated, Platform, ScrollView, Switch, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -246,6 +246,17 @@ export default function CustomersScreen({ navigation }) {
 
     const currentDynamicType = dynamicTypes[dynamicTypeIndex] || dynamicTypes[0];
 
+    const get3DIcon = (iconName) => {
+        switch (iconName) {
+            case 'domain': return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png';
+            case 'account': return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Office%20Worker.png';
+            case 'school': return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/School.png';
+            case 'factory': return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Factory.png';
+            case 'help-circle': return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Question%20Mark.png';
+            default: return 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Label.png';
+        }
+    };
+
     const filteredData = customers.filter(c => {
         // Search Filter
         if (searchQuery) {
@@ -362,7 +373,7 @@ export default function CustomersScreen({ navigation }) {
                     <View style={styles.kpiCardWrapper}>
                         <LinearGradient colors={['#3B82F6', '#2563EB', '#1E3A8A']} style={styles.kpiCardGradient} start={{x:0, y:0}} end={{x:1, y:1}}>
                             <View style={styles.kpiPattern1} />
-                            <Icon name="account-group" size={48} color="#FFF" style={[styles.kpiIcon3D, { opacity: 0.35 }]} />
+                            <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png' }} style={[styles.kpiIcon3D, { width: 64, height: 64, opacity: 1 }]} resizeMode="contain" />
                             <Text style={styles.kpiValue}>{totalCustomers}</Text>
                             <Text style={styles.kpiTitle}>Toplam Müşteri</Text>
                         </LinearGradient>
@@ -371,7 +382,7 @@ export default function CustomersScreen({ navigation }) {
                     <View style={styles.kpiCardWrapper}>
                         <LinearGradient colors={['#10B981', '#059669', '#064E3B']} style={styles.kpiCardGradient} start={{x:0, y:0}} end={{x:1, y:1}}>
                             <View style={styles.kpiPattern1} />
-                            <Icon name="check-decagram" size={48} color="#FFF" style={[styles.kpiIcon3D, { opacity: 0.35 }]} />
+                            <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark%20Button.png' }} style={[styles.kpiIcon3D, { width: 64, height: 64, opacity: 1 }]} resizeMode="contain" />
                             <Text style={styles.kpiValue}>{activeCustomers}</Text>
                             <Text style={styles.kpiTitle}>Aktif Müşteri</Text>
                         </LinearGradient>
@@ -380,7 +391,7 @@ export default function CustomersScreen({ navigation }) {
                     <View style={styles.kpiCardWrapper}>
                         <LinearGradient colors={['#F43F5E', '#E11D48', '#881337']} style={styles.kpiCardGradient} start={{x:0, y:0}} end={{x:1, y:1}}>
                             <View style={styles.kpiPattern1} />
-                            <Icon name="account-off" size={48} color="#FFF" style={[styles.kpiIcon3D, { opacity: 0.35 }]} />
+                            <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Prohibited.png' }} style={[styles.kpiIcon3D, { width: 64, height: 64, opacity: 1 }]} resizeMode="contain" />
                             <Text style={styles.kpiValue}>{passiveCustomers}</Text>
                             <Text style={styles.kpiTitle}>Pasif Müşteri</Text>
                         </LinearGradient>
@@ -391,7 +402,7 @@ export default function CustomersScreen({ navigation }) {
                             <View style={styles.kpiPattern1} />
                             
                             <Animated.View style={{ opacity: dynamicFade, flex: 1, justifyContent: 'center' }}>
-                                <Icon name={currentDynamicType.icon} size={48} color="#FFF" style={[styles.kpiIcon3D, { opacity: 0.35 }]} />
+                                <Image source={{ uri: get3DIcon(currentDynamicType.icon) }} style={[styles.kpiIcon3D, { width: 64, height: 64, opacity: 1 }]} resizeMode="contain" />
                                 <Text style={styles.kpiValue}>{currentDynamicType.count}</Text>
                                 <Text style={styles.kpiTitle}>{currentDynamicType.label} Müşterisi</Text>
                             </Animated.View>
@@ -598,7 +609,7 @@ const styles = StyleSheet.create({
         right: 10, 
         bottom: 10, 
         ...Platform.select({
-            ios: { shadowColor: '#000', shadowOffset: { width: -2, height: 4 }, shadowOpacity: 0.5, shadowRadius: 5 },
+            ios: { shadowColor: '#000', shadowOffset: { width: -2, height: 4 }, shadowopacity: 1, shadowRadius: 5 },
             android: { textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: -2, height: 4 }, textShadowRadius: 5 },
             web: { filter: 'drop-shadow(-2px 4px 5px rgba(0,0,0,0.5))' }
         })
@@ -679,7 +690,7 @@ const styles = StyleSheet.create({
     
     modalActions: { flexDirection: 'row', gap: 12, paddingTop: 10 },
     deleteBtn: { width: 56, height: 56, borderRadius: 16, backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FEE2E2' },
-    saveBtn: { flex: 1, height: 56, borderRadius: 16, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+    saveBtn: { flex: 1, height: 56, borderRadius: 16, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 8, elevation: 4 },
     saveBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', letterSpacing: 0.5 },
 
     // Dummy Tab

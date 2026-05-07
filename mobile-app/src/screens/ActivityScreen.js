@@ -307,6 +307,6 @@ const st = StyleSheet.create({
     modalActions: { flexDirection: 'row', gap: 12, marginTop: 30 },
     clearBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#F1F5F9', alignItems: 'center' },
     clearBtnTxt: { fontSize: 15, fontWeight: '700', color: '#475569' },
-    applyBtn: { flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: '#3B82F6', alignItems: 'center', shadowColor: '#3B82F6', shadowOffset: {width:0,height:4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+    applyBtn: { flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: '#3B82F6', alignItems: 'center', shadowColor: '#3B82F6', shadowOffset: {width:0,height:4}, shadowopacity: 1, shadowRadius: 8, elevation: 4 },
     applyBtnTxt: { fontSize: 15, fontWeight: '700', color: '#fff' },
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, Alert, Text, Platform, TouchableOpacity, RefreshControl, Modal, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, FlatList, ActivityIndicator, Alert, Text, Platform, TouchableOpacity, RefreshControl, Modal, ScrollView, Dimensions, Image } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -234,7 +234,7 @@ export default function MaintenancesScreen({ navigation }) {
             <View style={st.kpiRow}>
                 <LinearGradient colors={['#60A5FA', '#2563EB', '#1D4ED8']} locations={[0, 0.5, 1]} style={[st.kpiCard, { flex: 1, marginRight: 8 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <View style={st.kpiGlowTop} />
-                    <Icon name="tools" size={64} color="rgba(255,255,255,0.35)" style={[st.kpiIconBg, { textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 2, height: 4 }, textShadowRadius: 5 }]} />
+                    <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png' }} style={[st.kpiIconBg, { width: 80, height: 80, opacity: 1, right: -10, bottom: -10 }]} resizeMode="contain" />
                     <Text style={st.kpiTitle}>Toplam Bakım</Text>
                     <Text style={st.kpiValue}>{summary.total_count}</Text>
                     <Text style={st.kpiSub}>Sistemde kayıtlı işlemler</Text>
@@ -242,7 +242,7 @@ export default function MaintenancesScreen({ navigation }) {
                 
                 <LinearGradient colors={['#34D399', '#059669', '#047857']} locations={[0, 0.5, 1]} style={[st.kpiCard, { flex: 1, marginLeft: 8 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <View style={st.kpiGlowTop} />
-                    <Icon name="calendar-check" size={64} color="rgba(255,255,255,0.35)" style={[st.kpiIconBg, { textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 2, height: 4 }, textShadowRadius: 5 }]} />
+                    <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Spiral%20Calendar.png' }} style={[st.kpiIconBg, { width: 80, height: 80, opacity: 1, right: -10, bottom: -10 }]} resizeMode="contain" />
                     <Text style={st.kpiTitle}>Bu Ay Yapılan</Text>
                     <Text style={st.kpiValue}>{summary.this_month_count}</Text>
                     <Text style={st.kpiSub}>Tamamlanan kayıtlar</Text>
@@ -251,7 +251,7 @@ export default function MaintenancesScreen({ navigation }) {
             <View style={[st.kpiRow, { marginTop: 16 }]}>
                 <LinearGradient colors={['#FB7185', '#E11D48', '#BE123C']} locations={[0, 0.5, 1]} style={[st.kpiCard, { flex: 1 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <View style={st.kpiGlowTop} />
-                    <Icon name="cash-multiple" size={80} color="rgba(255,255,255,0.35)" style={[st.kpiIconBg, { textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 2, height: 4 }, textShadowRadius: 5, right: -10, bottom: -10 }]} />
+                    <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png' }} style={[st.kpiIconBg, { width: 100, height: 100, opacity: 1, right: -15, bottom: -15 }]} resizeMode="contain" />
                     <Text style={st.kpiTitle}>Toplam Maliyet</Text>
                     <Text style={st.kpiValue}>{fmtMoney(summary.total_cost)}</Text>
                     <Text style={st.kpiSub}>Tüm bakım işlemlerinin maliyeti</Text>
@@ -726,7 +726,7 @@ const st = StyleSheet.create({
     
     kpiContainer: { marginBottom: 20 },
     kpiRow: { flexDirection: 'row', justifyContent: 'space-between' },
-    kpiCard: { padding: 20, borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.35, shadowRadius: 16, elevation: 10, position: 'relative', overflow: 'hidden' },
+    kpiCard: { padding: 20, borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowopacity: 15, shadowRadius: 16, elevation: 10, position: 'relative', overflow: 'hidden' },
     kpiGlowTop: { position: 'absolute', top: 0, left: 0, right: 0, height: 2, backgroundColor: 'rgba(255,255,255,0.6)', opacity: 0.8 },
     kpiIconBg: { position: 'absolute', right: -15, bottom: -15, transform: [{ rotate: '-15deg' }] },
     kpiTitle: { fontSize: 13, fontWeight: '800', color: 'rgba(255,255,255,0.9)', marginBottom: 6, textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
@@ -761,7 +761,7 @@ const st = StyleSheet.create({
     gridValue: { fontSize: 13, fontWeight: '800', color: '#1E293B', marginBottom: 2 },
     gridSubValue: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
 
-    headerAddBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 4 },
+    headerAddBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 6, elevation: 4 },
     headerSettingsBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
 
     exportActionsRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, paddingHorizontal: 16, marginBottom: 16, marginTop: -4 },

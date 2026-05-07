@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     dayCell: { width: '14.28%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center', position: 'relative' },
     dayCellToday: { backgroundColor: 'rgba(139, 92, 246, 0.2)', borderRadius: 12 },
     dayCellAbsent: { backgroundColor: 'rgba(239, 68, 68, 0.2)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.5)' },
-    dayCellPast: { opacity: 0.3 },
+    dayCellPast: { opacity: 1 },
     dayText: { color: '#E2E8F0', fontSize: 15, fontWeight: '700' },
     dayTextToday: { color: '#A78BFA', fontWeight: '900' },
     dayTextAbsent: { color: '#EF4444', fontWeight: '900' },
