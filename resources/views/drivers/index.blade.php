@@ -54,7 +54,7 @@
 
         <div class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Zzz.png" alt="Pasif Durum" class="w-24 h-24  drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Sleeping%20Face.png" alt="Pasif Durum" class="w-24 h-24  drop-shadow-2xl" />
             </div>
             <div class="relative z-10 flex flex-col justify-between h-full">
                 <div class="flex items-center justify-between">
