@@ -75,9 +75,11 @@
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-slate-700">Telefon Numaranız <span class="text-rose-500">*</span></label>
                         <input type="tel"
+                               id="phone-input"
                                name="phone"
                                required
-                               placeholder="Örn: 0532 123 45 67"
+                               maxlength="15"
+                               placeholder="Örn: 0 532 123 45 67"
                                value="{{ old('phone') }}"
                                class="w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow">
                     </div>
@@ -162,10 +164,28 @@
             const titleCaseInputs = document.querySelectorAll('.title-case-input');
             titleCaseInputs.forEach(input => {
                 input.addEventListener('input', function() {
-                    // Update as user types or pastes
                     this.value = toTitleCase(this.value);
                 });
             });
+
+            const phoneInput = document.getElementById('phone-input');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function(e) {
+                    let x = e.target.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
+                    
+                    if (!x[1]) {
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    // Zorla 0 ile başlat
+                    if (x[1] !== '0') {
+                        x[1] = '0';
+                    }
+
+                    e.target.value = !x[2] ? x[1] : x[1] + ' ' + x[2] + (x[3] ? ' ' + x[3] : '') + (x[4] ? ' ' + x[4] : '') + (x[5] ? ' ' + x[5] : '');
+                });
+            }
         });
     </script>
 </body>
