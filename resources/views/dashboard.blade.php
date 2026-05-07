@@ -15,6 +15,46 @@
     $chartLabels = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu'];
     $incomeSeries = [12000, 18000, 22000, 26000, 31000, 37000, 43000, (float) $monthlyIncome];
     $operationSeries = [8, 11, 13, 16, 18, 21, 24, max((int) $todayTrips, 12)];
+
+    // Bakım Verileri
+    $maintVehicles = \App\Models\Fleet\Vehicle::with(['maintenanceSetting', 'maintenances'])
+        ->where('company_id', auth()->user()->company_id)
+        ->get();
+    
+    $maintAlerts = collect();
+    $healthyCount = 0;
+    
+    foreach ($maintVehicles as $v) {
+        $mStatus = $v->maintenance_status;
+        $needsAttention = false;
+        
+        if ($mStatus['has_oil_setting'] && $mStatus['oil_remaining'] !== null && $mStatus['oil_remaining'] <= 200) {
+            $maintAlerts->push([
+                'vehicle' => $v,
+                'type' => 'Yağ Değişimi',
+                'remaining' => $mStatus['oil_remaining'],
+                'critical' => $mStatus['oil_remaining'] < 0
+            ]);
+            $needsAttention = true;
+        }
+        
+        if ($mStatus['has_lube_setting'] && $mStatus['lube_remaining'] !== null && $mStatus['lube_remaining'] <= 200) {
+            $maintAlerts->push([
+                'vehicle' => $v,
+                'type' => 'Alt Yağlama',
+                'remaining' => $mStatus['lube_remaining'],
+                'critical' => $mStatus['lube_remaining'] < 0
+            ]);
+            $needsAttention = true;
+        }
+        
+        if (!$needsAttention) {
+            $healthyCount++;
+        }
+    }
+    
+    // Sort by remaining (most critical first)
+    $maintAlerts = $maintAlerts->sortBy('remaining')->values();
 @endphp
 
 <div class="space-y-8 animate-in fade-in duration-700">
@@ -26,10 +66,6 @@
             <p class="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">Sistem durumu şu an stabil. İşte bugünün özeti.</p>
         </div>
         <div class="flex items-center gap-3">
-            <div class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sistem Aktif</span>
-            </div>
             <a href="{{ route('trips.create') }}" class="group relative flex items-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95">
                 <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
                 <svg class="relative w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
@@ -119,25 +155,77 @@
         <!-- Sol Kolon: Grafik ve Önemli Tablolar -->
         <div class="xl:col-span-8 space-y-8">
             
-            <!-- Gelir ve Operasyon Grafiği -->
-            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
-                <div class="p-8 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <!-- Araç Bakım Sağlığı KPI -->
+            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h3 class="text-xl font-black text-slate-800">Performans Analitiği</h3>
-                        <p class="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Gelir ve Sefer Verimliliği</p>
+                        <h3 class="text-xl font-black text-slate-800">Filo Bakım Sağlığı</h3>
+                        <p class="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Yaklaşan ve Geciken Bakımlar (Son 200 KM)</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 text-[10px] font-black text-indigo-600">
-                            <span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span> GELİR
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+                            <span class="text-2xl">🛡️</span>
+                            <div>
+                                <div class="text-[10px] font-black uppercase tracking-widest">Sağlıklı Araç</div>
+                                <div class="text-lg font-black leading-none">{{ $healthyCount }}</div>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-[10px] font-black text-emerald-600">
-                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> SEFER
+                        <div class="flex items-center gap-2 px-4 py-2 rounded-2xl {{ $maintAlerts->count() > 0 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-slate-50 text-slate-400 border-slate-100' }} border">
+                            <span class="text-2xl">⚠️</span>
+                            <div>
+                                <div class="text-[10px] font-black uppercase tracking-widest">Riskli Araç</div>
+                                <div class="text-lg font-black leading-none">{{ $maintAlerts->count() }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="p-8 h-[400px]">
-                    <canvas id="dashboardRevenueChart"></canvas>
-                </div>
+
+                @if($maintAlerts->count() > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @foreach($maintAlerts as $alert)
+                            <div class="group relative overflow-hidden rounded-[24px] border {{ $alert['critical'] ? 'border-rose-200 bg-rose-50/50' : 'border-amber-200 bg-amber-50/50' }} p-5 transition-all hover:shadow-lg">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $alert['critical'] ? 'bg-rose-200 text-rose-700' : 'bg-amber-200 text-amber-700' }} font-black text-lg">
+                                            {{ $alert['critical'] ? '🚨' : '🔧' }}
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-black text-slate-800">{{ $alert['vehicle']->plate }}</div>
+                                            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ $alert['type'] }}</div>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('vehicles.show', ['vehicle' => $alert['vehicle']->id, 'tab' => 'maintenances']) }}" class="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm hover:scale-110 transition-transform text-slate-400 hover:text-indigo-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </a>
+                                </div>
+                                
+                                <div>
+                                    @if($alert['critical'])
+                                        <div class="text-rose-600 text-[10px] font-bold uppercase tracking-widest">Gecikme Miktarı</div>
+                                        <div class="text-2xl font-black text-rose-700 mt-1">{{ number_format(abs($alert['remaining']), 0, ',', '.') }} KM</div>
+                                    @else
+                                        <div class="text-amber-600 text-[10px] font-bold uppercase tracking-widest">Kalan Mesafe</div>
+                                        <div class="text-2xl font-black text-amber-700 mt-1">{{ number_format($alert['remaining'], 0, ',', '.') }} KM</div>
+                                    @endif
+                                </div>
+                                
+                                <!-- Progress Bar effect -->
+                                <div class="absolute bottom-0 left-0 h-1 w-full {{ $alert['critical'] ? 'bg-rose-200' : 'bg-amber-200' }}">
+                                    @php
+                                        $percent = $alert['critical'] ? 100 : (1 - ($alert['remaining'] / 200)) * 100;
+                                    @endphp
+                                    <div class="h-full {{ $alert['critical'] ? 'bg-rose-500' : 'bg-amber-500' }}" style="width: {{ $percent }}%"></div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="flex flex-col items-center justify-center py-12 rounded-[24px] bg-slate-50 border border-slate-100">
+                        <span class="text-5xl mb-4">✨</span>
+                        <h4 class="text-lg font-black text-slate-800">Tüm Filo Sağlıklı!</h4>
+                        <p class="text-sm font-bold text-slate-400 mt-1">Bakımı yaklaşan veya geciken hiçbir araç bulunmuyor.</p>
+                    </div>
+                @endif
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -322,101 +410,6 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('dashboardRevenueChart').getContext('2d');
-        
-        const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
-        gradientBlue.addColorStop(0, 'rgba(99, 102, 241, 0.3)');
-        gradientBlue.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
 
-        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 400);
-        gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
-        gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: @json($chartLabels),
-                datasets: [
-                    {
-                        label: 'Gelir',
-                        data: @json($incomeSeries),
-                        borderColor: '#6366f1',
-                        backgroundColor: gradientBlue,
-                        fill: true,
-                        tension: 0.45,
-                        borderWidth: 4,
-                        pointRadius: 0,
-                        pointHoverRadius: 8,
-                        pointHoverBackgroundColor: '#6366f1',
-                        pointHoverBorderColor: '#fff',
-                        pointHoverBorderWidth: 4
-                    },
-                    {
-                        label: 'Sefer',
-                        data: @json($operationSeries),
-                        borderColor: '#10b981',
-                        backgroundColor: gradientGreen,
-                        fill: true,
-                        tension: 0.45,
-                        borderWidth: 3,
-                        pointRadius: 0,
-                        pointHoverRadius: 6,
-                        pointHoverBackgroundColor: '#10b981',
-                        pointHoverBorderColor: '#fff',
-                        pointHoverBorderWidth: 3,
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                maintainAspectRatio: false,
-                responsive: true,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                        titleColor: '#fff',
-                        bodyColor: '#cbd5e1',
-                        titleFont: { size: 14, weight: 'bold' },
-                        bodyFont: { size: 13, weight: 'bold' },
-                        padding: 16,
-                        cornerRadius: 16,
-                        displayColors: true,
-                        borderColor: 'rgba(255,255,255,0.1)',
-                        borderWidth: 1
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8', font: { size: 11, weight: 'bold' } }
-                    },
-                    y: {
-                        grid: { color: 'rgba(226, 232, 240, 0.5)', borderDash: [5, 5] },
-                        ticks: { 
-                            color: '#94a3b8', 
-                            font: { size: 11, weight: 'bold' },
-                            callback: value => value.toLocaleString() + ' ₺'
-                        }
-                    },
-                    y1: {
-                        display: false,
-                        beginAtZero: true,
-                        position: 'right'
-                    }
-                }
-            }
-        });
-    });
-</script>
 
 @endsection
