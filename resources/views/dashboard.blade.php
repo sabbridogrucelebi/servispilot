@@ -78,7 +78,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Kart 1: Araçlar -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-8 text-white shadow-xl shadow-blue-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
-            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">🚌</div>
+            <div class="absolute -right-6 -bottom-6 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 text-blue-300/40 mix-blend-overlay drop-shadow-2xl">
+                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" /></svg>
+            </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
                     <p class="text-[11px] font-black text-blue-100/80 uppercase tracking-[0.2em] mb-2">Toplam Araç</p>
@@ -96,7 +98,9 @@
 
         <!-- Kart 2: Gelir -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-8 text-white shadow-xl shadow-emerald-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
-            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">💰</div>
+            <div class="absolute -right-6 -bottom-6 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 text-emerald-300/40 mix-blend-overlay drop-shadow-2xl">
+                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
                     <p class="text-[11px] font-black text-emerald-100/80 uppercase tracking-[0.2em] mb-2">Aylık Gelir</p>
@@ -114,7 +118,9 @@
 
         <!-- Kart 3: Şoförler -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-violet-500 via-purple-600 to-fuchsia-700 p-8 text-white shadow-xl shadow-violet-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
-            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">🧑‍✈️</div>
+            <div class="absolute -right-6 -bottom-6 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 text-violet-300/40 mix-blend-overlay drop-shadow-2xl">
+                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+            </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
                     <p class="text-[11px] font-black text-violet-100/80 uppercase tracking-[0.2em] mb-2">Toplam Şoför</p>
@@ -132,7 +138,9 @@
 
         <!-- Kart 4: Müşteriler -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 p-8 text-white shadow-xl shadow-amber-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
-            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">🏢</div>
+            <div class="absolute -right-6 -bottom-6 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 text-amber-300/40 mix-blend-overlay drop-shadow-2xl">
+                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" /></svg>
+            </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
                     <p class="text-[11px] font-black text-amber-100/80 uppercase tracking-[0.2em] mb-2">Müşteriler</p>
@@ -164,14 +172,14 @@
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
-                            <span class="text-2xl">🛡️</span>
+                            <svg class="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
                             <div>
                                 <div class="text-[10px] font-black uppercase tracking-widest">Sağlıklı Araç</div>
                                 <div class="text-lg font-black leading-none">{{ $healthyCount }}</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 px-4 py-2 rounded-2xl {{ $maintAlerts->count() > 0 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-slate-50 text-slate-400 border-slate-100' }} border">
-                            <span class="text-2xl">⚠️</span>
+                            <svg class="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                             <div>
                                 <div class="text-[10px] font-black uppercase tracking-widest">Riskli Araç</div>
                                 <div class="text-lg font-black leading-none">{{ $maintAlerts->count() }}</div>
@@ -186,8 +194,12 @@
                             <div class="group relative overflow-hidden rounded-[24px] border {{ $alert['critical'] ? 'border-rose-200 bg-rose-50/50' : 'border-amber-200 bg-amber-50/50' }} p-5 transition-all hover:shadow-lg">
                                 <div class="flex items-center justify-between mb-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $alert['critical'] ? 'bg-rose-200 text-rose-700' : 'bg-amber-200 text-amber-700' }} font-black text-lg">
-                                            {{ $alert['critical'] ? '🚨' : '🔧' }}
+                                        <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $alert['critical'] ? 'bg-rose-200 text-rose-700' : 'bg-amber-200 text-amber-700' }} font-black shadow-sm">
+                                            @if($alert['critical'])
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                            @else
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26" /></svg>
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="text-sm font-black text-slate-800">{{ $alert['vehicle']->plate }}</div>
@@ -220,8 +232,8 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="flex flex-col items-center justify-center py-12 rounded-[24px] bg-slate-50 border border-slate-100">
-                        <span class="text-5xl mb-4">✨</span>
+                    <div class="flex flex-col items-center justify-center py-12 rounded-[24px] bg-slate-50 border border-slate-100 text-emerald-400">
+                        <svg class="w-16 h-16 drop-shadow-sm mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>
                         <h4 class="text-lg font-black text-slate-800">Tüm Filo Sağlıklı!</h4>
                         <p class="text-sm font-bold text-slate-400 mt-1">Bakımı yaklaşan veya geciken hiçbir araç bulunmuyor.</p>
                     </div>
@@ -365,7 +377,7 @@
                             </p>
                         </div>
                         <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-2xl">
-                            💰
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                     </div>
                 </div>
