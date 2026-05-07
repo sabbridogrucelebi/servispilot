@@ -329,7 +329,13 @@
 
                                 <div class="relative group" x-data="{ open: false }">
                                     <button @click="open = !open" class="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-md font-black text-white shadow-lg border border-indigo-400/50 hover:scale-105 transition-all active:scale-95 ring-2 ring-white ring-offset-2 ring-offset-slate-50">
-                                        <span class="relative text-sm">{{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}</span>
+                                        @php
+                                            $nameParts = explode(' ', trim($user->name ?? 'U'));
+                                            $initials = count($nameParts) >= 2 
+                                                ? mb_substr($nameParts[0], 0, 1) . mb_substr(end($nameParts), 0, 1) 
+                                                : mb_substr($nameParts[0], 0, 2);
+                                        @endphp
+                                        <span class="relative text-sm tracking-widest">{{ mb_strtoupper($initials) }}</span>
                                         <div class="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-lg"></div>
                                     </button>
 
