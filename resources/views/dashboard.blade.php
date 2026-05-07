@@ -78,8 +78,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Kart 1: Araçlar -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-8 text-white shadow-xl shadow-blue-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
-            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 text-cyan-200 drop-shadow-[0_10px_20px_rgba(34,211,238,0.6)]">
-                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" /></svg>
+            <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bus.png" alt="Araçlar" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
             </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
@@ -98,8 +98,8 @@
 
         <!-- Kart 2: Gelir -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-8 text-white shadow-xl shadow-emerald-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
-            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 text-yellow-300 drop-shadow-[0_10px_20px_rgba(253,224,71,0.6)]">
-                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Gelir" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
             </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
@@ -118,8 +118,8 @@
 
         <!-- Kart 3: Şoförler -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-violet-500 via-purple-600 to-fuchsia-700 p-8 text-white shadow-xl shadow-violet-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
-            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 text-pink-300 drop-shadow-[0_10px_20px_rgba(249,168,212,0.6)]">
-                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+            <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Şoför" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
             </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
@@ -138,8 +138,8 @@
 
         <!-- Kart 4: Müşteriler -->
         <div class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 p-8 text-white shadow-xl shadow-amber-500/25 transition-all hover:shadow-2xl hover:-translate-y-1">
-            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 text-yellow-100 drop-shadow-[0_10px_20px_rgba(254,240,138,0.6)]">
-                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" /></svg>
+            <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Office%20Building.png" alt="Müşteriler" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
             </div>
             <div class="relative flex items-center justify-between z-10">
                 <div>
@@ -377,7 +377,7 @@
                             </p>
                         </div>
                         <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-2xl">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Kâr" class="w-8 h-8 drop-shadow-md" />
                         </div>
                     </div>
                 </div>

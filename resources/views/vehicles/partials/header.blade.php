@@ -143,8 +143,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {{-- Hasılat --}}
             <div class="group relative overflow-hidden rounded-[24px] bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-5 text-white shadow-xl shadow-emerald-500/25 transition-all hover:-translate-y-1 hover:shadow-2xl">
-                <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 text-yellow-300 drop-shadow-[0_10px_20px_rgba(253,224,71,0.6)]">
-                    <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Hasılat" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
                 </div>
                 <div class="relative z-10">
                     <div class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-100/80">Toplam Hasılat</div>
@@ -161,8 +161,8 @@
 
             {{-- Yakıt Gideri --}}
             <div class="group relative overflow-hidden rounded-[24px] bg-gradient-to-br from-orange-500 via-orange-600 to-rose-600 p-5 text-white shadow-xl shadow-orange-500/25 transition-all hover:-translate-y-1 hover:shadow-2xl">
-                <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 text-yellow-100 drop-shadow-[0_10px_20px_rgba(254,240,138,0.6)]">
-                    <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26" /></svg>
+                <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="Yakıt" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
                 </div>
                 <div class="relative z-10">
                     <div class="text-[9px] font-black uppercase tracking-[0.2em] text-orange-100/80">Yakıt Gideri</div>
@@ -179,8 +179,8 @@
 
             {{-- Personel --}}
             <div class="group relative overflow-hidden rounded-[24px] bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 p-5 text-white shadow-xl shadow-indigo-500/25 transition-all hover:-translate-y-1 hover:shadow-2xl">
-                <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 text-pink-300 drop-shadow-[0_10px_20px_rgba(249,168,212,0.6)]">
-                    <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+                <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Personel" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
                 </div>
                 <div class="relative z-10">
                     <div class="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-100/80">Personel & Maaş</div>
@@ -197,11 +197,11 @@
 
             {{-- Karlılık --}}
             <div class="group relative overflow-hidden rounded-[24px] p-5 text-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl {{ $profit >= 0 ? 'bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 shadow-blue-500/25' : 'bg-gradient-to-br from-rose-500 via-rose-600 to-pink-700 shadow-rose-500/25' }}">
-                <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 {{ $profit >= 0 ? 'text-green-300 drop-shadow-[0_10px_20px_rgba(134,239,172,0.6)]' : 'text-rose-300 drop-shadow-[0_10px_20px_rgba(253,164,175,0.6)]' }}">
+                <div class="absolute -right-4 -bottom-4 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 drop-shadow-2xl">
                     @if($profit >= 0)
-                        <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" /></svg>
+                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark%20Button.png" alt="Kâr" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
                     @else
-                        <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.51m-3.182 5.51l-5.511-3.181" /></svg>
+                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Cross%20Mark.png" alt="Zarar" class="w-36 h-36 opacity-90 drop-shadow-2xl" />
                     @endif
                 </div>
                 <div class="relative z-10">
