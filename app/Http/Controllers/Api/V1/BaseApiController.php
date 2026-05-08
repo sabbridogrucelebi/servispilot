@@ -18,9 +18,17 @@ class BaseApiController extends Controller
     /**
      * Aktif kullanıcının şirket ID'sini döndürür
      */
-    protected function getCompanyId()
+    protected function getCompanyId(): int
     {
-        return auth()->user()->company_id;
+        $id = auth()->user()->company_id;
+        
+        if (!$id) {
+            // Süper Admin veya firması atanmamış bir kullanıcı ise Type Error (500)
+            // yememek için int olan 0 dönüyoruz. Bu sayede veritabanı boş dizi döner, çökmeyi engelleriz.
+            return 0;
+        }
+
+        return (int) $id;
     }
 
     protected function userHasPermission($user, string $permission): bool

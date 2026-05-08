@@ -2,7 +2,7 @@
   "expo": {
     "name": "FiloMERKEZ",
     "slug": "mobile-app",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.celebiturizm.filomerkez",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "locales": {
         "tr": "./locales/tr.json"
       },
@@ -55,7 +55,7 @@
         "android.permission.READ_MEDIA_AUDIO"
       ],
       "package": "com.celebiturizm.filomerkez",
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -70,7 +70,8 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "FiloMERKEZ, sefer takibi ve rota oluşturma işlemleri için konumunuza erişim izni gerektirir."
+          "locationWhenInUsePermission": "FiloMERKEZ, anlık seferinizi izleyebilmek, hızınızı hesaplamak ve öğrenci/personel taşıma rotalarını haritada çizebilmek için konumunuza erişim izni gerektirir.",
+          "locationAlwaysAndWhenInUsePermission": "FiloMERKEZ, siz uygulamayı arka plana aldığınızda dahi (örneğin seyir halindeyken navigasyon kullanırken) arka planda rotanızı çizmeye devam edebilmek için konumunuza her zaman erişim izni gerektirir."
         }
       ],
       [
