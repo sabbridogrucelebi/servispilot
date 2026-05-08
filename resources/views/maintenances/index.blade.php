@@ -362,18 +362,20 @@
                                 <div class="flex items-center gap-4">
                                     <div class="flex items-center justify-center rounded-2xl shadow">
                                         @php
-                                            $mType = mb_strtolower($maintenance->maintenance_type ?? '');
-                                            $mIcon = 'Emojis/Objects/Hammer%20and%20Wrench.png';
+                                            $mType = $maintenance->maintenance_type ?? '';
+                                            $mIconUrl = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png';
                                             
-                                            if (str_contains($mType, 'lastik')) {
-                                                $mIcon = 'Emojis/Objects/Gear.png';
-                                            } elseif (str_contains($mType, 'yağ') || str_contains($mType, 'filtre') || str_contains($mType, 'sivi')) {
-                                                $mIcon = 'Emojis/Travel%20and%20places/Droplet.png';
-                                            } elseif (str_contains($mType, 'kaporta') || str_contains($mType, 'kaza')) {
-                                                $mIcon = 'Emojis/Travel%20and%20places/Automobile.png';
+                                            if (stripos($mType, 'lastik') !== false) {
+                                                $mIconUrl = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Wheel/3D/wheel_3d.png';
+                                            } elseif (stripos($mType, 'alt yağ') !== false || stripos($mType, 'alt yag') !== false) {
+                                                $mIconUrl = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gear.png';
+                                            } elseif (stripos($mType, 'yağ') !== false || stripos($mType, 'yag') !== false || stripos($mType, 'filtre') !== false || stripos($mType, 'sivi') !== false) {
+                                                $mIconUrl = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Droplet.png';
+                                            } elseif (stripos($mType, 'kaporta') !== false || stripos($mType, 'kaza') !== false) {
+                                                $mIconUrl = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Automobile.png';
                                             }
                                         @endphp
-                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/{{ $mIcon }}" alt="Bakım" class="w-12 h-12 drop-shadow-xl" />
+                                        <img src="{{ $mIconUrl }}" alt="Bakım" class="w-12 h-12 drop-shadow-xl" />
                                     </div>
 
                                     <div>
