@@ -114,17 +114,20 @@
             </div>
 
             <div class="p-6 space-y-4">
+                @php
+                    $driverMessage = "Merhaba,\nFirma yetkiliniz, kullanmakta olduğunuz *{$vehicle->plate}* plakalı aracın güncel fotoğraflarını (ön, arka, sağ, sol, iç vb.) sisteme yüklemenizi talep etmektedir.\n\nLütfen aşağıdaki linke tıklayarak telefonunuzun kamerasıyla fotoğrafları çekip doğrudan sisteme yükleyin:\n\n{$publicImageUploadUrl}\n\nİyi çalışmalar dileriz.";
+                @endphp
                 
                 <!-- Şoför Linki Kopyalama -->
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 cursor-pointer hover:bg-slate-100 hover:border-indigo-200 transition-all group"
-                     onclick="navigator.clipboard.writeText('{{ $publicImageUploadUrl }}'); const t = this.querySelector('.copy-text-driver'); const orig = t.innerText; t.innerText='Kopyalandı!'; t.classList.add('text-emerald-600'); setTimeout(() => { t.innerText=orig; t.classList.remove('text-emerald-600'); }, 2000);">
+                     onclick="navigator.clipboard.writeText({{ \Illuminate\Support\Js::from($driverMessage) }}); const t = this.querySelector('.copy-text-driver'); const orig = t.innerText; t.innerText='Açıklamalı Metin Kopyalandı!'; t.classList.add('text-emerald-600'); setTimeout(() => { t.innerText=orig; t.classList.remove('text-emerald-600'); }, 2000);">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                             </div>
                             <div>
-                                <div class="text-sm font-bold text-slate-700">Şoför Yükleme Linki</div>
+                                <div class="text-sm font-bold text-slate-700">Şoför Linki <span class="font-normal text-slate-500">(Açıklamalı Metin)</span></div>
                                 <div class="text-xs text-slate-500 mt-0.5 copy-text-driver">Kopyalamak için tıklayın</div>
                             </div>
                         </div>
