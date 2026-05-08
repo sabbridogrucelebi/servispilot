@@ -667,6 +667,17 @@ class VehicleController extends Controller
             ->with('success', $typeLabel . ' başarıyla yüklendi.');
     }
 
+    public function adminFastPhotoUpload()
+    {
+        if (!auth()->user()->hasPermission('vehicles.view')) {
+            abort(403);
+        }
+
+        $vehicles = Vehicle::orderBy('plate')->get();
+
+        return view('vehicles.admin-fast-upload-select', compact('vehicles'));
+    }
+
     public function setFeaturedImage(Vehicle $vehicle, VehicleImage $image)
     {
         if ($image->vehicle_id !== $vehicle->id) {

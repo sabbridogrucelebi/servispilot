@@ -545,6 +545,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/payrolls/bulk-store', [PayrollController::class, 'bulkStore'])->name('payrolls.bulk-store');
     Route::post('/payrolls/update-single', [PayrollController::class, 'updateSingle'])->name('payrolls.update-single');
 
+    Route::get('/vehicles/admin/fast-photo-upload', [VehicleController::class, 'adminFastPhotoUpload'])->name('vehicles.admin.fast-photo-upload');
     Route::get('/vehicles/export/excel', [VehicleController::class, 'exportExcel'])->name('vehicles.export.excel');
     Route::post('/vehicles/ai-assistant', [VehicleController::class, 'aiAssistant'])->name('vehicles.ai.assistant');
 

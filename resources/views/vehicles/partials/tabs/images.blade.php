@@ -114,29 +114,42 @@
             </div>
 
             <div class="p-6 space-y-4">
-                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.10em] text-slate-400">Paylaşılacak Link</div>
-                    <div class="mt-2 break-all text-sm font-medium text-slate-700">
-                        {{ $publicImageUploadUrl }}
+                
+                <!-- Şoför Linki Kopyalama -->
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 cursor-pointer hover:bg-slate-100 hover:border-indigo-200 transition-all group"
+                     onclick="navigator.clipboard.writeText('{{ $publicImageUploadUrl }}'); const t = this.querySelector('.copy-text'); const orig = t.innerText; t.innerText='Kopyalandı!'; t.classList.add('text-emerald-600'); setTimeout(() => { t.innerText=orig; t.classList.remove('text-emerald-600'); }, 2000);">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-700">Şoför Yükleme Linki</div>
+                                <div class="text-xs text-slate-500 mt-0.5 copy-text">Kopyalamak için tıklayın</div>
+                            </div>
+                        </div>
+                        <div class="text-slate-400 group-hover:text-indigo-600 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <button type="button"
-                            onclick="navigator.clipboard.writeText('{{ $publicImageUploadUrl }}'); this.innerText='Kopyalandı'; setTimeout(() => this.innerText='Linki Kopyala', 1500);"
-                            class="rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition">
-                        Linki Kopyala
-                    </button>
-
                     <a href="{{ $publicImageUploadUrl }}"
                        target="_blank"
                        class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                        Önizle
+                        Şoför Ekranını Önizle
+                    </a>
+                    <a href="{{ route('vehicles.admin.fast-photo-upload') }}"
+                       target="_blank"
+                       class="rounded-2xl bg-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                        Admin Hızlı Yükleme
                     </a>
                 </div>
 
                 <div class="rounded-2xl bg-amber-50 p-4 text-xs leading-6 text-amber-700">
-                    Şoför bu linke telefondan girer. Ön, sağ yan, sol yan, arka, iç resimler ve göğüs fotoğrafını kameradan çekip yükleyebilir.
+                    Şoför bu linke telefondan girer. Ön, sağ yan, vb. resimleri kameradan çekip yükleyebilir. <br>
+                    <strong>Admin Hızlı Yükleme</strong> ile siz de istediğiniz aracı seçip telefondan kolayca fotoğraf yükleyebilirsiniz.
                 </div>
             </div>
         </div>
