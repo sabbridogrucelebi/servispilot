@@ -312,8 +312,8 @@
         <div class="p-6 space-y-6">
             <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-sky-500 to-blue-600 p-5 text-white shadow-xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Tutar" class="absolute right-5 top-1/2 -translate-y-1/2 w-[76px] h-[76px] drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)] select-none pointer-events-none" />
-                    <div class="relative z-10 pr-[84px]">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Tutar" class="absolute right-5 top-1/2 -translate-y-1/2 w-[60px] h-[60px] drop-shadow-xl select-none pointer-events-none" />
+                    <div class="relative z-10 pr-[70px]">
                         <div class="text-sm font-medium text-white/90">Toplam Yakıt Tutarı</div>
                         <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">{{ number_format($totalAmount, 2, ',', '.') }} ₺</div>
                         <div class="mt-2 text-xs text-white/80">Kayıtlı toplam yakıt maliyeti</div>
@@ -321,8 +321,8 @@
                 </div>
 
                 <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Oil%20Drum.png" alt="Litre" class="absolute right-4 top-1/2 -translate-y-1/2 w-[80px] h-[80px] drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)] select-none pointer-events-none" />
-                    <div class="relative z-10 pr-[84px]">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" alt="Litre" class="absolute right-5 top-1/2 -translate-y-1/2 w-[60px] h-[60px] drop-shadow-xl select-none pointer-events-none" />
+                    <div class="relative z-10 pr-[70px]">
                         <div class="text-sm font-medium text-white/90">Toplam Litre</div>
                         <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">{{ number_format($totalLiters, 2, ',', '.') }}</div>
                         <div class="mt-2 text-xs text-white/80">Sisteme işlenen toplam litre</div>
@@ -330,8 +330,8 @@
                 </div>
 
                 <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-indigo-500 to-blue-600 p-5 text-white shadow-xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Receipt.png" alt="Fiş" class="absolute right-5 top-1/2 -translate-y-1/2 w-[76px] h-[76px] drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)] select-none pointer-events-none" />
-                    <div class="relative z-10 pr-[84px]">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Receipt.png" alt="Fiş" class="absolute right-5 top-1/2 -translate-y-1/2 w-[56px] h-[56px] drop-shadow-xl select-none pointer-events-none" />
+                    <div class="relative z-10 pr-[70px]">
                         <div class="text-sm font-medium text-white/90">Yakıt Fiş Adedi</div>
                         <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">{{ number_format($totalReceiptCount, 0, ',', '.') }}</div>
                         <div class="mt-2 text-xs text-white/80">Toplam kayıtlı yakıt fişi sayısı</div>
@@ -339,11 +339,11 @@
                 </div>
 
                 <div class="rounded-[26px] p-5 text-white shadow-xl transition-all duration-500 bg-gradient-to-br relative overflow-hidden" :class="stationCardClass()">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="İstasyon" class="absolute right-4 top-[55%] -translate-y-1/2 w-[80px] h-[80px] drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)] select-none pointer-events-none" />
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="İstasyon" class="absolute right-5 top-[55%] -translate-y-1/2 w-[60px] h-[60px] drop-shadow-xl select-none pointer-events-none" />
                     <div class="absolute right-4 top-4 rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold text-white tracking-wider uppercase">
                         5 sn
                     </div>
-                    <div class="relative z-10 pr-[84px]">
+                    <div class="relative z-10 pr-[70px]">
                         <div>
                             <div class="text-sm font-medium text-white/90">İstasyon Cari Borcu</div>
                             <div class="mt-1 text-xs text-white/80 line-clamp-1" x-text="currentStationCard().name"></div>
