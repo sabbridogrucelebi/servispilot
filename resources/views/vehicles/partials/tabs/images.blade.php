@@ -117,7 +117,7 @@
                 
                 <!-- Şoför Linki Kopyalama -->
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 cursor-pointer hover:bg-slate-100 hover:border-indigo-200 transition-all group"
-                     onclick="navigator.clipboard.writeText('{{ $publicImageUploadUrl }}'); const t = this.querySelector('.copy-text'); const orig = t.innerText; t.innerText='Kopyalandı!'; t.classList.add('text-emerald-600'); setTimeout(() => { t.innerText=orig; t.classList.remove('text-emerald-600'); }, 2000);">
+                     onclick="navigator.clipboard.writeText('{{ $publicImageUploadUrl }}'); const t = this.querySelector('.copy-text-driver'); const orig = t.innerText; t.innerText='Kopyalandı!'; t.classList.add('text-emerald-600'); setTimeout(() => { t.innerText=orig; t.classList.remove('text-emerald-600'); }, 2000);">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
@@ -125,10 +125,29 @@
                             </div>
                             <div>
                                 <div class="text-sm font-bold text-slate-700">Şoför Yükleme Linki</div>
-                                <div class="text-xs text-slate-500 mt-0.5 copy-text">Kopyalamak için tıklayın</div>
+                                <div class="text-xs text-slate-500 mt-0.5 copy-text-driver">Kopyalamak için tıklayın</div>
                             </div>
                         </div>
                         <div class="text-slate-400 group-hover:text-indigo-600 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Linki Kopyalama -->
+                <div class="rounded-2xl border border-slate-200 bg-indigo-50/50 p-4 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-all group"
+                     onclick="navigator.clipboard.writeText('{{ route('vehicles.admin.fast-photo-upload') }}'); const t = this.querySelector('.copy-text-admin'); const orig = t.innerText; t.innerText='Kopyalandı!'; t.classList.add('text-emerald-600'); setTimeout(() => { t.innerText=orig; t.classList.remove('text-emerald-600'); }, 2000);">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-md">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-800">Admin Hızlı Yükleme Linki</div>
+                                <div class="text-xs text-indigo-600 mt-0.5 copy-text-admin font-medium">Kopyalamak için tıklayın</div>
+                            </div>
+                        </div>
+                        <div class="text-indigo-400 group-hover:text-indigo-600 transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         </div>
                     </div>
@@ -138,12 +157,12 @@
                     <a href="{{ $publicImageUploadUrl }}"
                        target="_blank"
                        class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                        Şoför Ekranını Önizle
+                        Şoför Ekranı (Önizle)
                     </a>
                     <a href="{{ route('vehicles.admin.fast-photo-upload') }}"
                        target="_blank"
                        class="rounded-2xl bg-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all">
-                        Admin Hızlı Yükleme
+                        Admin Ekranı (Önizle)
                     </a>
                 </div>
 
