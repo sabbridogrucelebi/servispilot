@@ -59,46 +59,46 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
         
         {{-- Toplam Araç --}}
-        <a href="{{ route('vehicles.index') }}" class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+        <a href="{{ route('vehicles.index') }}" class="group relative overflow-hidden rounded-[32px] bg-gradient-to-br from-indigo-500 to-blue-600 p-6 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bus.png" alt="Toplam Araç" class="w-24 h-24  drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bus.png" alt="Toplam Araç" class="w-24 h-24 drop-shadow-2xl" />
             </div>
             <div class="relative flex flex-col justify-between h-full z-10">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-xl">Toplam Araç Sayısı</span>
+                    <span class="text-[10px] font-black text-white uppercase tracking-widest bg-white/20 px-3 py-1.5 rounded-xl">Toplam Araç Sayısı</span>
                 </div>
                 <div class="mt-6">
-                    <div class="text-3xl font-black text-slate-900">{{ $kpi['total'] }}</div>
+                    <div class="text-3xl font-black text-white">{{ $kpi['total'] }}</div>
                 </div>
             </div>
         </a>
 
         {{-- Muayenesi Yaklaşan --}}
-        <a href="{{ route('vehicles.index', ['filter' => 'upcoming_inspection']) }}" class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+        <a href="{{ route('vehicles.index', ['filter' => 'upcoming_inspection']) }}" class="group relative overflow-hidden rounded-[32px] bg-gradient-to-br from-amber-500 to-orange-500 p-6 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wrench.png" alt="Muayene" class="w-24 h-24  drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wrench.png" alt="Muayene" class="w-24 h-24 drop-shadow-2xl" />
             </div>
             <div class="relative flex flex-col justify-between h-full z-10">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 px-3 py-1.5 rounded-xl">Muayenesi Yaklaşan</span>
+                    <span class="text-[10px] font-black text-white uppercase tracking-widest bg-white/20 px-3 py-1.5 rounded-xl">Muayenesi Yaklaşan</span>
                 </div>
                 <div class="mt-6">
-                    <div class="text-3xl font-black text-slate-900">{{ $kpi['upcoming_inspection'] }}</div>
+                    <div class="text-3xl font-black text-white">{{ $kpi['upcoming_inspection'] }}</div>
                 </div>
             </div>
         </a>
 
         {{-- Sigortası Yaklaşan --}}
-        <a href="{{ route('vehicles.index', ['filter' => 'upcoming_insurance']) }}" class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+        <a href="{{ route('vehicles.index', ['filter' => 'upcoming_insurance']) }}" class="group relative overflow-hidden rounded-[32px] bg-gradient-to-br from-rose-500 to-pink-600 p-6 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="Sigorta" class="w-24 h-24  drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="Sigorta" class="w-24 h-24 drop-shadow-2xl" />
             </div>
             <div class="relative flex flex-col justify-between h-full z-10">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded-xl">Sigortası Yaklaşan</span>
+                    <span class="text-[10px] font-black text-white uppercase tracking-widest bg-white/20 px-3 py-1.5 rounded-xl">Sigortası Yaklaşan</span>
                 </div>
                 <div class="mt-6">
-                    <div class="text-3xl font-black text-slate-900">{{ $kpi['upcoming_insurance'] }}</div>
+                    <div class="text-3xl font-black text-white">{{ $kpi['upcoming_insurance'] }}</div>
                 </div>
             </div>
         </a>
@@ -108,16 +108,16 @@
                 types: {{ json_encode($kpi['types']) }}, 
                 keys: Object.keys({{ json_encode($kpi['types']) }}).length ? Object.keys({{ json_encode($kpi['types']) }}) : ['Belirsiz'],
                 currentIndex: 0,
-                colors: ['text-emerald-600 bg-emerald-50', 'text-purple-600 bg-purple-50', 'text-cyan-600 bg-cyan-50', 'text-fuchsia-600 bg-fuchsia-50'],
+                colors: ['text-white bg-white/20', 'text-white bg-white/25', 'text-white bg-white/30', 'text-white bg-white/10'],
                 init() { 
                     if(this.keys.length > 1) {
                         setInterval(() => { this.currentIndex = (this.currentIndex + 1) % this.keys.length; }, 5000);
                     }
                 }
              }" 
-             class="group relative overflow-hidden rounded-[32px] bg-white p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300">
+             class="group relative overflow-hidden rounded-[32px] bg-gradient-to-br from-emerald-500 to-teal-500 p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
             <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Automobile.png" alt="Araç Tipi" class="w-24 h-24  drop-shadow-2xl" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Automobile.png" alt="Araç Tipi" class="w-24 h-24 drop-shadow-2xl" />
             </div>
             <div class="relative flex flex-col justify-between h-full z-10">
                 <div class="flex items-center justify-between">
@@ -126,7 +126,7 @@
                     </span>
                 </div>
                 <div class="mt-6">
-                    <div class="text-3xl font-black text-slate-900 transition-all duration-500" x-text="types[keys[currentIndex]] || 0"></div>
+                    <div class="text-3xl font-black text-white transition-all duration-500" x-text="types[keys[currentIndex]] || 0"></div>
                 </div>
             </div>
         </div>
