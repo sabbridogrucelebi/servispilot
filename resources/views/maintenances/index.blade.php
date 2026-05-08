@@ -50,34 +50,31 @@
 
     <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-500 to-indigo-600 p-5 text-white shadow-xl">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
-            <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
-            <div class="relative">
-                <div class="text-sm font-medium text-white/80">Toplam Bakım Kaydı</div>
+        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-500 to-indigo-600 p-5 text-white shadow-xl flex items-center justify-between">
+            <div class="relative z-10">
+                <div class="text-sm font-medium text-white/90">Toplam Bakım Kaydı</div>
                 <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ $totalMaintenances }}</div>
-                <div class="mt-2 text-xs text-white/75">Sistemde kayıtlı tüm bakım işlemleri</div>
+                <div class="mt-2 text-xs text-white/80">Sistemde kayıtlı tüm bakım işlemleri</div>
             </div>
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png" alt="Kayıtlar" class="relative z-10 w-16 h-16 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2" />
         </div>
 
-        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
-            <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
-            <div class="relative">
-                <div class="text-sm font-medium text-white/80">Bu Ay Yapılan</div>
+        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl flex items-center justify-between">
+            <div class="relative z-10">
+                <div class="text-sm font-medium text-white/90">Bu Ay Yapılan</div>
                 <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ $thisMonthMaintenances }}</div>
-                <div class="mt-2 text-xs text-white/75">Bu ay tamamlanan bakım sayısı</div>
+                <div class="mt-2 text-xs text-white/80">Bu ay tamamlanan bakım sayısı</div>
             </div>
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Calendar.png" alt="Takvim" class="relative z-10 w-16 h-16 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2" />
         </div>
 
-        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-rose-500 to-pink-500 p-5 text-white shadow-xl">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10"></div>
-            <div class="absolute bottom-0 right-8 h-16 w-16 rounded-full bg-white/10"></div>
-            <div class="relative">
-                <div class="text-sm font-medium text-white/80">Toplam Maliyet</div>
-                <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ number_format($totalAmount, 2, ',', '.') }} ₺</div>
-                <div class="mt-2 text-xs text-white/75">Filtrelenen kayıtların toplam tutarı</div>
+        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-rose-500 to-pink-500 p-5 text-white shadow-xl flex items-center justify-between">
+            <div class="relative z-10">
+                <div class="text-sm font-medium text-white/90">Toplam Maliyet</div>
+                <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">{{ number_format($totalAmount, 2, ',', '.') }} ₺</div>
+                <div class="mt-2 text-xs text-white/80">Filtrelenen kayıtların toplam tutarı</div>
             </div>
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Maliyet" class="relative z-10 w-16 h-16 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2" />
         </div>
 
     </div>
@@ -364,7 +361,19 @@
                             <td class="col-arac px-6 py-5">
                                 <div class="flex items-center gap-4">
                                     <div class="flex items-center justify-center rounded-2xl shadow">
-                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png" alt="Bakım" class="w-12 h-12 drop-shadow-xl" />
+                                        @php
+                                            $mType = mb_strtolower($maintenance->maintenance_type ?? '');
+                                            $mIcon = 'Emojis/Objects/Hammer%20and%20Wrench.png';
+                                            
+                                            if (str_contains($mType, 'lastik')) {
+                                                $mIcon = 'Emojis/Objects/Gear.png';
+                                            } elseif (str_contains($mType, 'yağ') || str_contains($mType, 'filtre') || str_contains($mType, 'sivi')) {
+                                                $mIcon = 'Emojis/Travel%20and%20places/Droplet.png';
+                                            } elseif (str_contains($mType, 'kaporta') || str_contains($mType, 'kaza')) {
+                                                $mIcon = 'Emojis/Travel%20and%20places/Automobile.png';
+                                            }
+                                        @endphp
+                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/{{ $mIcon }}" alt="Bakım" class="w-12 h-12 drop-shadow-xl" />
                                     </div>
 
                                     <div>
