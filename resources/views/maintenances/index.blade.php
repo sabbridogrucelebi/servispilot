@@ -50,23 +50,23 @@
 
     <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-500 to-indigo-600 p-5 text-white shadow-xl flex items-center justify-between">
+        <a href="{{ route('maintenances.index') }}" class="block relative overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-500 to-indigo-600 p-5 text-white shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-between">
             <div class="relative z-10">
                 <div class="text-sm font-medium text-white/90">Toplam Bakım Kaydı</div>
                 <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ $totalMaintenances }}</div>
                 <div class="mt-2 text-xs text-white/80">Sistemde kayıtlı tüm bakım işlemleri</div>
             </div>
             <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png" alt="Kayıtlar" class="relative z-10 w-16 h-16 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2" />
-        </div>
+        </a>
 
-        <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl flex items-center justify-between">
+        <a href="{{ route('maintenances.index', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->endOfMonth()->format('Y-m-d')]) }}" class="block relative overflow-hidden rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-between">
             <div class="relative z-10">
                 <div class="text-sm font-medium text-white/90">Bu Ay Yapılan</div>
                 <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ $thisMonthMaintenances }}</div>
                 <div class="mt-2 text-xs text-white/80">Bu ay tamamlanan bakım sayısı</div>
             </div>
             <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Calendar.png" alt="Takvim" class="relative z-10 w-16 h-16 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2" />
-        </div>
+        </a>
 
         <div class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-rose-500 to-pink-500 p-5 text-white shadow-xl flex items-center justify-between">
             <div class="relative z-10">

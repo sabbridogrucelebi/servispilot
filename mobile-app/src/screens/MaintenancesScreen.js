@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, Alert, Text, Platform, TouchableOpacity, RefreshControl, Modal, ScrollView, Dimensions, Image } from 'react-native';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { View, StyleSheet, FlatList, ActivityIndicator, Alert, Text, Platform, TouchableOpacity, RefreshControl, Modal, ScrollView, Dimensions, Image, Animated } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -15,6 +15,25 @@ import DatePickerInput from '../components/DatePickerInput';
 const { width } = Dimensions.get('window');
 const fmtMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2 }).format(v || 0);
 const fmtKm = (v) => new Intl.NumberFormat('tr-TR').format(v || 0);
+
+const BlinkingPlate = ({ plate }) => {
+    const fadeAnim = useRef(new Animated.Value(1)).current;
+    
+    useEffect(() => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(fadeAnim, { toValue: 0.4, duration: 800, useNativeDriver: true }),
+                Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true })
+            ])
+        ).start();
+    }, [fadeAnim]);
+
+    return (
+        <Animated.View style={{ opacity: fadeAnim, backgroundColor: '#3B82F6', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, shadowColor: '#3B82F6', shadowOffset: { width:0, height:4 }, shadowOpacity: 0.4, shadowRadius: 6, elevation: 4 }}>
+            <Text style={{ fontSize: 16, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 }}>{plate}</Text>
+        </Animated.View>
+    );
+};
 
 export default function MaintenancesScreen({ navigation }) {
     const { hasPermission } = useContext(AuthContext);
@@ -240,13 +259,26 @@ export default function MaintenancesScreen({ navigation }) {
                     <Text style={st.kpiSub}>Sistemde kayıtlı işlemler</Text>
                 </LinearGradient>
                 
-                <LinearGradient colors={['#34D399', '#059669', '#047857']} locations={[0, 0.5, 1]} style={[st.kpiCard, { flex: 1, marginLeft: 8 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                    <View style={st.kpiGlowTop} />
-                    <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Spiral%20Calendar.png' }} style={[st.kpiIconBg, { width: 80, height: 80, opacity: 1, right: -10, bottom: -10 }]} resizeMode="contain" />
-                    <Text style={st.kpiTitle}>Bu Ay Yapılan</Text>
-                    <Text style={st.kpiValue}>{summary.this_month_count}</Text>
-                    <Text style={st.kpiSub}>Tamamlanan kayıtlar</Text>
-                </LinearGradient>
+                <TouchableOpacity 
+                    style={{ flex: 1, marginLeft: 8 }}
+                    onPress={() => {
+                        const now = new Date();
+                        const y = now.getFullYear();
+                        const m = String(now.getMonth() + 1).padStart(2, '0');
+                        const firstDay = `${y}-${m}-01`;
+                        const lastDay = new Date(y, now.getMonth() + 1, 0).toISOString().split('T')[0];
+                        setFilters({...filters, start_date: firstDay, end_date: lastDay});
+                        setActiveFilters({...activeFilters, start_date: firstDay, end_date: lastDay});
+                    }}
+                >
+                    <LinearGradient colors={['#34D399', '#059669', '#047857']} locations={[0, 0.5, 1]} style={[st.kpiCard]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <View style={st.kpiGlowTop} />
+                        <Image source={{ uri: 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Spiral%20Calendar.png' }} style={[st.kpiIconBg, { width: 80, height: 80, opacity: 1, right: -10, bottom: -10 }]} resizeMode="contain" />
+                        <Text style={st.kpiTitle}>Bu Ay Yapılan</Text>
+                        <Text style={st.kpiValue}>{summary.this_month_count}</Text>
+                        <Text style={st.kpiSub}>Tamamlanan kayıtlar</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
             </View>
             <View style={[st.kpiRow, { marginTop: 16 }]}>
                 <LinearGradient colors={['#FB7185', '#E11D48', '#BE123C']} locations={[0, 0.5, 1]} style={[st.kpiCard, { flex: 1 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
@@ -344,7 +376,7 @@ export default function MaintenancesScreen({ navigation }) {
                     <View style={{ flex: 1, paddingLeft: 12, paddingRight: 8 }}>
                         <Text style={st.cardTitle}>{toTitleCase(item.title)}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                            <Text style={st.cardPlate}>{item.vehicle?.plate || 'Bilinmiyor'}</Text>
+                            <Text style={st.amountTextSmall}>{fmtMoney(item.amount)}</Text>
                             <View style={st.statusBadge}>
                                 <View style={st.statusDot} />
                                 <Text style={st.statusText}>Tamamlandı</Text>
@@ -354,9 +386,9 @@ export default function MaintenancesScreen({ navigation }) {
                             {hasDesc ? toTitleCase(item.description) : 'Açıklama yok'}
                         </Text>
                     </View>
-                    <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={st.amountText}>{fmtMoney(item.amount)}</Text>
-                        <TouchableOpacity onPress={() => confirmDelete(item.id)} style={{ padding: 4, marginTop: 4 }}>
+                    <View style={{ alignItems: 'flex-end', justifyContent: 'flex-start' }}>
+                        <BlinkingPlate plate={item.vehicle?.plate || 'Bilinmiyor'} />
+                        <TouchableOpacity onPress={() => confirmDelete(item.id)} style={{ padding: 4, marginTop: 8 }}>
                             <Icon name="trash-can-outline" size={20} color="#EF4444" />
                         </TouchableOpacity>
                     </View>
@@ -748,8 +780,8 @@ const st = StyleSheet.create({
     statusBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ECFDF5', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
     statusDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#10B981', marginRight: 4 },
     statusText: { fontSize: 10, fontWeight: '700', color: '#10B981' },
-    cardDesc: { fontSize: 12, color: '#64748B', fontWeight: '500', marginTop: 2 },
-    amountText: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
+    cardDesc: { fontSize: 12, color: '#64748B', fontWeight: '500', marginTop: 4 },
+    amountTextSmall: { fontSize: 14, fontWeight: '900', color: '#0F172A' },
     
     cardGrid: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#F1F5F9' },
     gridRow: { flexDirection: 'row', alignItems: 'flex-start' },
