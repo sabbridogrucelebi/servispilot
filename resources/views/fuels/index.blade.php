@@ -103,14 +103,7 @@
     }
 
     $displayRows = $calculatedRows
-        ->sortByDesc(function ($row) {
-            return sprintf(
-                '%s-%010d-%010d',
-                optional($row->date)->format('Ymd') ?? '00000000',
-                (int) ($row->km ?? 0),
-                (int) $row->id
-            );
-        })
+        ->sortByDesc('id')
         ->values();
 
     $totalLiters = (float) $displayRows->sum(fn ($row) => (float) ($row->liters ?? 0));
@@ -207,7 +200,7 @@
         ->sort()
         ->values();
 
-    $perPage = 10;
+    $perPage = 100;
     $currentPage = max((int) request('page', 1), 1);
     $totalFiltered = $filteredRows->count();
     $lastPage = max((int) ceil($totalFiltered / $perPage), 1);
@@ -318,44 +311,56 @@
 
         <div class="p-6 space-y-6">
             <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-[26px] bg-gradient-to-br from-sky-500 to-blue-600 p-5 text-white shadow-xl">
-                    <div class="text-sm font-medium text-white/80">Toplam Yakıt Tutarı</div>
-                    <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ number_format($totalAmount, 2, ',', '.') }} ₺</div>
-                    <div class="mt-2 text-xs text-white/75">Kayıtlı toplam yakıt maliyeti</div>
+                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-sky-500 to-blue-600 p-5 text-white shadow-xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Tutar" class="absolute right-[-10px] bottom-[-15px] w-32 h-32 opacity-20 drop-shadow-2xl select-none pointer-events-none" />
+                    <div class="relative z-10">
+                        <div class="text-sm font-medium text-white/80">Toplam Yakıt Tutarı</div>
+                        <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ number_format($totalAmount, 2, ',', '.') }} ₺</div>
+                        <div class="mt-2 text-xs text-white/75">Kayıtlı toplam yakıt maliyeti</div>
+                    </div>
                 </div>
 
-                <div class="rounded-[26px] bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl">
-                    <div class="text-sm font-medium text-white/80">Toplam Litre</div>
-                    <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ number_format($totalLiters, 2, ',', '.') }}</div>
-                    <div class="mt-2 text-xs text-white/75">Sisteme işlenen toplam litre</div>
+                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Oil%20Drum.png" alt="Litre" class="absolute right-[-5px] bottom-[-15px] w-32 h-32 opacity-20 drop-shadow-2xl select-none pointer-events-none" />
+                    <div class="relative z-10">
+                        <div class="text-sm font-medium text-white/80">Toplam Litre</div>
+                        <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ number_format($totalLiters, 2, ',', '.') }}</div>
+                        <div class="mt-2 text-xs text-white/75">Sisteme işlenen toplam litre</div>
+                    </div>
                 </div>
 
-                <div class="rounded-[26px] bg-gradient-to-br from-indigo-500 to-blue-600 p-5 text-white shadow-xl">
-                    <div class="text-sm font-medium text-white/80">Yakıt Fiş Adedi</div>
-                    <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ number_format($totalReceiptCount, 0, ',', '.') }}</div>
-                    <div class="mt-2 text-xs text-white/75">Toplam kayıtlı yakıt fişi sayısı</div>
+                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-indigo-500 to-blue-600 p-5 text-white shadow-xl">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Receipt.png" alt="Fiş" class="absolute right-[0px] bottom-[-10px] w-28 h-28 opacity-20 drop-shadow-2xl select-none pointer-events-none" />
+                    <div class="relative z-10">
+                        <div class="text-sm font-medium text-white/80">Yakıt Fiş Adedi</div>
+                        <div class="mt-3 text-3xl font-extrabold tracking-tight">{{ number_format($totalReceiptCount, 0, ',', '.') }}</div>
+                        <div class="mt-2 text-xs text-white/75">Toplam kayıtlı yakıt fişi sayısı</div>
+                    </div>
                 </div>
 
-                <div class="rounded-[26px] p-5 text-white shadow-xl transition-all duration-500 bg-gradient-to-br" :class="stationCardClass()">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <div class="text-sm font-medium text-white/80">İstasyon Cari Borcu</div>
-                            <div class="mt-1 text-xs text-white/75" x-text="currentStationCard().name"></div>
+                <div class="rounded-[26px] p-5 text-white shadow-xl transition-all duration-500 bg-gradient-to-br relative overflow-hidden" :class="stationCardClass()">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="İstasyon" class="absolute right-[-10px] bottom-[-15px] w-32 h-32 opacity-20 drop-shadow-2xl select-none pointer-events-none" />
+                    <div class="relative z-10">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="text-sm font-medium text-white/80">İstasyon Cari Borcu</div>
+                                <div class="mt-1 text-xs text-white/75" x-text="currentStationCard().name"></div>
+                            </div>
+
+                            <div class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold text-white/90">
+                                5 sn dönüşüm
+                            </div>
                         </div>
 
-                        <div class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold text-white/90">
-                            5 sn dönüşüm
+                        <div class="mt-4 text-3xl font-extrabold tracking-tight">
+                            <span x-text="new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentStationCard().debt)"></span> ₺
                         </div>
-                    </div>
 
-                    <div class="mt-4 text-3xl font-extrabold tracking-tight">
-                        <span x-text="new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentStationCard().debt)"></span> ₺
-                    </div>
+                        <div class="mt-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white/95" x-text="currentStationCard().status_text"></div>
 
-                    <div class="mt-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white/95" x-text="currentStationCard().status_text"></div>
-
-                    <div class="mt-2 text-xs text-white/75">
-                        Borç varsa kırmızı, ödeme tamamlandıysa yeşil görünür
+                        <div class="mt-2 text-xs text-white/75">
+                            Borç varsa kırmızı, ödeme tamamlandıysa yeşil görünür
+                        </div>
                     </div>
                 </div>
             </div>
