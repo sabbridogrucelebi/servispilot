@@ -694,7 +694,7 @@ class VehicleController extends Controller
 
     public function deleteImage(Vehicle $vehicle, VehicleImage $image)
     {
-        if ($image->vehicle_id !== $vehicle->id) {
+        if ((int) $image->vehicle_id !== (int) $vehicle->id) {
             abort(404);
         }
 
