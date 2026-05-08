@@ -311,49 +311,51 @@
 
         <div class="p-6 space-y-6">
             <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-sky-500 to-blue-600 p-5 text-white shadow-xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Tutar" class="absolute right-5 top-1/2 -translate-y-1/2 w-[60px] h-[60px] drop-shadow-xl select-none pointer-events-none" />
-                    <div class="relative z-10 pr-[70px]">
+                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-sky-500 to-blue-600 p-5 text-white shadow-xl flex items-center justify-between">
+                    <div class="relative z-10">
                         <div class="text-sm font-medium text-white/90">Toplam Yakıt Tutarı</div>
                         <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">{{ number_format($totalAmount, 2, ',', '.') }} ₺</div>
                         <div class="mt-2 text-xs text-white/80">Kayıtlı toplam yakıt maliyeti</div>
                     </div>
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Money%20Bag.png" alt="Tutar" class="relative z-10 w-16 h-16 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2" />
                 </div>
 
-                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" alt="Litre" class="absolute right-5 top-1/2 -translate-y-1/2 w-[60px] h-[60px] drop-shadow-xl select-none pointer-events-none" />
-                    <div class="relative z-10 pr-[70px]">
+                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-500 p-5 text-white shadow-xl flex items-center justify-between">
+                    <div class="relative z-10">
                         <div class="text-sm font-medium text-white/90">Toplam Litre</div>
                         <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">{{ number_format($totalLiters, 2, ',', '.') }}</div>
                         <div class="mt-2 text-xs text-white/80">Sisteme işlenen toplam litre</div>
                     </div>
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" alt="Litre" class="relative z-10 w-16 h-16 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2" />
                 </div>
 
-                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-indigo-500 to-blue-600 p-5 text-white shadow-xl">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Receipt.png" alt="Fiş" class="absolute right-5 top-1/2 -translate-y-1/2 w-[56px] h-[56px] drop-shadow-xl select-none pointer-events-none" />
-                    <div class="relative z-10 pr-[70px]">
+                <div class="rounded-[26px] relative overflow-hidden bg-gradient-to-br from-indigo-500 to-blue-600 p-5 text-white shadow-xl flex items-center justify-between">
+                    <div class="relative z-10">
                         <div class="text-sm font-medium text-white/90">Yakıt Fiş Adedi</div>
                         <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">{{ number_format($totalReceiptCount, 0, ',', '.') }}</div>
                         <div class="mt-2 text-xs text-white/80">Toplam kayıtlı yakıt fişi sayısı</div>
                     </div>
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Receipt.png" alt="Fiş" class="relative z-10 w-14 h-14 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2" />
                 </div>
 
                 <div class="rounded-[26px] p-5 text-white shadow-xl transition-all duration-500 bg-gradient-to-br relative overflow-hidden" :class="stationCardClass()">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="İstasyon" class="absolute right-5 top-[55%] -translate-y-1/2 w-[60px] h-[60px] drop-shadow-xl select-none pointer-events-none" />
                     <div class="absolute right-4 top-4 rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold text-white tracking-wider uppercase">
                         5 sn
                     </div>
-                    <div class="relative z-10 pr-[70px]">
+                    <div class="relative z-10 flex items-center justify-between">
                         <div>
-                            <div class="text-sm font-medium text-white/90">İstasyon Cari Borcu</div>
-                            <div class="mt-1 text-xs text-white/80 line-clamp-1" x-text="currentStationCard().name"></div>
-                        </div>
+                            <div>
+                                <div class="text-sm font-medium text-white/90">İstasyon Cari Borcu</div>
+                                <div class="mt-1 text-xs text-white/80 line-clamp-1 pr-12" x-text="currentStationCard().name"></div>
+                            </div>
 
-                        <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">
-                            <span x-text="new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentStationCard().debt)"></span> ₺
-                        </div>
+                            <div class="mt-3 text-2xl xl:text-3xl font-extrabold tracking-tight truncate">
+                                <span x-text="new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentStationCard().debt)"></span> ₺
+                            </div>
 
-                        <div class="mt-3 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white" x-text="currentStationCard().status_text"></div>
+                            <div class="mt-3 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white" x-text="currentStationCard().status_text"></div>
+                        </div>
+                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fuel%20Pump.png" alt="İstasyon" class="w-16 h-16 drop-shadow-xl select-none pointer-events-none flex-shrink-0 ml-2 mt-4" />
                     </div>
                 </div>
             </div>
