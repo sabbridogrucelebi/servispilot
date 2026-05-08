@@ -362,16 +362,16 @@
                                 <div class="flex items-center gap-4">
                                     <div class="flex items-center justify-center rounded-2xl shadow">
                                         @php
-                                            $mType = $maintenance->maintenance_type ?? '';
+                                            $mTypeUpper = mb_strtoupper($maintenance->maintenance_type ?? '', 'UTF-8');
                                             $mIconUrl = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png';
                                             
-                                            if (stripos($mType, 'lastik') !== false) {
+                                            if (str_contains($mTypeUpper, 'LASTİK') || str_contains($mTypeUpper, 'LASTIK')) {
                                                 $mIconUrl = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Wheel/3D/wheel_3d.png';
-                                            } elseif (stripos($mType, 'alt yağ') !== false || stripos($mType, 'alt yag') !== false) {
+                                            } elseif (str_contains($mTypeUpper, 'ALT YAĞ') || str_contains($mTypeUpper, 'ALT YAG')) {
                                                 $mIconUrl = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gear.png';
-                                            } elseif (stripos($mType, 'yağ') !== false || stripos($mType, 'yag') !== false || stripos($mType, 'filtre') !== false || stripos($mType, 'sivi') !== false) {
-                                                $mIconUrl = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Droplet.png';
-                                            } elseif (stripos($mType, 'kaporta') !== false || stripos($mType, 'kaza') !== false) {
+                                            } elseif (str_contains($mTypeUpper, 'YAĞ') || str_contains($mTypeUpper, 'YAG') || str_contains($mTypeUpper, 'FİLTRE') || str_contains($mTypeUpper, 'FILTRE')) {
+                                                $mIconUrl = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Oil%20drum/3D/oil_drum_3d.png';
+                                            } elseif (str_contains($mTypeUpper, 'KAPORTA') || str_contains($mTypeUpper, 'KAZA')) {
                                                 $mIconUrl = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Automobile.png';
                                             }
                                         @endphp
