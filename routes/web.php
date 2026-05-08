@@ -47,19 +47,6 @@ use App\Http\Controllers\VehicleTrackingController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\CompanyController as SuperAdminCompanyController;
 
-Route::get('/fix-storage', function () {
-    $publicStoragePath = public_path('storage');
-    if (file_exists($publicStoragePath)) {
-        if (is_link($publicStoragePath)) {
-            unlink($publicStoragePath);
-        } else {
-            \Illuminate\Support\Facades\File::deleteDirectory($publicStoragePath);
-        }
-    }
-    \Illuminate\Support\Facades\Artisan::call('storage:link');
-    return 'Resim yolları başarıyla düzeltildi! (Storage link created). Lütfen bu sekmeyi kapatın ve sayfayı yenileyin.';
-});
-
 Route::get('/', function () {
     return view('welcome');
 });
