@@ -47,7 +47,7 @@
                         <form action="{{ route('vehicles.public-images.store', ['vehicle' => $vehicle->id, 'token' => $token]) }}"
                               method="POST"
                               enctype="multipart/form-data"
-                              class="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                              class="upload-form rounded-[24px] border border-slate-200 bg-slate-50 p-4">
                             @csrf
 
                             <input type="hidden" name="image_type" value="{{ $key }}">
@@ -66,8 +66,8 @@
                             </div>
 
                             <button type="submit"
-                                    class="mt-4 w-full rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3 text-sm font-semibold text-white shadow">
-                                Yükle
+                                    class="upload-btn mt-4 w-full rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow transition-all relative overflow-hidden">
+                                <span class="relative z-10 btn-text">Yükle</span>
                             </button>
                         </form>
                     @endforeach
@@ -79,5 +79,53 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.upload-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const btn = form.querySelector('.upload-btn');
+                const btnText = btn.querySelector('.btn-text');
+                const fileInput = form.querySelector('input[type="file"]');
+                
+                if (!fileInput.files.length) return;
+                
+                const formData = new FormData(form);
+                const xhr = new XMLHttpRequest();
+                
+                xhr.open('POST', form.action, true);
+                
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        btnText.innerHTML = `Yükleniyor... %${percent}`;
+                        btn.style.background = `linear-gradient(to right, #4f46e5 ${percent}%, #818cf8 ${percent}%)`;
+                        btn.disabled = true;
+                    }
+                };
+                
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        btnText.innerHTML = '✅ Yüklendi';
+                        btn.style.background = '#10b981';
+                        setTimeout(() => { window.location.reload(); }, 1500);
+                    } else {
+                        btnText.innerHTML = '❌ Hata! Tekrar Dene';
+                        btn.style.background = '#ef4444';
+                        btn.disabled = false;
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    btnText.innerHTML = '❌ Hata! Tekrar Dene';
+                    btn.style.background = '#ef4444';
+                    btn.disabled = false;
+                };
+                
+                xhr.send(formData);
+            });
+        });
+    </script>
 </body>
 </html>
