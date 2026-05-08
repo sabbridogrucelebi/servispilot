@@ -653,6 +653,7 @@ class VehicleController extends Controller
         }
 
         $vehicle->images()->create([
+            'company_id' => $vehicle->company_id,
             'title' => $title,
             'file_path' => $path,
             'is_featured' => $isFeatured,
