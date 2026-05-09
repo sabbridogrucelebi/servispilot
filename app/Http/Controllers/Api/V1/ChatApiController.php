@@ -98,6 +98,11 @@ class ChatApiController extends Controller
             $companyId = $otherUser ? $otherUser->company_id : null;
         }
 
+        // Fallback for demo users or super admins without a company
+        if (!$companyId) {
+            $companyId = \App\Models\Company::first()->id ?? 1;
+        }
+
         if ($request->type === 'direct' && count($userIds) === 2) {
             $existing = Conversation::where('company_id', $companyId)
                 ->where('type', 'direct')

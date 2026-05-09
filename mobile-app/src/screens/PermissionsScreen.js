@@ -109,7 +109,7 @@ export default function PermissionsScreen({ onComplete }) {
 
                     <View style={s.footer}>
                         <TouchableOpacity style={[s.btn, loading && s.btnDisabled]} onPress={handleNext} disabled={loading}>
-                            {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnTxt}>İzin Ver ve Devam Et</Text>}
+                            {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnTxt}>Devam Et</Text>}
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
