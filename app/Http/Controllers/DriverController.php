@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
+use ZipArchive;
 use App\Imports\DriversImport;
 
 class DriverController extends Controller
@@ -519,6 +520,62 @@ class DriverController extends Controller
         return redirect()->back()->with('success', 'Personel araç ataması başarıyla güncellendi.');
     }
 
+    public function downloadDocumentsZip(Driver $driver)
+    {
+        if (!auth()->user()->hasPermission('drivers.view')) {
+            abort(403, 'Personel belgelerini indirme yetkiniz yok.');
+        }
+
+        $documents = $driver->documents()->get();
+
+        if ($documents->isEmpty()) {
+            return redirect()->back()->with('error', 'Bu personele ait indirilebilir belge bulunamadı.');
+        }
+
+        // Türkçe karakterleri ASCII'ye çevir
+        $safeName = str_replace(
+            ['ç','Ç','ğ','Ğ','ı','İ','ö','Ö','ş','Ş','ü','Ü',' '],
+            ['c','C','g','G','i','I','o','O','s','S','u','U','_'],
+            $driver->full_name
+        );
+        $safeName = preg_replace('/[^A-Za-z0-9_\-]/', '', $safeName);
+
+        $zipFileName = $safeName . '_' . now()->format('d-m-Y') . '.zip';
+        $zipPath = storage_path('app/' . $zipFileName);
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            abort(500, 'ZIP dosyası oluşturulamadı.');
+        }
+
+        $addedFiles = 0;
+
+        foreach ($documents as $document) {
+            if (!empty($document->file_path) && Storage::disk('public')->exists($document->file_path)) {
+                $absolutePath = Storage::disk('public')->path($document->file_path);
+                $extension = pathinfo($absolutePath, PATHINFO_EXTENSION);
+
+                $docType = preg_replace('/[\\\\\/:"*?<>|]+/', '-', ($document->document_type ?: 'Belge'));
+                $docName = preg_replace('/[\\\\\/:"*?<>|]+/', '-', ($document->document_name ?: 'Dosya'));
+
+                $fileNameInZip = $docType . '/' . $docName . '_' . $document->id . '.' . $extension;
+
+                $zip->addFile($absolutePath, $fileNameInZip);
+                $addedFiles++;
+            }
+        }
+
+        $zip->close();
+
+        if ($addedFiles === 0) {
+            @unlink($zipPath);
+            return redirect()->back()->with('error', 'Bu personele ait indirilebilir dosya bulunamadı.');
+        }
+
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+    }
+
     protected function resolveDriverDocumentStatus(Driver $driver): array
     {
         $documents = $driver->documents->map(function ($document) use ($driver) {
@@ -593,32 +650,94 @@ class DriverController extends Controller
         return $document;
     }
 
+    /**
+     * Belge türüne göre uyarı eşiğini gün cinsinden döndürür.
+     * Ehliyet → 30 gün (1 ay)
+     * SRC Belgeleri → 30 gün (1 ay)
+     * Adli Sicil → 7 gün (1 hafta)
+     * Psikoteknik → 7 gün (1 hafta)
+     * Diğer tüm belgeler → 7 gün (1 hafta)
+     */
+    public static function getAlertThresholdDays(?string $documentType): int
+    {
+        $type = mb_strtolower(trim($documentType ?? ''), 'UTF-8');
+
+        // Ehliyet - 1 ay (30 gün)
+        if (str_contains($type, 'ehliyet') || str_contains($type, 'kimlik ve ehliyet')) {
+            return 30;
+        }
+
+        // SRC Belgeleri - 1 ay (30 gün)
+        if (str_contains($type, 'src')) {
+            return 30;
+        }
+
+        // Adli Sicil - 1 hafta (7 gün)
+        if (str_contains($type, 'adli sicil')) {
+            return 7;
+        }
+
+        // Psikoteknik - 1 hafta (7 gün)
+        if (str_contains($type, 'psikoteknik')) {
+            return 7;
+        }
+
+        // Diğer tüm belgeler - 1 hafta (7 gün)
+        return 7;
+    }
+
     public static function getDriverDocumentAlertsForLayout(): array
     {
         $today = now()->startOfDay();
-        $sevenDaysLater = now()->copy()->addDays(7)->endOfDay();
+        // En geniş eşik 30 gün olduğu için 30 güne kadar tüm belgeleri çekiyoruz
+        $maxThreshold = now()->copy()->addDays(30)->endOfDay();
 
         return Document::query()
             ->where('documentable_type', Driver::class)
             ->where('is_active', true)
             ->whereNotNull('end_date')
-            ->whereDate('end_date', '<=', $sevenDaysLater)
+            ->whereDate('end_date', '<=', $maxThreshold)
             ->with('documentable')
             ->orderBy('end_date')
             ->get()
             ->filter(fn ($doc) => $doc->documentable)
+            ->filter(function ($doc) use ($today) {
+                // Her belge türüne özel eşik uygula
+                $endDate = Carbon::parse($doc->end_date)->startOfDay();
+                $remainingDays = $today->diffInDays($endDate, false);
+                $threshold = self::getAlertThresholdDays($doc->document_type ?: $doc->document_name);
+
+                // Süresi geçmiş VEYA eşik içindeki belgeleri göster
+                return $remainingDays < 0 || $remainingDays <= $threshold;
+            })
             ->map(function ($doc) use ($today) {
                 $endDate = Carbon::parse($doc->end_date)->startOfDay();
                 $remainingDays = $today->diffInDays($endDate, false);
+                $docType = $doc->document_type ?: $doc->document_name;
+                $threshold = self::getAlertThresholdDays($docType);
+
+                // Uyarı seviyesi belirle
+                if ($remainingDays < 0) {
+                    $status = 'expired';
+                    $urgency = 'critical';
+                } elseif ($remainingDays <= 7) {
+                    $status = 'expiring';
+                    $urgency = 'high';
+                } else {
+                    $status = 'expiring';
+                    $urgency = 'medium';
+                }
 
                 return [
                     'document_id' => $doc->id,
                     'driver_id' => $doc->documentable_id,
                     'driver_name' => $doc->documentable?->full_name ?? 'Personel',
-                    'document_type' => $doc->document_type ?: $doc->document_name,
+                    'document_type' => $docType,
                     'end_date' => $doc->end_date,
                     'remaining_days' => $remainingDays,
-                    'status' => $remainingDays < 0 ? 'expired' : 'expiring',
+                    'threshold_days' => $threshold,
+                    'status' => $status,
+                    'urgency' => $urgency,
                     'route' => route('drivers.show', [
                         'driver' => $doc->documentable_id,
                         'tab' => 'documents',

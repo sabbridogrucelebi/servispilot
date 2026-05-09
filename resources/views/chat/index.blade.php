@@ -262,6 +262,7 @@
     document.getElementById('chat-notification-sound').src = popSoundData;
 
     function chatApp() {
+        const BASE = '{{ url("/") }}'.replace(/\/$/, '');
         return {
             conversations: [],
             searchQuery: '',
@@ -334,7 +335,7 @@
 
             async fetchConversations(isSilent = false) {
                 try {
-                    const res = await fetch('/chat-api/conversations', {
+                    const res = await fetch(BASE + '/chat-api/conversations', {
                         headers: { 'Accept': 'application/json' }
                     });
                     const data = await res.json();
@@ -354,7 +355,7 @@
             async fetchMessages() {
                 if (!this.activeChat) return;
                 try {
-                    const res = await fetch('/chat-api/conversations/' + this.activeChat.id + '/messages', {
+                    const res = await fetch(BASE + '/chat-api/conversations/' + this.activeChat.id + '/messages', {
                         headers: { 'Accept': 'application/json' }
                     });
                     this.messages = await res.json();
@@ -389,7 +390,7 @@
                 this.selectedFiles = [];
                 
                 try {
-                    await fetch('/chat-api/conversations/' + this.activeChat.id + '/messages', {
+                    await fetch(BASE + '/chat-api/conversations/' + this.activeChat.id + '/messages', {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
@@ -411,7 +412,7 @@
                 const label = forEveryone ? 'Herkesten silmek istediğinize emin misiniz?' : 'Bu mesajı silmek istediğinize emin misiniz?';
                 if (!confirm(label)) return;
                 try {
-                    await fetch(`/chat-api/conversations/${this.activeChat.id}/messages/${msg.id}`, {
+                    await fetch(BASE + `/chat-api/conversations/${this.activeChat.id}/messages/${msg.id}`, {
                         method: 'DELETE',
                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: JSON.stringify({ for_everyone: forEveryone })
@@ -423,7 +424,7 @@
             async deleteConversation(conv) {
                 if (!confirm(`"${conv.name}" sohbetini silmek istediğinize emin misiniz?`)) return;
                 try {
-                    await fetch(`/chat-api/conversations/${conv.id}`, {
+                    await fetch(BASE + `/chat-api/conversations/${conv.id}`, {
                         method: 'DELETE',
                         headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
                     });
@@ -442,7 +443,7 @@
                 if (!this.selectedConvIds.length) return;
                 if (!confirm(`${this.selectedConvIds.length} sohbeti silmek istediğinize emin misiniz?`)) return;
                 try {
-                    await fetch('/chat-api/conversations/bulk-delete', {
+                    await fetch(BASE + '/chat-api/conversations/bulk-delete', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: JSON.stringify({ ids: this.selectedConvIds })
@@ -480,7 +481,7 @@
 
             async fetchUsersList() {
                 try {
-                    const res = await fetch('/chat-api/users', {
+                    const res = await fetch(BASE + '/chat-api/users', {
                         headers: { 'Accept': 'application/json' }
                     });
                     this.usersList = await res.json();
@@ -496,7 +497,7 @@
                 const type = this.newGroup.name.trim() === '' && userIds.length === 1 ? 'direct' : 'group';
 
                 try {
-                    const res = await fetch('/chat-api/conversations', {
+                    const res = await fetch(BASE + '/chat-api/conversations', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

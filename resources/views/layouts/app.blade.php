@@ -461,47 +461,69 @@
                     <div>
                         <h3 class="text-xl font-extrabold text-slate-900">Personel Belge Uyarıları Var</h3>
                         <p class="mt-1 text-sm text-slate-500">
-                            Süresi geçen veya 7 gün içinde bitecek personel belgelerini güncelleyiniz.
+                            Süresi geçen veya yakında bitecek personel belgelerini güncelleyiniz.
                         </p>
                     </div>
+                </div>
+
+                {{-- Uyarı eşik bilgileri --}}
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-bold text-indigo-700 ring-1 ring-indigo-200">
+                        🪪 Ehliyet / SRC → 1 ay önceden uyarı
+                    </span>
+                    <span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200">
+                        📋 Adli Sicil / Psikoteknik / Diğer → 1 hafta önceden uyarı
+                    </span>
                 </div>
             </div>
 
             <div class="max-h-[65vh] overflow-y-auto p-6 space-y-4">
                 @foreach($driverDocumentAlerts as $alert)
-                    <div class="rounded-[24px] border {{ $alert['status'] === 'expired' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50' }} p-5">
+                    @php
+                        $isExpired = $alert['status'] === 'expired';
+                        $isUrgent = ($alert['urgency'] ?? 'medium') === 'high';
+                        $borderClass = $isExpired ? 'border-rose-200 bg-rose-50' : ($isUrgent ? 'border-amber-200 bg-amber-50' : 'border-orange-200 bg-orange-50');
+                        $textClass = $isExpired ? 'text-rose-700' : ($isUrgent ? 'text-amber-700' : 'text-orange-700');
+                        $btnClass = $isExpired ? 'bg-gradient-to-r from-rose-600 to-pink-600' : ($isUrgent ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-orange-400 to-amber-500');
+                    @endphp
+                    <div class="rounded-[24px] border {{ $borderClass }} p-5">
                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <div>
                                 <div class="text-base font-bold text-slate-900">
-                                    <span class="{{ $alert['status'] === 'expired' ? 'text-rose-700' : 'text-amber-700' }}">
+                                    <span class="{{ $textClass }}">
                                         {{ $alert['driver_name'] }}
                                     </span>
                                     adlı personele ait
-                                    <span class="{{ $alert['status'] === 'expired' ? 'text-rose-700' : 'text-amber-700' }}">
+                                    <span class="{{ $textClass }}">
                                         {{ $alert['document_type'] }}
                                     </span>
                                     belgesi
-                                    {{ $alert['status'] === 'expired' ? 'süresi dolmuş durumda.' : 'bitmek üzere.' }}
+                                    {{ $isExpired ? 'süresi dolmuş durumda.' : 'bitmek üzere.' }}
                                 </div>
 
                                 <div class="mt-2 text-sm text-slate-600">
                                     Son geçerlilik tarihi:
-                                    <span class="font-semibold {{ $alert['status'] === 'expired' ? 'text-rose-700' : 'text-amber-700' }}">
+                                    <span class="font-semibold {{ $textClass }}">
                                         {{ \Illuminate\Support\Carbon::parse($alert['end_date'])->format('d.m.Y') }}
                                     </span>
                                 </div>
 
-                                <div class="mt-1 text-sm font-semibold {{ $alert['status'] === 'expired' ? 'text-rose-700' : 'text-amber-700' }}">
-                                    @if($alert['status'] === 'expired')
-                                        {{ abs((int) $alert['remaining_days']) }} gün önce süresi doldu
-                                    @else
-                                        {{ (int) $alert['remaining_days'] }} gün kaldı
-                                    @endif
+                                <div class="mt-1 flex items-center gap-2">
+                                    <span class="text-sm font-semibold {{ $textClass }}">
+                                        @if($isExpired)
+                                            {{ abs((int) $alert['remaining_days']) }} gün önce süresi doldu
+                                        @else
+                                            {{ (int) $alert['remaining_days'] }} gün kaldı
+                                        @endif
+                                    </span>
+                                    <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+                                        eşik: {{ $alert['threshold_days'] ?? 7 }} gün
+                                    </span>
                                 </div>
                             </div>
 
                             <a href="{{ $alert['route'] }}"
-                               class="inline-flex items-center justify-center rounded-2xl {{ $alert['status'] === 'expired' ? 'bg-gradient-to-r from-rose-600 to-pink-600' : 'bg-gradient-to-r from-amber-500 to-orange-500' }} px-5 py-3 text-sm font-semibold text-white shadow hover:scale-[1.01] transition">
+                               class="inline-flex items-center justify-center rounded-2xl {{ $btnClass }} px-5 py-3 text-sm font-semibold text-white shadow hover:scale-[1.01] transition">
                                 Belgeyi Güncelle
                             </a>
                         </div>

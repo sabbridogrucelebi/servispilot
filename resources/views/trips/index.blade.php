@@ -528,6 +528,12 @@
                     const data = await response.json();
                     if (data.success || data.deleted) {
                         this.closeModals();
+                        // Kaydetmeden önce scroll pozisyonunu sakla
+                        let container = document.querySelector('.matrix-container');
+                        if (container) {
+                            sessionStorage.setItem('puantajScrollLeft', container.scrollLeft);
+                            sessionStorage.setItem('puantajScrollTop', window.scrollY || document.documentElement.scrollTop);
+                        }
                         window.location.reload();
                     } else {
                         alert('Hata: ' + (data.message || 'Bilinmeyen bir hata oluştu'));
@@ -541,22 +547,36 @@
         }
     }
     document.addEventListener('DOMContentLoaded', () => {
-        // Otomatik Kaydırma (En son işlenen güne odaklanma)
-        let lastRecordDay = 0;
-        document.querySelectorAll('td[data-has-record="true"]').forEach(td => {
-            let day = parseInt(td.getAttribute('data-date'));
-            if (day > lastRecordDay) lastRecordDay = day;
-        });
-        
-        let targetDay = lastRecordDay + 1;
-        if (targetDay > 31) targetDay = 31;
-        
-        let targetDayStr = targetDay.toString().padStart(2, '0');
-        let targetHeader = document.getElementById('day-header-' + targetDayStr);
-        
-        if (targetHeader) {
-            let container = document.querySelector('.matrix-container');
-            if (container) {
+        let container = document.querySelector('.matrix-container');
+
+        // Kayıt sonrası sayfa yenileniyorsa önceki scroll pozisyonunu geri yükle
+        let savedScrollLeft = sessionStorage.getItem('puantajScrollLeft');
+        let savedScrollTop = sessionStorage.getItem('puantajScrollTop');
+
+        if (savedScrollLeft !== null && container) {
+            // Kaydedilen pozisyonu geri yükle, otomatik kaydırma yapma
+            container.scrollLeft = parseInt(savedScrollLeft, 10);
+            sessionStorage.removeItem('puantajScrollLeft');
+
+            if (savedScrollTop !== null) {
+                window.scrollTo(0, parseInt(savedScrollTop, 10));
+                sessionStorage.removeItem('puantajScrollTop');
+            }
+        } else if (container) {
+            // İlk giriş: en son işlenen güne otomatik kaydır
+            let lastRecordDay = 0;
+            document.querySelectorAll('td[data-has-record="true"]').forEach(td => {
+                let day = parseInt(td.getAttribute('data-date'));
+                if (day > lastRecordDay) lastRecordDay = day;
+            });
+            
+            let targetDay = lastRecordDay + 1;
+            if (targetDay > 31) targetDay = 31;
+            
+            let targetDayStr = targetDay.toString().padStart(2, '0');
+            let targetHeader = document.getElementById('day-header-' + targetDayStr);
+            
+            if (targetHeader) {
                 // Sticky column is 250px, we scroll so the target is visible next to it
                 container.scrollLeft = targetHeader.offsetLeft - 300;
             }

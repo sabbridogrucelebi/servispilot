@@ -90,7 +90,7 @@ export default function PermissionsScreen({ onComplete }) {
                             <Image source={require('../../assets/icon.png')} style={{width: 60, height: 60, borderRadius: 16}} />
                         </View>
                         <Text style={s.title}>ServisPilot Deneyimi</Text>
-                        <Text style={s.subtitle}>Uygulamayı tam kapasiteyle kullanabilmeniz için birkaç izne ihtiyacımız var.</Text>
+                        <Text style={s.subtitle}>Uygulamayı tam kapasiteyle kullanabilmeniz için birkaç izne ihtiyacımız var. Her adımda tercihinize göre izin verebilir veya atlayabilirsiniz.</Text>
                     </View>
 
                     <View style={s.card}>
@@ -110,6 +110,12 @@ export default function PermissionsScreen({ onComplete }) {
                     <View style={s.footer}>
                         <TouchableOpacity style={[s.btn, loading && s.btnDisabled]} onPress={handleNext} disabled={loading}>
                             {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnTxt}>Devam Et</Text>}
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={{ alignItems: 'center', paddingVertical: 12 }} 
+                            onPress={() => { if (onComplete) onComplete(); }}
+                        >
+                            <Text style={{ color: '#94A3B8', fontSize: 14, fontWeight: '600' }}>Şimdilik Atla</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>

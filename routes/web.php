@@ -307,6 +307,10 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:drivers.view')
         ->name('drivers.documents.destroy');
 
+    Route::get('/drivers/{driver}/documents/download-zip', [DriverController::class, 'downloadDocumentsZip'])
+        ->middleware('permission:drivers.view')
+        ->name('drivers.documents.zip');
+
     /*
     |--------------------------------------------------------------------------
     | MAINTENANCES

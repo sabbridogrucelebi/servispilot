@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Dimensions, Animated, Keyboard, Easing } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Dimensions, Animated, Keyboard, Easing, Linking } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -155,6 +155,15 @@ export default function LoginScreen({ navigation }) {
                                         </TouchableOpacity>
                                     </Animated.View>
                                 </View>
+
+                                <TouchableOpacity 
+                                    onPress={() => Linking.openURL('https://mehmetcelebiturizm.com/app/privacy-policy')} 
+                                    style={{ marginTop: 20, alignItems: 'center' }}
+                                >
+                                    <Text style={{ color: '#94A3B8', fontSize: 12, textDecorationLine: 'underline' }}>
+                                        Gizlilik Politikası ve KVKK Aydınlatma Metni
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
                         ) : (
                             <Animated.View style={[styles.card, { opacity: formFadeAnim, transform: [{ translateY: formSlideAnim }] }]}>
@@ -217,6 +226,15 @@ export default function LoginScreen({ navigation }) {
                                     activeOpacity={0.8}
                                 >
                                     {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginBtnTxt}>Giriş Yap</Text>}
+                                </TouchableOpacity>
+
+                                <TouchableOpacity 
+                                    onPress={() => Linking.openURL('https://mehmetcelebiturizm.com/app/privacy-policy')} 
+                                    style={{ marginTop: 20, alignItems: 'center' }}
+                                >
+                                    <Text style={{ color: '#94A3B8', fontSize: 12, textDecorationLine: 'underline' }}>
+                                        Gizlilik Politikası ve KVKK Aydınlatma Metni
+                                    </Text>
                                 </TouchableOpacity>
                             </Animated.View>
                         )}
