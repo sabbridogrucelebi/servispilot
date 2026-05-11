@@ -177,10 +177,7 @@
                                             // Yetki bazlı kontrol (eğer belirtilmişse)
                                             $permissionAccess = !($item['permission'] ?? null) || $user->hasPermission($item['permission']);
 
-                                            // Sadece firma adminine özel sekmeler (ör: LOGLAR)
-                                            $adminGate = empty($item['admin_only']) || $user->isCompanyAdmin() || $user->isSuperAdmin();
-
-                                            $canAccess = $moduleAccess && $permissionAccess && $adminGate;
+                                            $canAccess = $moduleAccess && $permissionAccess;
                                         @endphp
 
                                         @if($canAccess)

@@ -1,7 +1,18 @@
-{{-- Premium Modül Bazlı Yetki Kartları --}}
+{{-- Premium Modül Bazlı Yetki Kartları — Tüm Sidebar Modülleri --}}
 @php
-    // Modül grupları tanımı: Her modül kendi ikonuna, rengine ve alt yetkilerine sahip
+    // Modül grupları tanımı: sidebar'daki her sekmeye karşılık gelir
     $modules = [
+        [
+            'title' => 'Ana Sayfa',
+            'icon' => '🏠',
+            'gradient' => 'from-slate-600 to-slate-800',
+            'shadow' => 'shadow-slate-500/25',
+            'bg' => 'bg-slate-50',
+            'border' => 'border-slate-300',
+            'text' => 'text-slate-600',
+            'keys' => ['dashboard.view'],
+            'labels' => ['Gösterge Paneli Erişimi'],
+        ],
         [
             'title' => 'Araçlar',
             'icon' => '🚗',
@@ -12,6 +23,17 @@
             'text' => 'text-blue-600',
             'keys' => ['vehicles.view', 'vehicles.create', 'vehicles.edit', 'vehicles.delete'],
             'labels' => ['Araçları Görüntüleme', 'Araç Ekleme', 'Araç Düzenleme', 'Araç Silme'],
+        ],
+        [
+            'title' => 'Araç Takip',
+            'icon' => '📡',
+            'gradient' => 'from-cyan-500 to-blue-600',
+            'shadow' => 'shadow-cyan-500/25',
+            'bg' => 'bg-cyan-50',
+            'border' => 'border-cyan-200',
+            'text' => 'text-cyan-600',
+            'keys' => ['vehicle_tracking.view'],
+            'labels' => ['Canlı Araç Takip Erişimi'],
         ],
         [
             'title' => 'Personeller',
@@ -48,7 +70,7 @@
         ],
         [
             'title' => 'Trafik Cezaları',
-            'icon' => '⚠️',
+            'icon' => '🚨',
             'gradient' => 'from-rose-500 to-pink-600',
             'shadow' => 'shadow-rose-500/25',
             'bg' => 'bg-rose-50',
@@ -109,8 +131,96 @@
             'bg' => 'bg-indigo-50',
             'border' => 'border-indigo-200',
             'text' => 'text-indigo-600',
-            'keys' => ['reports.view', 'financials.view', 'dashboard.view'],
-            'labels' => ['Raporları Görüntüleme', 'Finansal Özet Görüntüleme', 'Gösterge Panelini Görüntüleme'],
+            'keys' => ['reports.view', 'reports.export', 'financials.view'],
+            'labels' => ['Raporları Görüntüleme', 'Rapor Dışa Aktarma', 'Finansal Özet Görüntüleme'],
+        ],
+        [
+            'title' => 'PilotChat',
+            'icon' => '💬',
+            'gradient' => 'from-fuchsia-500 to-pink-600',
+            'shadow' => 'shadow-fuchsia-500/25',
+            'bg' => 'bg-fuchsia-50',
+            'border' => 'border-fuchsia-200',
+            'text' => 'text-fuchsia-600',
+            'keys' => ['chat.view', 'chat.create'],
+            'labels' => ['Mesajlaşma Görüntüleme', 'Mesaj Gönderme'],
+        ],
+        [
+            'title' => 'Loglar',
+            'icon' => '📜',
+            'gradient' => 'from-stone-500 to-stone-700',
+            'shadow' => 'shadow-stone-500/25',
+            'bg' => 'bg-stone-50',
+            'border' => 'border-stone-200',
+            'text' => 'text-stone-600',
+            'keys' => ['logs.view'],
+            'labels' => ['Sistem Loglarını Görüntüleme'],
+        ],
+        [
+            'title' => 'Kullanıcılar',
+            'icon' => '👥',
+            'gradient' => 'from-purple-600 to-indigo-700',
+            'shadow' => 'shadow-purple-500/25',
+            'bg' => 'bg-purple-50',
+            'border' => 'border-purple-200',
+            'text' => 'text-purple-600',
+            'keys' => ['company_users.view', 'company_users.create', 'company_users.edit', 'company_users.delete'],
+            'labels' => ['Kullanıcıları Görüntüleme', 'Kullanıcı Ekleme', 'Kullanıcı Düzenleme', 'Kullanıcı Silme'],
+        ],
+        [
+            'title' => 'Abonelik & Ödeme',
+            'icon' => '💳',
+            'gradient' => 'from-yellow-500 to-amber-600',
+            'shadow' => 'shadow-yellow-500/25',
+            'bg' => 'bg-yellow-50',
+            'border' => 'border-yellow-200',
+            'text' => 'text-yellow-700',
+            'keys' => ['billing.view'],
+            'labels' => ['Abonelik & Ödeme Erişimi'],
+        ],
+        [
+            'title' => 'Destek',
+            'icon' => '🆘',
+            'gradient' => 'from-red-500 to-rose-600',
+            'shadow' => 'shadow-red-500/25',
+            'bg' => 'bg-red-50',
+            'border' => 'border-red-200',
+            'text' => 'text-red-600',
+            'keys' => ['support.view', 'support.create'],
+            'labels' => ['Destek Taleplerini Görüntüleme', 'Destek Talebi Oluşturma'],
+        ],
+        [
+            'title' => 'PilotCell',
+            'icon' => '📱',
+            'gradient' => 'from-green-500 to-emerald-600',
+            'shadow' => 'shadow-green-500/25',
+            'bg' => 'bg-green-50',
+            'border' => 'border-green-200',
+            'text' => 'text-green-600',
+            'keys' => ['pilotcell.view', 'pilotcell.manage'],
+            'labels' => ['PilotCell Görüntüleme', 'PilotCell Yönetimi'],
+        ],
+        [
+            'title' => 'Ayarlar',
+            'icon' => '⚙️',
+            'gradient' => 'from-zinc-500 to-zinc-700',
+            'shadow' => 'shadow-zinc-500/25',
+            'bg' => 'bg-zinc-50',
+            'border' => 'border-zinc-200',
+            'text' => 'text-zinc-600',
+            'keys' => ['settings.view', 'settings.edit'],
+            'labels' => ['Ayarları Görüntüleme', 'Ayarları Düzenleme'],
+        ],
+        [
+            'title' => 'Yedeklemeler',
+            'icon' => '💾',
+            'gradient' => 'from-gray-600 to-gray-800',
+            'shadow' => 'shadow-gray-500/25',
+            'bg' => 'bg-gray-50',
+            'border' => 'border-gray-300',
+            'text' => 'text-gray-600',
+            'keys' => ['backups.view', 'backups.create'],
+            'labels' => ['Yedeklemeleri Görüntüleme', 'Yedekleme Oluşturma'],
         ],
     ];
 
@@ -120,16 +230,18 @@
 @endphp
 
 <div class="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-    <div class="mb-8 flex items-center gap-4">
-        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04a11.357 11.357 0 00-1.018 4.772c0 4.113 2.193 7.713 5.5 9.69a11.354 11.354 0 0011.001 0c3.307-1.977 5.5-5.577 5.5-9.69a11.357 11.357 0 00-1.018-4.772z"></path></svg>
-        </div>
-        <div>
-            <h2 class="text-xl font-black text-slate-900 tracking-tight">Menü Erişimi</h2>
-            <p class="text-sm font-medium text-slate-400">Modüle tıklayarak alt yetkileri açın veya kapatın</p>
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04a11.357 11.357 0 00-1.018 4.772c0 4.113 2.193 7.713 5.5 9.69a11.354 11.354 0 0011.001 0c3.307-1.977 5.5-5.577 5.5-9.69a11.357 11.357 0 00-1.018-4.772z"></path></svg>
+            </div>
+            <div>
+                <h2 class="text-xl font-black text-slate-900 tracking-tight">Menü Erişimi</h2>
+                <p class="text-sm font-medium text-slate-400">Modüle tıklayarak alt yetkileri açın veya kapatın</p>
+            </div>
         </div>
         {{-- Tümünü Seç / Kaldır --}}
-        <div class="ml-auto flex gap-2">
+        <div class="flex gap-2">
             <button type="button" onclick="selectAllPerms()" class="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-100 transition-all">
                 Tümünü Seç
             </button>
@@ -139,7 +251,17 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="permission-modules">
+    {{-- Kategori Başlıkları ile Gruplandırma --}}
+    @php
+        $categoryBreaks = [
+            0 => 'Genel',
+            1 => 'Filo Yönetimi',
+            4 => 'Operasyon & Finans',
+            12 => 'İletişim & Sistem',
+        ];
+    @endphp
+
+    <div class="space-y-8" id="permission-modules">
         @foreach($modules as $mi => $mod)
             @php
                 $modPerms = [];
@@ -159,31 +281,47 @@
                 }
             @endphp
 
+            {{-- Kategori Başlığı --}}
+            @if(isset($categoryBreaks[$mi]))
+                @if($mi > 0)
+                    <div class="border-t border-slate-100 pt-6"></div>
+                @endif
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="h-px flex-1 bg-gradient-to-r from-indigo-200 to-transparent"></div>
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 whitespace-nowrap">{{ $categoryBreaks[$mi] }}</span>
+                    <div class="h-px flex-1 bg-gradient-to-l from-indigo-200 to-transparent"></div>
+                </div>
+            @endif
+
+            @if($mi === 0 || isset($categoryBreaks[$mi]))
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            @endif
+
             <div class="perm-module-card group relative" data-module="{{ $mi }}">
                 {{-- Modül Başlık Kartı (Tıklanabilir) --}}
                 <button type="button"
                         onclick="toggleModule({{ $mi }})"
-                        class="module-trigger w-full rounded-[24px] border-2 transition-all duration-500 p-5 text-center hover:-translate-y-1 hover:shadow-2xl {{ $activeCount > 0 ? $mod['border'] . ' ' . $mod['bg'] . ' shadow-lg ' . $mod['shadow'] : 'border-slate-100 bg-slate-50/50 shadow-sm' }}">
+                        class="module-trigger w-full rounded-[24px] border-2 transition-all duration-500 p-4 text-center hover:-translate-y-1 hover:shadow-2xl {{ $activeCount > 0 ? $mod['border'] . ' ' . $mod['bg'] . ' shadow-lg ' . $mod['shadow'] : 'border-slate-100 bg-slate-50/50 shadow-sm' }}">
                     
                     {{-- 3D İkon --}}
-                    <div class="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-[20px] bg-gradient-to-br {{ $mod['gradient'] }} text-3xl shadow-xl {{ $mod['shadow'] }} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                    <div class="mx-auto mb-2.5 flex h-14 w-14 items-center justify-center rounded-[18px] bg-gradient-to-br {{ $mod['gradient'] }} text-2xl shadow-xl {{ $mod['shadow'] }} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
                         {{ $mod['icon'] }}
                     </div>
 
                     {{-- Modül Adı --}}
-                    <h3 class="text-sm font-black text-slate-800 tracking-tight leading-tight">{{ $mod['title'] }}</h3>
+                    <h3 class="text-xs font-black text-slate-800 tracking-tight leading-tight">{{ $mod['title'] }}</h3>
 
                     {{-- Aktif Yetki Sayacı --}}
-                    <div class="mt-2 flex items-center justify-center gap-1.5" id="module-counter-{{ $mi }}">
-                        <span class="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full text-[10px] font-black {{ $activeCount > 0 ? 'bg-gradient-to-r ' . $mod['gradient'] . ' text-white' : 'bg-slate-200 text-slate-500' }}" id="module-count-{{ $mi }}">
+                    <div class="mt-1.5 flex items-center justify-center gap-1" id="module-counter-{{ $mi }}">
+                        <span class="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-black {{ $activeCount > 0 ? 'bg-gradient-to-r ' . $mod['gradient'] . ' text-white' : 'bg-slate-200 text-slate-500' }}" id="module-count-{{ $mi }}">
                             {{ $activeCount }}
                         </span>
                         <span class="text-[10px] font-bold text-slate-400">/{{ count($modPerms) }}</span>
                     </div>
 
                     {{-- Açılma İndikatörü --}}
-                    <div class="mt-2">
-                        <svg class="w-4 h-4 mx-auto text-slate-300 transition-transform duration-300" id="module-chevron-{{ $mi }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                    <div class="mt-1.5">
+                        <svg class="w-3.5 h-3.5 mx-auto text-slate-300 transition-transform duration-300" id="module-chevron-{{ $mi }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                 </button>
 
@@ -227,6 +365,19 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Grid kapatma: sonraki kategori başlığı veya son eleman --}}
+            @php
+                $nextCategoryAt = null;
+                foreach ($categoryBreaks as $catIdx => $catLabel) {
+                    if ($catIdx > $mi) { $nextCategoryAt = $catIdx; break; }
+                }
+                $isLastModule = ($mi === count($modules) - 1);
+                $isBeforeCategory = ($nextCategoryAt === $mi + 1);
+            @endphp
+            @if($isLastModule || $isBeforeCategory)
+                </div>
+            @endif
         @endforeach
     </div>
 </div>
@@ -284,10 +435,8 @@
         if (checked > 0) {
             countEl.className = countEl.className.replace('bg-slate-200 text-slate-500', '').replace(/bg-gradient-to-r\s+\S+\s+text-white/, '');
             countEl.classList.add('bg-gradient-to-r', 'text-white');
-            // Gradient sınıfını geri koy
-            const gradientMatch = trigger.className.match(/from-\S+/);
         } else {
-            countEl.className = 'inline-flex h-5 min-w-[20px] items-center justify-center rounded-full text-[10px] font-black bg-slate-200 text-slate-500';
+            countEl.className = 'inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-black bg-slate-200 text-slate-500';
         }
     }
 
