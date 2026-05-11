@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import GlobalSplashScreen from './src/components/GlobalSplashScreen';
 import * as Font from 'expo-font';
-import PermissionsScreen from './src/screens/PermissionsScreen';
+// PermissionsScreen removed — Apple 5.1.1(iv) compliance: no custom pre-permission screens
 import { TextInput } from 'react-native';
 
 // PRO ÖZELLİK: Telefonun erişilebilirlik (büyük yazı) ayarları açık olsa bile
@@ -348,25 +348,9 @@ function AppNavigation() {
 
 export default function App() {
     const [splashFinished, setSplashFinished] = React.useState(false);
-    const [permissionsFinished, setPermissionsFinished] = React.useState(false);
-    const [isCheckingFirstLaunch, setIsCheckingFirstLaunch] = React.useState(true);
     const [fontsLoaded, setFontsLoaded] = React.useState(false);
 
     React.useEffect(() => {
-        const checkFirstLaunch = async () => {
-            try {
-                const hasLaunched = await AsyncStorage.getItem('has_launched_and_permissions_done');
-                if (hasLaunched === 'true') {
-                    setPermissionsFinished(true);
-                }
-            } catch (e) {
-                // ignore
-            } finally {
-                setIsCheckingFirstLaunch(false);
-            }
-        };
-        checkFirstLaunch();
-
         async function loadFonts() {
             try {
                 // Inter fontlarını yükle — Türkçe (Latin Extended) karakter seti tam destekli
@@ -390,13 +374,6 @@ export default function App() {
         loadFonts();
     }, []);
 
-    const handlePermissionsComplete = async () => {
-        try {
-            await AsyncStorage.setItem('has_launched_and_permissions_done', 'true');
-        } catch (e) { }
-        setPermissionsFinished(true);
-    };
-
     if (!fontsLoaded) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#040B16' }}>
@@ -412,8 +389,7 @@ export default function App() {
                     <View style={s.phone}>
                         <View style={s.notch} />
                         {!splashFinished && <GlobalSplashScreen onFinish={() => setSplashFinished(true)} />}
-                        {splashFinished && !isCheckingFirstLaunch && !permissionsFinished && <PermissionsScreen onComplete={handlePermissionsComplete} />}
-                        {splashFinished && !isCheckingFirstLaunch && permissionsFinished && (
+                        {splashFinished && (
                             <AuthProvider><StatusBar style="light" /><AppNavigation /></AuthProvider>
                         )}
                     </View>
@@ -429,8 +405,7 @@ export default function App() {
     return (
         <SafeAreaProvider>
             {!splashFinished && <GlobalSplashScreen onFinish={() => setSplashFinished(true)} />}
-            {splashFinished && !isCheckingFirstLaunch && !permissionsFinished && <PermissionsScreen onComplete={handlePermissionsComplete} />}
-            {splashFinished && !isCheckingFirstLaunch && permissionsFinished && (
+            {splashFinished && (
                 <AuthProvider><StatusBar style="light" /><AppNavigation /></AuthProvider>
             )}
         </SafeAreaProvider>

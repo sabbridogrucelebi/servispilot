@@ -119,17 +119,17 @@ api.interceptors.response.use(
                 error.response.data?.message ? error.response.data.message.substring(0, 100) : "Sunucuda beklenmeyen bir hata oluştu."
             );
         }
-        // 402 Payment Required (Abonelik süresi dolmuş)
+        // 402 - Session/Access expired
         else if (status === 402) {
-            console.log('[API SUBSCRIPTION EXPIRED]', error.response.data.message);
+            console.log('[API ACCESS EXPIRED]', error.response.data.message);
             if (Platform.OS === 'web') {
                 await AsyncStorage.removeItem('userToken');
             } else {
                 await SecureStore.deleteItemAsync('userToken');
             }
             Alert.alert(
-                "Abonelik Süresi Doldu",
-                error.response.data.message || "Firmanızın kullanım süresi dolmuştur. Lütfen sistem yöneticinizle iletişime geçin.",
+                "Erişim Süresi Doldu",
+                "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın veya sistem yöneticinizle iletişime geçin.",
                 [{ text: "Tamam" }]
             );
             DeviceEventEmitter.emit('logout');
