@@ -70,7 +70,13 @@ Route::get('/gizlilik', function () {
     return view('privacy-policy');
 })->name('gizlilik');
 
-
+/*
+|--------------------------------------------------------------------------
+| CRON TRIGGER (cPanel uyumlu — auth gerektirmez)
+| cPanel cron komutu: curl -s "https://domain.com/app/cron/backup?key=spilot-cron-2026" > /dev/null
+|--------------------------------------------------------------------------
+*/
+Route::get('/cron/backup', [\App\Http\Controllers\BackupController::class, 'cronTrigger']);
 /*
 |--------------------------------------------------------------------------
 | PUBLIC VEHICLE IMAGE UPLOAD
@@ -433,6 +439,8 @@ Route::middleware('auth')->group(function () {
         ->name('backups.download');
     Route::post('/backups/restore', [\App\Http\Controllers\BackupController::class, 'restore'])
         ->name('backups.restore');
+    Route::post('/backups/run-now', [\App\Http\Controllers\BackupController::class, 'runNow'])
+        ->name('backups.run-now');
 
     /*
     |--------------------------------------------------------------------------

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Artisan;
 use Carbon\Carbon;
 use ZipArchive;
 
@@ -126,5 +127,56 @@ class BackupController extends Controller
         ];
 
         return $models[$module] ?? null;
+    }
+
+    /**
+     * Manuel "Şimdi Yedekle" butonu — admin panelden tetiklenir.
+     */
+    public function runNow()
+    {
+        try {
+            Artisan::call('app:backup-tenant-data');
+
+            // Son yedekleme zamanını kaydet
+            $statusFile = storage_path('app/YEDEKLEMELER/.last_backup');
+            File::ensureDirectoryExists(dirname($statusFile));
+            File::put($statusFile, now()->toIso8601String());
+
+            return redirect()
+                ->route('backups.index')
+                ->with('success', 'Yedekleme başarıyla tamamlandı! ✅ Tüm şirket verileri yedeklendi.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('backups.index')
+                ->with('error', 'Yedekleme sırasında hata oluştu: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * cPanel cron job tarafından çağrılacak public endpoint.
+     * URL: /cron/backup?key=XXXX
+     * Cron komutu: curl -s "https://domain.com/app/cron/backup?key=spilot-cron-2026" > /dev/null
+     */
+    public static function cronTrigger(Request $request)
+    {
+        // Basit güvenlik anahtarı
+        $expectedKey = env('CRON_SECRET_KEY', 'spilot-cron-2026');
+
+        if ($request->query('key') !== $expectedKey) {
+            return response('Unauthorized.', 403);
+        }
+
+        try {
+            Artisan::call('app:backup-tenant-data');
+
+            // Son yedekleme zamanını kaydet
+            $statusFile = storage_path('app/YEDEKLEMELER/.last_backup');
+            File::ensureDirectoryExists(dirname($statusFile));
+            File::put($statusFile, now()->toIso8601String());
+
+            return response('Backup completed: ' . now()->format('Y-m-d H:i:s'), 200);
+        } catch (\Exception $e) {
+            return response('Backup failed: ' . $e->getMessage(), 500);
+        }
     }
 }
