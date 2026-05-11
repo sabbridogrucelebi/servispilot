@@ -60,12 +60,6 @@ Route::get('/privacy-policy', function () {
     return view('privacy-policy');
 })->name('privacy-policy');
 
-// Geçici: Yeni yetkileri veritabanına ekle (kullanıldıktan sonra SİLİNECEK)
-Route::get('/run-permission-seeder-2026', function () {
-    \Artisan::call('db:seed', ['--class' => 'UpdatePermissionsSeeder', '--force' => true]);
-    return 'Tüm yetkiler başarıyla güncellendi! ✅ Bu rotayı artık silebilirsiniz.';
-});
-
 Route::get('/gizlilik', function () {
     return view('privacy-policy');
 })->name('gizlilik');
