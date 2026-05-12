@@ -224,96 +224,101 @@
         {{-- ════════════════════════════════════════════════════════════ --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 gap-4 lg:gap-6">
             {{-- Atanan Şoför --}}
-            <div class="group relative overflow-hidden rounded-[20px] bg-white border border-slate-200/80 p-4 shadow hover:shadow-md hover:-translate-y-0.5 transition-all">
-                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 to-blue-500"></div>
-                <div class="flex flex-col gap-2">
+            <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-90"></div>
+                
+                <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-md">
-                            <svg class="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 shadow-inner border border-indigo-100/50 group-hover:scale-110 transition-transform duration-500">
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Şoför" class="w-10 h-10 drop-shadow-md" />
                         </div>
                         @if($driverFullName)
-                            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></span>
+                            <span class="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)] animate-pulse"></span>
                         @endif
                     </div>
                     <div>
-                        <div class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Şoför</div>
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Şoför</div>
                         @if($driverFullName)
-                            <div class="mt-0.5 text-xs font-black text-slate-900 truncate" title="{{ $driverFullName }}">{{ $driverFullName }}</div>
+                            <div class="mt-1 text-base font-black text-slate-800 truncate" title="{{ $driverFullName }}">{{ $driverFullName }}</div>
                             @if($driverPhone)
-                                <div class="text-[10px] font-bold text-indigo-600 truncate">{{ $driverPhone }}</div>
+                                <div class="mt-0.5 text-xs font-bold text-indigo-600 truncate">{{ $driverPhone }}</div>
                             @endif
                         @else
-                            <div class="mt-0.5 text-xs font-black text-slate-400">Atanmamış</div>
-                            <div class="text-[10px] font-bold text-rose-500">Atama Bekliyor</div>
+                            <div class="mt-1 text-base font-black text-slate-400">Atanmamış</div>
+                            <div class="mt-0.5 text-xs font-bold text-rose-500">Atama Bekliyor</div>
                         @endif
                     </div>
                 </div>
             </div>
 
             {{-- Güncel KM --}}
-            <div class="group relative overflow-hidden rounded-[20px] bg-white border border-slate-200/80 p-4 shadow hover:shadow-md hover:-translate-y-0.5 transition-all">
-                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-                <div class="flex flex-col gap-2">
+            <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-90"></div>
+                
+                <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md">
-                            <svg class="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20.247V15a3 3 0 013-3h0a3 3 0 013 3v5.247M12 9v2m0-6h.01M12 3a9 9 0 100 18 9 9 0 000-18z" /></svg>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 shadow-inner border border-emerald-100/50 group-hover:scale-110 transition-transform duration-500">
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Police%20Car%20Light.png" alt="KM" class="w-10 h-10 drop-shadow-md" />
                         </div>
                     </div>
                     <div>
-                        <div class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Kilometre</div>
-                        <div class="mt-0.5 text-sm font-black text-slate-900">{{ $formattedKm }}</div>
-                        <div class="text-[10px] font-bold text-emerald-600">KM (Kayıt)</div>
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Kilometre</div>
+                        <div class="mt-1 text-xl font-black tracking-tight text-slate-800">{{ $formattedKm }}</div>
+                        <div class="mt-0.5 text-xs font-bold text-emerald-600">KM (Kayıt)</div>
                     </div>
                 </div>
             </div>
 
             {{-- Koltuk Kapasitesi --}}
-            <div class="group relative overflow-hidden rounded-[20px] bg-white border border-slate-200/80 p-4 shadow hover:shadow-md hover:-translate-y-0.5 transition-all">
-                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-500 to-fuchsia-500"></div>
-                <div class="flex flex-col gap-2">
+            <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-purple-500 to-fuchsia-500 opacity-90"></div>
+                
+                <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-purple-500 to-fuchsia-500 text-white shadow-md">
-                            <svg class="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 shadow-inner border border-purple-100/50 group-hover:scale-110 transition-transform duration-500">
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Seat.png" alt="Koltuk" class="w-10 h-10 drop-shadow-md" />
                         </div>
                     </div>
                     <div>
-                        <div class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Koltuk</div>
-                        <div class="mt-0.5 text-sm font-black text-slate-900">{{ $vehicle->seat_count ?: 'Bilinmiyor' }}</div>
-                        <div class="text-[10px] font-bold text-purple-600">Yolcu Kapasitesi</div>
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Koltuk</div>
+                        <div class="mt-1 text-xl font-black tracking-tight text-slate-800">{{ $vehicle->seat_count ?: 'Bilinmiyor' }}</div>
+                        <div class="mt-0.5 text-xs font-bold text-purple-600">Yolcu Kapasitesi</div>
                     </div>
                 </div>
             </div>
 
             {{-- Ruhsat Sahibi --}}
-            <div class="group relative overflow-hidden rounded-[20px] bg-white border border-slate-200/80 p-4 shadow hover:shadow-md hover:-translate-y-0.5 transition-all">
-                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 to-blue-500"></div>
-                <div class="flex flex-col gap-2">
+            <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-sky-500 to-blue-500 opacity-90"></div>
+                
+                <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-md">
-                            <svg class="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 shadow-inner border border-sky-100/50 group-hover:scale-110 transition-transform duration-500">
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Briefcase.png" alt="Ruhsat" class="w-10 h-10 drop-shadow-md" />
                         </div>
                     </div>
                     <div class="min-w-0">
-                        <div class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Ruhsat Sahibi</div>
-                        <div class="mt-0.5 text-xs font-black text-slate-900 truncate" title="{{ $vehicle->license_owner ?: 'Bilinmiyor' }}">{{ $vehicle->license_owner ?: 'Bilinmiyor' }}</div>
-                        <div class="text-[10px] font-bold text-sky-600 truncate">{{ $vehicle->owner_tax_or_tc_no ?: 'TC/VKN Yok' }}</div>
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Ruhsat Sahibi</div>
+                        <div class="mt-1 text-base font-black text-slate-800 truncate" title="{{ $vehicle->license_owner ?: 'Bilinmiyor' }}">{{ $vehicle->license_owner ?: 'Bilinmiyor' }}</div>
+                        <div class="mt-0.5 text-xs font-bold text-sky-600 truncate">{{ $vehicle->owner_tax_or_tc_no ?: 'TC/VKN Yok' }}</div>
                     </div>
                 </div>
             </div>
 
             {{-- Muayene --}}
-            <div class="group relative overflow-hidden rounded-[20px] bg-white border border-slate-200/80 p-4 shadow hover:shadow-md hover:-translate-y-0.5 transition-all">
-                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500"></div>
-                <div class="flex flex-col gap-2">
+            <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500 opacity-90"></div>
+                
+                <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md">
-                            <svg class="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" /></svg>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 shadow-inner border border-amber-100/50 group-hover:scale-110 transition-transform duration-500">
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Magnifying%20Glass%20Tilted%20Right.png" alt="Muayene" class="w-10 h-10 drop-shadow-md" />
                         </div>
                     </div>
                     <div>
-                        <div class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Muayene</div>
-                        <div class="mt-0.5 text-xs font-black text-slate-900">{{ $inspectionInfo['text'] }}</div>
-                        <span class="mt-0.5 inline-flex items-center rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider {{ $inspectionInfo['class'] }}">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Muayene</div>
+                        <div class="mt-1 text-base font-black text-slate-800">{{ $inspectionInfo['text'] }}</div>
+                        <span class="mt-1.5 inline-flex items-center rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider {{ $inspectionInfo['class'] }} shadow-sm">
                             {{ $inspectionInfo['status'] }}
                         </span>
                     </div>
@@ -321,18 +326,19 @@
             </div>
 
             {{-- Kasko --}}
-            <div class="group relative overflow-hidden rounded-[20px] bg-white border border-slate-200/80 p-4 shadow hover:shadow-md hover:-translate-y-0.5 transition-all">
-                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-500 to-pink-500"></div>
-                <div class="flex flex-col gap-2">
+            <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-rose-500 to-pink-500 opacity-90"></div>
+                
+                <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md">
-                            <svg class="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 shadow-inner border border-rose-100/50 group-hover:scale-110 transition-transform duration-500">
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="Kasko" class="w-10 h-10 drop-shadow-md" />
                         </div>
                     </div>
                     <div>
-                        <div class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Kasko</div>
-                        <div class="mt-0.5 text-xs font-black text-slate-900">{{ $kaskoInfo['text'] }}</div>
-                        <span class="mt-0.5 inline-flex items-center rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider {{ $kaskoInfo['class'] }}">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Kasko</div>
+                        <div class="mt-1 text-base font-black text-slate-800">{{ $kaskoInfo['text'] }}</div>
+                        <span class="mt-1.5 inline-flex items-center rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider {{ $kaskoInfo['class'] }} shadow-sm">
                             {{ $kaskoInfo['status'] }}
                         </span>
                     </div>
