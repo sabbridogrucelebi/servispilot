@@ -831,18 +831,34 @@ class VehicleController extends Controller
 
     public function downloadDocumentsZip(Vehicle $vehicle)
     {
-        $documents = $vehicle->documents()->get();
+        $documents = $vehicle->documents()->whereNotNull('file_path')->get();
 
-        $zipFileName = $vehicle->plate . '_Belgeleri_' . now()->format('d-m-Y_H-i') . '.zip';
+        // Dosyasi olan belgeleri filtrele
+        $validDocs = $documents->filter(function ($doc) {
+            return !empty($doc->file_path) && Storage::disk('public')->exists($doc->file_path);
+        });
+
+        if ($validDocs->isEmpty()) {
+            return redirect()
+                ->route('vehicles.show', ['vehicle' => $vehicle->id, 'tab' => 'documents'])
+                ->with('error', 'Indirilecek belge dosyasi bulunamadi. Lutfen once belgelere dosya yukleyin.');
+        }
+
+        // Dosya adi: PLAKA_TARIH_Arac_Evraklari.zip
+        $safePlate = preg_replace('/[^A-Za-z0-9]/', '', $vehicle->plate);
+        $todayDate = now()->format('d-m-Y');
+        $zipFileName = $safePlate . '_' . $todayDate . '_Arac_Evraklari.zip';
         $zipPath = storage_path('app/' . $zipFileName);
 
         $zip = new ZipArchive();
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            abort(500, 'ZIP dosyası oluşturulamadı.');
+            return redirect()
+                ->route('vehicles.show', ['vehicle' => $vehicle->id, 'tab' => 'documents'])
+                ->with('error', 'ZIP dosyası oluşturulamadı.');
         }
 
-        foreach ($documents as $document) {
+        foreach ($validDocs as $document) {
             if (!empty($document->file_path) && Storage::disk('public')->exists($document->file_path)) {
                 $absolutePath = Storage::disk('public')->path($document->file_path);
                 $extension = pathinfo($absolutePath, PATHINFO_EXTENSION);
@@ -862,7 +878,7 @@ class VehicleController extends Controller
 
         $zip->close();
 
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
     }
 
     public function destroy(Vehicle $vehicle)
