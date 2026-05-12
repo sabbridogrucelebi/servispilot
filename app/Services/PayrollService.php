@@ -38,7 +38,9 @@ class PayrollService
                 // 2. Şoför ID'si eşleşmese bile araç şoförün aracıysa (Tenure filtresi aşağıda hakedişi netleştirecek)
                 if ($effectiveVehicleId) {
                     $q->orWhere(function ($sq) use ($effectiveVehicleId) {
-                        $sq->where('vehicle_id', $effectiveVehicleId);
+                        $sq->where('vehicle_id', $effectiveVehicleId)
+                           ->orWhere('morning_vehicle_id', $effectiveVehicleId)
+                           ->orWhere('evening_vehicle_id', $effectiveVehicleId);
                     });
                 }
             })
@@ -125,6 +127,30 @@ class PayrollService
                     $canDoEvening = false;
                 }
             }
+
+            // --- BACAĞI KİM SÜRDÜ KONTROLÜ ---
+            $driverDroveMorning = false;
+            $driverDroveEvening = false;
+
+            if ($effectiveVehicleId) {
+                if ((string)$trip->morning_vehicle_id === (string)$effectiveVehicleId) $driverDroveMorning = true;
+                if ((string)$trip->evening_vehicle_id === (string)$effectiveVehicleId) $driverDroveEvening = true;
+                
+                // Geriye dönük uyumluluk: vehicle_id kullanılmışsa
+                if ((string)$trip->vehicle_id === (string)$effectiveVehicleId) {
+                    $driverDroveMorning = true;
+                    $driverDroveEvening = true;
+                }
+            }
+            
+            // Araç yoksa ama direkt şoför eşleştiyse
+            if ($trip->driver_id === $driver->id && !$driverDroveMorning && !$driverDroveEvening) {
+                $driverDroveMorning = true;
+                $driverDroveEvening = true;
+            }
+
+            if (!$driverDroveMorning) $canDoMorning = false;
+            if (!$driverDroveEvening) $canDoEvening = false;
 
             $morningEarning = 0;
             $eveningEarning = 0;
