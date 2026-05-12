@@ -222,7 +222,7 @@
         {{-- ════════════════════════════════════════════════════════════ --}}
         {{--  BİLGİ KARTLARI: Şoför / KM / Muayene / Kasko / Kapasite vs  --}}
         {{-- ════════════════════════════════════════════════════════════ --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 gap-4 lg:gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6">
             {{-- Atanan Şoför --}}
             <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                 <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-90"></div>
@@ -305,7 +305,8 @@
                 </div>
             </div>
 
-            {{-- Muayene --}}
+            {{-- Muayene (Gizlendi) --}}
+            <!--
             <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                 <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500 opacity-90"></div>
                 
@@ -324,8 +325,10 @@
                     </div>
                 </div>
             </div>
+            -->
 
-            {{-- Kasko --}}
+            {{-- Kasko (Gizlendi) --}}
+            <!--
             <div class="group relative overflow-hidden rounded-[24px] bg-white border border-slate-100 p-6 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                 <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-rose-500 to-pink-500 opacity-90"></div>
                 
@@ -344,6 +347,7 @@
                     </div>
                 </div>
             </div>
+            -->
         </div>
     @endif
 </div>
