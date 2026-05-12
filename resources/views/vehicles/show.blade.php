@@ -82,13 +82,24 @@
         ];
     };
 
-    $inspectionInfo = $dateCard($vehicle->inspection_date);
-    $exhaustInfo = $dateCard($vehicle->exhaust_date);
-    $insuranceInfo = $dateCard($vehicle->insurance_end_date);
-    $kaskoInfo = $dateCard($vehicle->kasko_end_date);
+    // Kritik Takvim: TÜM belgelerden (aktif + arşiv) en güncel olanı her tür için oku
+    $allDocs = collect($activeVehicleDocuments ?? [])->merge(collect($archivedVehicleDocuments ?? []));
+    $latestDocByType = $allDocs->groupBy('document_type')->map(function ($group) {
+        return $group->sortByDesc(function ($d) { return $d->end_date ?? $d->created_at; })->first();
+    });
 
-    $immDoc = collect($activeVehicleDocuments ?? [])->firstWhere('document_type', 'İMM Poliçesi') ?? collect($activeVehicleDocuments ?? [])->firstWhere('document_type', 'İMM POLİÇESİ');
-    $immInfo = $dateCard($immDoc ? $immDoc->end_date : null);
+    $inspectionDoc = $latestDocByType->get('Muayene');
+    $exhaustDoc    = $latestDocByType->get('Egzoz');
+    $insuranceDoc  = $latestDocByType->get('Sigorta');
+    $kaskoDoc      = $latestDocByType->get('Kasko');
+    $immDoc        = $latestDocByType->get('İMM Poliçesi') ?? $latestDocByType->get('İMM POLİÇESİ');
+
+    // Önce documents'tan oku, yoksa vehicle model alanlarına fallback yap
+    $inspectionInfo = $dateCard($inspectionDoc?->end_date ?? $vehicle->inspection_date ?? null);
+    $exhaustInfo    = $dateCard($exhaustDoc?->end_date ?? $vehicle->exhaust_date ?? null);
+    $insuranceInfo  = $dateCard($insuranceDoc?->end_date ?? $vehicle->insurance_end_date ?? null);
+    $kaskoInfo      = $dateCard($kaskoDoc?->end_date ?? $vehicle->kasko_end_date ?? null);
+    $immInfo        = $dateCard($immDoc?->end_date ?? null);
 
     $tabClass = function ($key) use ($activeTab) {
         return $activeTab === $key
