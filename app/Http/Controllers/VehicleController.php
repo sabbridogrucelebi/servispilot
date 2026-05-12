@@ -228,18 +228,33 @@ class VehicleController extends Controller
                 ];
             });
 
-        $allVehicleDocuments = $vehicle->documents()
-            ->latest()
-            ->get();
+        // Belge türü sıralama önceliği
+        $docTypeOrder = [
+            'Ruhsat' => 1,
+            'Muayene' => 2,
+            'Sigorta' => 3,
+            'Kasko' => 4,
+            'Egzoz' => 5,
+            'Koltuk Sigortası' => 6,
+            'İMM Poliçesi' => 7,
+            'Vergi / Harç' => 8,
+            'Diğer' => 9,
+        ];
+
+        $allVehicleDocuments = $vehicle->documents()->get();
 
         $activeVehicleDocuments = $allVehicleDocuments->filter(function ($doc) {
             return is_null($doc->archived_at)
                 && (is_null($doc->end_date) || $doc->end_date->startOfDay()->gte(now()->startOfDay()));
+        })->sortBy(function ($doc) use ($docTypeOrder) {
+            return $docTypeOrder[$doc->document_type] ?? 99;
         })->values();
 
         $archivedVehicleDocuments = $allVehicleDocuments->filter(function ($doc) {
             return !is_null($doc->archived_at)
                 || (!is_null($doc->end_date) && $doc->end_date->startOfDay()->lt(now()->startOfDay()));
+        })->sortBy(function ($doc) use ($docTypeOrder) {
+            return $docTypeOrder[$doc->document_type] ?? 99;
         })->values();
 
         $assignedDrivers = $vehicle->drivers()

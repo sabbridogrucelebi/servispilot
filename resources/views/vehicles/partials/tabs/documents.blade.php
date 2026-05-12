@@ -55,7 +55,7 @@
             </div>
         </div>
 
-        <div class="overflow-x-hidden">
+        <div class="overflow-x-auto">
             @if($activeVehicleDocuments->count())
                 <table class="w-full table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-100">
@@ -115,8 +115,8 @@
 
                                         <form action="{{ route('vehicles.documents.destroy', [$vehicle, $document]) }}"
                                               method="POST"
-                                              class="relative z-50"
-                                              onsubmit="return confirm('Bu belgeyi silmek istediğine emin misin?')">
+                                              class="inline"
+                                              onsubmit="return confirm('Bu belgeyi silmek istediğine emin misin?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -168,7 +168,7 @@
             </div>
         </div>
 
-        <div class="overflow-x-hidden">
+        <div class="overflow-x-auto">
             @if($archivedVehicleDocuments->count())
                 <table class="w-full table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-100">
@@ -214,8 +214,8 @@
 
                                         <form action="{{ route('vehicles.documents.destroy', [$vehicle, $document]) }}"
                                               method="POST"
-                                              class="relative z-50"
-                                              onsubmit="return confirm('Arşivdeki bu belgeyi kalıcı olarak silmek istediğine emin misin?')">
+                                              class="inline"
+                                              onsubmit="return confirm('Arşivdeki bu belgeyi kalıcı olarak silmek istediğine emin misin?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

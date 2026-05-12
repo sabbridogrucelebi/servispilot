@@ -91,10 +91,6 @@ class CompanyUserController extends Controller
 
         $permissionIds = $validated['permissions'] ?? [];
 
-        if ($validated['role'] === 'company_admin') {
-            $permissionIds = Permission::pluck('id')->toArray();
-        }
-
         $user->permissions()->sync($permissionIds);
 
         return redirect()->route('company-users.index')->with('success', 'Kullanıcı başarıyla eklendi.');
@@ -174,10 +170,6 @@ class CompanyUserController extends Controller
         $companyUser->save();
 
         $permissionIds = $validated['permissions'] ?? [];
-
-        if ($validated['role'] === 'company_admin') {
-            $permissionIds = Permission::pluck('id')->toArray();
-        }
 
         $companyUser->permissions()->sync($permissionIds);
 
