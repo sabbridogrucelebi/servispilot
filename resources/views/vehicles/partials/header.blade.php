@@ -258,7 +258,7 @@
                 <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
                         <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 shadow-inner border border-emerald-100/50 group-hover:scale-110 transition-transform duration-500">
-                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Stopwatch.png" alt="KM" class="w-10 h-10 drop-shadow-md" />
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Oncoming%20Automobile.png" alt="KM" class="w-10 h-10 drop-shadow-md" />
                         </div>
                     </div>
                     <div>
