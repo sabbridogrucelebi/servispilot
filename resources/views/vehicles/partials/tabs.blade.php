@@ -9,7 +9,7 @@
         ['id' => 'maintenances', 'label' => 'Bakım', 'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hammer%20and%20Wrench.png" class="w-8 h-8 drop-shadow-md" />', 'color' => 'emerald', 'gradient' => 'from-emerald-500 to-teal-600'],
         ['id' => 'penalties', 'label' => 'Cezalar', 'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Police%20Car%20Light.png" class="w-8 h-8 drop-shadow-md" />', 'color' => 'violet', 'gradient' => 'from-violet-500 to-purple-600'],
         ['id' => 'reports', 'label' => 'Raporlar', 'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Chart%20Increasing.png" class="w-8 h-8 drop-shadow-md" />', 'color' => 'sky', 'gradient' => 'from-sky-500 to-cyan-600'],
-        ['id' => 'images', 'label' => 'Galeri', 'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Framed%20Picture.png" class="w-8 h-8 drop-shadow-md" />', 'color' => 'fuchsia', 'gradient' => 'from-fuchsia-500 to-pink-600'],
+        ['id' => 'images', 'label' => 'Galeri', 'icon' => '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Camera%20with%20Flash.png" class="w-8 h-8 drop-shadow-md" />', 'color' => 'fuchsia', 'gradient' => 'from-fuchsia-500 to-pink-600'],
     ];
 @endphp
 
