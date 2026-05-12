@@ -100,15 +100,16 @@
                 <div class="module-trigger w-full rounded-[24px] border-2 transition-all duration-500 p-4 text-center {{ $masterChecked ? $mod['border'].' '.$mod['bg'].' shadow-lg '.$mod['shadow'] : 'border-slate-100 bg-slate-50/30 shadow-sm opacity-60' }}"
                      id="module-card-{{ $mi }}">
 
-                    {{-- MASTER TOGGLE SWITCH --}}
+                    {{-- MASTER TOGGLE SWITCH + AÇIK/KAPALI LABEL --}}
                     <div class="flex justify-center mb-2" onclick="event.stopPropagation()">
-                        <label class="relative inline-flex items-center cursor-pointer" title="Menüde göster/gizle">
+                        <label class="relative inline-flex items-center gap-2 cursor-pointer select-none" title="Menüde göster/gizle">
                             <input type="checkbox" name="permissions[]" value="{{ $masterPerm['id'] }}"
                                    class="sr-only peer master-toggle" data-module="{{ $mi }}"
                                    id="master-toggle-{{ $mi }}"
                                    onchange="onMasterToggle({{ $mi }})"
                                    {{ $masterChecked ? 'checked' : '' }}>
-                            <div class="w-11 h-6 bg-slate-200 peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:{{ str_replace(' ', ' peer-checked:', $mod['gradient']) }} shadow-inner"></div>
+                            <div class="relative w-14 h-7 bg-rose-400 rounded-full peer peer-checked:bg-emerald-500 peer-focus:ring-4 peer-focus:ring-emerald-100 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-[22px] after:w-[22px] after:shadow-md after:transition-all after:duration-300 peer-checked:after:translate-x-[26px] shadow-inner transition-colors duration-300"></div>
+                            <span class="text-[10px] font-black uppercase tracking-wider transition-colors duration-300 {{ $masterChecked ? 'text-emerald-600' : 'text-rose-500' }}" id="master-label-{{ $mi }}">{{ $masterChecked ? 'AÇIK' : 'KAPALI' }}</span>
                         </label>
                     </div>
 
@@ -183,19 +184,19 @@
 <script>
     let openModuleId = null;
 
-    // Master toggle: switch açıldığında sidebar'da görünür, kapandığında tüm alt yetkiler de kalkar
     function onMasterToggle(moduleId) {
         const master = document.getElementById('master-toggle-' + moduleId);
         const card = document.getElementById('module-card-' + moduleId);
+        const label = document.getElementById('master-label-' + moduleId);
         const subCbs = document.querySelectorAll(`input.perm-cb[data-module="${moduleId}"][data-sub="1"]`);
 
         if (master.checked) {
-            // Açıldı — kart aktif görünsün
             card.classList.remove('opacity-60', 'border-slate-100', 'bg-slate-50/30', 'shadow-sm');
+            if (label) { label.textContent = 'AÇIK'; label.classList.remove('text-rose-500'); label.classList.add('text-emerald-600'); }
         } else {
-            // Kapatıldı — tüm alt yetkileri de kapat
             subCbs.forEach(c => c.checked = false);
             card.classList.add('opacity-60');
+            if (label) { label.textContent = 'KAPALI'; label.classList.remove('text-emerald-600'); label.classList.add('text-rose-500'); }
             closeAllPanels();
         }
         updateSubCount(moduleId);
