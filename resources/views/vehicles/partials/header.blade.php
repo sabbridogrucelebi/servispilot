@@ -230,7 +230,7 @@
                 <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
                         <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 shadow-inner border border-indigo-100/50 group-hover:scale-110 transition-transform duration-500">
-                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Man%20Pilot.png" alt="Şoför" class="w-10 h-10 drop-shadow-md" />
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Waving%20Hand.png" alt="Şoför" class="w-10 h-10 drop-shadow-md" />
                         </div>
                         @if($driverFullName)
                             <span class="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)] animate-pulse"></span>
@@ -276,7 +276,7 @@
                 <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
                         <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 shadow-inner border border-purple-100/50 group-hover:scale-110 transition-transform duration-500">
-                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Seat.png" alt="Koltuk" class="w-10 h-10 drop-shadow-md" />
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Bus.png" alt="Koltuk" class="w-10 h-10 drop-shadow-md" />
                         </div>
                     </div>
                     <div>
@@ -294,7 +294,7 @@
                 <div class="relative z-10 flex flex-col gap-4">
                     <div class="flex items-center justify-between">
                         <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 shadow-inner border border-sky-100/50 group-hover:scale-110 transition-transform duration-500">
-                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Briefcase.png" alt="Ruhsat" class="w-10 h-10 drop-shadow-md" />
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Handshake.png" alt="Ruhsat" class="w-10 h-10 drop-shadow-md" />
                         </div>
                     </div>
                     <div class="min-w-0">
