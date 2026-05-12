@@ -163,17 +163,32 @@ class VehicleReadService
             'bottom_lube_percent' => $mStatus['lube_percent'] ?? 0,
         ];
 
-        $immDoc = $vehicle->documents()
-            ->whereIn('document_type', ['İMM Poliçesi', 'İMM POLİÇESİ'])
-            ->latest('end_date')
-            ->first();
+        // Tüm kritik belge tarihlerini documents tablosundan oku
+        $docTypes = ['Muayene', 'Egzoz', 'Sigorta', 'Kasko', 'İMM Poliçesi', 'İMM POLİÇESİ'];
+        $latestDocs = $vehicle->documents()
+            ->whereIn('document_type', $docTypes)
+            ->whereNotNull('end_date')
+            ->get()
+            ->groupBy('document_type')
+            ->map(fn($g) => $g->sortByDesc('end_date')->first());
+
+        $inspectionDoc = $latestDocs->get('Muayene');
+        $exhaustDoc    = $latestDocs->get('Egzoz');
+        $insuranceDoc  = $latestDocs->get('Sigorta');
+        $kaskoDoc      = $latestDocs->get('Kasko');
+        $immDoc        = $latestDocs->get('İMM Poliçesi') ?? $latestDocs->get('İMM POLİÇESİ');
 
         return [
             'vehicle' => array_merge($vehicle->toArray(), [
                 'current_km' => (int) ($mStatus['current_km'] ?? $currentKm),
                 'driver' => $driver,
                 'image_url' => $imageUrl,
-                'imm_end_date' => $immDoc ? ($immDoc->end_date ? clone $immDoc->end_date : null) : null,
+                // Belge tarihlerini documents tablosundan öncelikli oku, fallback olarak vehicle alanları
+                'inspection_date'   => $inspectionDoc?->end_date?->toDateString() ?? ($vehicle->inspection_date ? $vehicle->inspection_date->toDateString() : null),
+                'exhaust_date'      => $exhaustDoc?->end_date?->toDateString() ?? ($vehicle->exhaust_date ? $vehicle->exhaust_date->toDateString() : null),
+                'insurance_end_date'=> $insuranceDoc?->end_date?->toDateString() ?? ($vehicle->insurance_end_date ? $vehicle->insurance_end_date->toDateString() : null),
+                'kasko_end_date'    => $kaskoDoc?->end_date?->toDateString() ?? ($vehicle->kasko_end_date ? $vehicle->kasko_end_date->toDateString() : null),
+                'imm_end_date'      => $immDoc?->end_date?->toDateString() ?? null,
             ]),
             'stats' => $stats,
             'maintenance_health' => $maintenanceHealth,
