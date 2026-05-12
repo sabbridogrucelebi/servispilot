@@ -833,7 +833,6 @@ class VehicleController extends Controller
     {
         $documents = $vehicle->documents()->whereNotNull('file_path')->get();
 
-        // Dosyasi olan belgeleri filtrele
         $validDocs = $documents->filter(function ($doc) {
             return !empty($doc->file_path) && Storage::disk('public')->exists($doc->file_path);
         });
@@ -841,44 +840,60 @@ class VehicleController extends Controller
         if ($validDocs->isEmpty()) {
             return redirect()
                 ->route('vehicles.show', ['vehicle' => $vehicle->id, 'tab' => 'documents'])
-                ->with('error', 'Indirilecek belge dosyasi bulunamadi. Lutfen once belgelere dosya yukleyin.');
+                ->with('error', 'İndirilecek belge dosyası bulunamadı. Lütfen önce belgelere dosya yükleyin.');
         }
 
-        // Dosya adi: PLAKA_TARIH_Arac_Evraklari.zip
-        $safePlate = preg_replace('/[^A-Za-z0-9]/', '', $vehicle->plate);
+        $safePlate = \Illuminate\Support\Str::slug($vehicle->plate, '');
         $todayDate = now()->format('d-m-Y');
         $zipFileName = $safePlate . '_' . $todayDate . '_Arac_Evraklari.zip';
-        $zipPath = storage_path('app/' . $zipFileName);
+        $zipPath = storage_path('app/temp_' . time() . '_' . $zipFileName);
 
-        $zip = new ZipArchive();
+        $zip = new \ZipArchive();
 
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
             return redirect()
                 ->route('vehicles.show', ['vehicle' => $vehicle->id, 'tab' => 'documents'])
-                ->with('error', 'ZIP dosyası oluşturulamadı.');
+                ->with('error', 'ZIP dosyası oluşturulamadı. Sunucu izinlerini kontrol edin.');
         }
 
+        $filesAdded = 0;
         foreach ($validDocs as $document) {
-            if (!empty($document->file_path) && Storage::disk('public')->exists($document->file_path)) {
-                $absolutePath = Storage::disk('public')->path($document->file_path);
+            $absolutePath = Storage::disk('public')->path($document->file_path);
+            
+            if (file_exists($absolutePath)) {
                 $extension = pathinfo($absolutePath, PATHINFO_EXTENSION);
+                if (empty($extension)) {
+                    $extension = 'pdf'; // Fallback extension
+                }
 
                 $folder = (!is_null($document->archived_at) || (!is_null($document->end_date) && $document->end_date->isPast()))
                     ? 'Arsiv_Belgeler'
                     : 'Aktif_Belgeler';
 
-                $safeName = preg_replace('/[\\\\\\/:"*?<>|]+/', '-', ($document->document_name ?: 'Belge'));
-                $safeType = preg_replace('/[\\\\\\/:"*?<>|]+/', '-', ($document->document_type ?: 'Dosya'));
+                $safeName = \Illuminate\Support\Str::slug($document->document_name ?: 'Belge');
+                $safeType = \Illuminate\Support\Str::slug($document->document_type ?: 'Dosya');
 
                 $fileNameInZip = $folder . '/' . $safeName . '_' . $safeType . '.' . $extension;
 
                 $zip->addFile($absolutePath, $fileNameInZip);
+                $filesAdded++;
             }
+        }
+
+        if ($filesAdded === 0) {
+            $zip->close();
+            @unlink($zipPath);
+            return redirect()
+                ->route('vehicles.show', ['vehicle' => $vehicle->id, 'tab' => 'documents'])
+                ->with('error', 'Belgelerin fiziksel dosyaları sunucuda bulunamadı.');
         }
 
         $zip->close();
 
-        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+        return response()->download($zipPath, $zipFileName, [
+            'Content-Type' => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="' . $zipFileName . '"'
+        ])->deleteFileAfterSend(true);
     }
 
     public function destroy(Vehicle $vehicle)
