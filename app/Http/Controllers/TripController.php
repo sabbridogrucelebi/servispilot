@@ -388,17 +388,11 @@ class TripController extends Controller
             ]);
         }
 
-        // EĞER ŞOFÖR BOŞ GELİRSE (Puantajdan sadece araç seçilirse)
-        // Seçilen aracın o anki aktif şoförünü otomatik bul ve ata.
-        if (!$driverId && $fallbackVehicleId) {
-            $autoDriver = Driver::where('vehicle_id', $fallbackVehicleId)
-                ->where('is_active', true)
-                ->first();
-            
-            if ($autoDriver) {
-                $driverId = $autoDriver->id;
-            }
-        }
+        // AUTO-FILL İPTAL EDİLDİ:
+        // Artık sabah ve akşam araçları ayrı ayrı şoförlerle eşleştiği için
+        // driver_id alanını otomatik doldurmuyoruz. PayrollService doğrudan
+        // vehicle_id'ler üzerinden veya morning_driver_id/evening_driver_id üzerinden 
+        // eşleştirme yapacak.
 
         $trip = Trip::query()->updateOrCreate(
             [

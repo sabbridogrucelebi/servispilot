@@ -237,22 +237,30 @@
                                             @if($hasRecord)
                                             <div class="flex flex-col gap-0.5 mt-1">
                                                 @if($route->service_type !== 'evening')
-                                                <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isMorningDiff ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-sky-100 text-sky-800' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
+                                                <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isMorningDiff ? 'bg-emerald-200 text-emerald-900 border-2 border-dashed border-emerald-500' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
                                                     <span>S:</span><span class="truncate ml-1">{{ $mPlate }}</span>
                                                 </div>
-                                                @if(!empty($cell['morning_manual_driver_name']) || (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) && empty($cell['evening_manual_driver_name'])))
-                                                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-slate-900 text-white shadow-sm mt-0.5" title="Sabah Farklı Şoför Görevlendirildi">
+                                                @php
+                                                    $showMDriver = !empty($cell['morning_manual_driver_name']) || 
+                                                                   (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) && empty($cell['evening_manual_driver_name']) && $cell['driver_name'] !== ($cell['default_morning_driver_name'] ?? ''));
+                                                @endphp
+                                                @if($showMDriver)
+                                                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-emerald-600 text-white shadow-sm mt-0.5" title="Sabah Farklı Şoför Görevlendirildi">
                                                         <span>S 👤</span><span class="truncate ml-1">{{ mb_strimwidth($cell['morning_manual_driver_name'] ?: $cell['driver_name'], 0, 15, '..') }}</span>
                                                     </div>
                                                 @endif
                                                 @endif
 
                                                 @if($route->service_type !== 'morning')
-                                                <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isEveningDiff ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-indigo-100 text-indigo-800' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
+                                                <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isEveningDiff ? 'bg-rose-200 text-rose-900 border-2 border-dashed border-rose-500' : 'bg-rose-100 text-rose-800 border border-rose-200' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
                                                     <span>A:</span><span class="truncate ml-1">{{ $ePlate }}</span>
                                                 </div>
-                                                @if(!empty($cell['evening_manual_driver_name']) || (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) && empty($cell['evening_manual_driver_name'])))
-                                                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-slate-900 text-white shadow-sm mt-0.5" title="Akşam Farklı Şoför Görevlendirildi">
+                                                @php
+                                                    $showEDriver = !empty($cell['evening_manual_driver_name']) || 
+                                                                   (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) && empty($cell['evening_manual_driver_name']) && $cell['driver_name'] !== ($cell['default_evening_driver_name'] ?? ''));
+                                                @endphp
+                                                @if($showEDriver)
+                                                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-rose-600 text-white shadow-sm mt-0.5" title="Akşam Farklı Şoför Görevlendirildi">
                                                         <span>A 👤</span><span class="truncate ml-1">{{ mb_strimwidth($cell['evening_manual_driver_name'] ?: $cell['driver_name'], 0, 15, '..') }}</span>
                                                     </div>
                                                 @endif
