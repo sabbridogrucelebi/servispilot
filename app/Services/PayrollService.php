@@ -210,7 +210,7 @@ class PayrollService
                 
                 $groupedDetails[$routeKey]['total_fee'] = round($groupedDetails[$routeKey]['total_fee'] + $tripTotal, 2);
                 $groupedDetails[$routeKey]['dates'][] = [
-                    'date' => $trip->trip_date->format('d.m.Y'),
+                    'date' => $trip->trip_date->translatedFormat('d.m.Y l'),
                     'morning' => $morningEarning,
                     'evening' => $eveningEarning,
                     'total' => $tripTotal
