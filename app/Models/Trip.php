@@ -21,7 +21,9 @@ class Trip extends Model
         'vehicle_id',
         'morning_vehicle_id',
         'evening_vehicle_id',
-        'driver_id',
+        'driver_id', // keeping for legacy
+        'morning_driver_id',
+        'evening_driver_id',
         'trip_date',
         'trip_status',
         'trip_price',
@@ -56,6 +58,16 @@ class Trip extends Model
     public function driver()
     {
         return $this->belongsTo(Driver::class);
+    }
+
+    public function morningDriver()
+    {
+        return $this->belongsTo(Driver::class, 'morning_driver_id');
+    }
+
+    public function eveningDriver()
+    {
+        return $this->belongsTo(Driver::class, 'evening_driver_id');
     }
 
     public function getFormattedPriceAttribute()

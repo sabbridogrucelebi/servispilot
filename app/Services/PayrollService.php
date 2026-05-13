@@ -145,22 +145,40 @@ class PayrollService
                 if ((string)$trip->evening_vehicle_id === (string)$effectiveVehicleId) $driverDroveEvening = true;
             }
 
-            // Araç yoksa veya FARKLI ŞOFÖR seçildiyse:
-            if ($trip->driver_id === $driver->id) {
-                // Eğer manuel olarak driver_id atanmışsa, bu şoförün bu seferleri yaptığı kabul edilir.
-                if ($trip->morning_vehicle_id) $driverDroveMorning = true;
-                if ($trip->evening_vehicle_id) $driverDroveEvening = true;
-                
-                // Geriye dönük vehicle_id kullanımı varsa
-                if (empty($trip->morning_vehicle_id) && empty($trip->evening_vehicle_id) && $trip->vehicle_id) {
-                     $driverDroveMorning = true;
-                     $driverDroveEvening = true;
+            // Yeni Yapı: Farklı Şoför (Sabah/Akşam) manuel seçildiyse:
+            if ($trip->morning_driver_id) {
+                // Eğer manuel olarak bu bacak için şoför atanmışsa, 
+                // bu değerlendirilen şoför O DEĞİLSE, aracın sahibi bile olsa gidememiştir.
+                if ($trip->morning_driver_id === $driver->id) {
+                    $driverDroveMorning = true;
+                } else {
+                    $driverDroveMorning = false;
                 }
-            } else if ($trip->driver_id !== null && $trip->driver_id !== $driver->id) {
-                // Eğer bu trip'te manuel bir şoför seçildiyse ve değerlendirilen şoför O DEĞİLSE,
-                // aracın asıl sahibi olsa bile parayı alamaz.
-                $driverDroveMorning = false;
-                $driverDroveEvening = false;
+            }
+            
+            if ($trip->evening_driver_id) {
+                // Aynı mantık akşam için:
+                if ($trip->evening_driver_id === $driver->id) {
+                    $driverDroveEvening = true;
+                } else {
+                    $driverDroveEvening = false;
+                }
+            }
+
+            // Eski/Legacy Yapı: Tek bir driver_id manuel seçildiyse (Geriye Dönük Uyumluluk):
+            if ($trip->driver_id && !$trip->morning_driver_id && !$trip->evening_driver_id) {
+                if ($trip->driver_id === $driver->id) {
+                    if ($trip->morning_vehicle_id) $driverDroveMorning = true;
+                    if ($trip->evening_vehicle_id) $driverDroveEvening = true;
+                    
+                    if (empty($trip->morning_vehicle_id) && empty($trip->evening_vehicle_id) && $trip->vehicle_id) {
+                         $driverDroveMorning = true;
+                         $driverDroveEvening = true;
+                    }
+                } else {
+                    $driverDroveMorning = false;
+                    $driverDroveEvening = false;
+                }
             }
 
             if (!$driverDroveMorning) $canDoMorning = false;

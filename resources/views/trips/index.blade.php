@@ -201,7 +201,8 @@
                                             'evening_id' => $cell['evening_vehicle_id'] ?? $cell['default_evening_vehicle_id'] ?? '',
                                             'default_morning_id' => $cell['default_morning_vehicle_id'] ?? '',
                                             'default_evening_id' => $cell['default_evening_vehicle_id'] ?? '',
-                                            'driver_id' => $cell['driver_id'] ?? '',
+                                            'morning_driver_id' => $cell['morning_driver_id'] ?? '',
+                                            'evening_driver_id' => $cell['evening_driver_id'] ?? '',
                                             'default_morning_plate' => ($cell['default_morning_vehicle_plate'] ?? 'Tanımsız') . ($mDriver ? ' ('.$mDriver.')' : ''),
                                             'default_evening_plate' => ($cell['default_evening_vehicle_plate'] ?? 'Tanımsız') . ($eDriver ? ' ('.$eDriver.')' : ''),
                                             'status' => $cell['trip_status'] ?? 'Yapıldı',
@@ -239,16 +240,22 @@
                                                 <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isMorningDiff ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-sky-100 text-sky-800' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
                                                     <span>S:</span><span class="truncate ml-1">{{ $mPlate }}</span>
                                                 </div>
+                                                @if(!empty($cell['morning_manual_driver_name']) || (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) && empty($cell['evening_manual_driver_name'])))
+                                                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-slate-900 text-white shadow-sm mt-0.5" title="Sabah Farklı Şoför Görevlendirildi">
+                                                        <span>S 👤</span><span class="truncate ml-1">{{ mb_strimwidth($cell['morning_manual_driver_name'] ?: $cell['driver_name'], 0, 15, '..') }}</span>
+                                                    </div>
                                                 @endif
+                                                @endif
+
                                                 @if($route->service_type !== 'morning')
                                                 <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isEveningDiff ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-indigo-100 text-indigo-800' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
                                                     <span>A:</span><span class="truncate ml-1">{{ $ePlate }}</span>
                                                 </div>
+                                                @if(!empty($cell['evening_manual_driver_name']) || (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) && empty($cell['evening_manual_driver_name'])))
+                                                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-slate-900 text-white shadow-sm mt-0.5" title="Akşam Farklı Şoför Görevlendirildi">
+                                                        <span>A 👤</span><span class="truncate ml-1">{{ mb_strimwidth($cell['evening_manual_driver_name'] ?: $cell['driver_name'], 0, 15, '..') }}</span>
+                                                    </div>
                                                 @endif
-                                                @if(!empty($cell['driver_name']))
-                                                <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-slate-900 text-white shadow-sm mt-0.5" title="Farklı Şoför Görevlendirildi">
-                                                    <span>👤</span><span class="truncate ml-1">{{ mb_strimwidth($cell['driver_name'], 0, 15, '..') }}</span>
-                                                </div>
                                                 @endif
                                             </div>
                                             @endif
@@ -384,15 +391,30 @@
                 </div>
 
                 <div x-show="showDriverSelect" x-collapse>
-                    <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700 shadow-inner">
-                        <label class="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-slate-300">👤 Görevli Şoförü Seçin</label>
-                        <select x-model="formData.driver_id" class="w-full rounded-xl border border-slate-600 bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Araça Kayıtlı Asıl Şoför Gitti --</option>
-                            @foreach($drivers as $driver)
-                                <option value="{{ $driver->id }}">{{ $driver->full_name }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-2 text-[10px] text-slate-400">Not: Eğer aracın asıl şoförü rahatsızlanıp yerine başka biri gittiyse buradan seçin. Bu sayede hakediş maaşa doğru yansır.</p>
+                    <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700 shadow-inner flex flex-col gap-4">
+                        <label class="block text-xs font-bold uppercase tracking-[0.1em] text-slate-300 border-b border-slate-700 pb-2">👤 Görevli Şoförü Seçin</label>
+                        
+                        <div x-show="activeCell.service_type !== 'evening'" class="flex flex-col gap-1.5">
+                            <label class="text-[10px] font-bold text-sky-400">Sabah Aracı İçin Farklı Şoför (Gidiş)</label>
+                            <select x-model="formData.morning_driver_id" class="w-full rounded-xl border border-slate-600 bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-500">
+                                <option value="">-- Araca Kayıtlı Asıl Şoför Gitti --</option>
+                                @foreach($drivers as $driver)
+                                    <option value="{{ $driver->id }}">{{ $driver->full_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div x-show="activeCell.service_type !== 'morning'" class="flex flex-col gap-1.5">
+                            <label class="text-[10px] font-bold text-indigo-400">Akşam Aracı İçin Farklı Şoför (Dönüş)</label>
+                            <select x-model="formData.evening_driver_id" class="w-full rounded-xl border border-slate-600 bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500">
+                                <option value="">-- Araca Kayıtlı Asıl Şoför Gitti --</option>
+                                @foreach($drivers as $driver)
+                                    <option value="{{ $driver->id }}">{{ $driver->full_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <p class="text-[10px] text-slate-400">Not: Eğer aracın asıl şoförü rahatsızlanıp yerine başka biri gittiyse ilgili alandan yedek şoförü seçin. Bu sayede hakediş maaşa doğru yansır.</p>
                     </div>
                 </div>
 
@@ -497,6 +519,8 @@
                 morning_id: null,
                 evening_id: null,
                 driver_id: null,
+                morning_driver_id: null,
+                evening_driver_id: null,
                 status: 'Yapıldı'
             },
             
@@ -511,6 +535,8 @@
                         morning_id: '',
                         evening_id: '',
                         driver_id: '',
+                        morning_driver_id: '',
+                        evening_driver_id: '',
                         status: 'İptal'
                     };
                     this.executeSave();
@@ -525,9 +551,11 @@
                     morning_id: cellData.morning_id || cellData.default_morning_id,
                     evening_id: cellData.evening_id || cellData.default_evening_id,
                     driver_id: cellData.driver_id || '',
+                    morning_driver_id: cellData.morning_driver_id || '',
+                    evening_driver_id: cellData.evening_driver_id || '',
                     status: cellData.status || 'Yapıldı'
                 };
-                this.showDriverSelect = !!cellData.driver_id;
+                this.showDriverSelect = !!cellData.driver_id || !!cellData.morning_driver_id || !!cellData.evening_driver_id;
                 
                 if (this.openHizliMod) {
                     this.saveQuick();
@@ -552,7 +580,9 @@
                 // Keep default IDs
                 this.formData.morning_id = this.activeCell.default_morning_id;
                 this.formData.evening_id = this.activeCell.default_evening_id;
-                this.formData.driver_id = ''; // reset driver
+                this.formData.driver_id = ''; // reset legacy
+                this.formData.morning_driver_id = ''; // reset driver
+                this.formData.evening_driver_id = ''; // reset driver
                 this.executeSave();
             },
             
@@ -576,6 +606,8 @@
                             morning_vehicle_id: this.formData.morning_id,
                             evening_vehicle_id: this.formData.evening_id,
                             driver_id: this.formData.driver_id,
+                            morning_driver_id: this.formData.morning_driver_id,
+                            evening_driver_id: this.formData.evening_driver_id,
                             trip_status: this.formData.status
                         })
                     });

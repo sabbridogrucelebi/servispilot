@@ -177,7 +177,11 @@ class TripController extends Controller
                             'evening_vehicle_plate' => $trip?->eveningVehicle?->plate,
                             'evening_driver_name' => $formatDriver($trip?->eveningVehicle, $cursor),
                             'driver_id' => $trip?->driver_id,
+                            'morning_driver_id' => $trip?->morning_driver_id,
+                            'evening_driver_id' => $trip?->evening_driver_id,
                             'driver_name' => $trip?->driver?->full_name,
+                            'morning_manual_driver_name' => $trip?->morningDriver?->full_name,
+                            'evening_manual_driver_name' => $trip?->eveningDriver?->full_name,
                             'notes' => $trip?->notes,
                             'has_record' => !is_null($trip),
                             'is_weekend' => $isWeekend,
@@ -292,6 +296,8 @@ class TripController extends Controller
             'morning_vehicle_id' => ['nullable', 'exists:vehicles,id'],
             'evening_vehicle_id' => ['nullable', 'exists:vehicles,id'],
             'driver_id' => ['nullable', 'exists:drivers,id'],
+            'morning_driver_id' => ['nullable', 'exists:drivers,id'],
+            'evening_driver_id' => ['nullable', 'exists:drivers,id'],
             'trip_status' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string'],
         ]);
@@ -300,11 +306,16 @@ class TripController extends Controller
             ->with(['morningVehicle', 'eveningVehicle'])
             ->findOrFail($validated['service_route_id']);
 
-        $tripDate = Carbon::parse($validated['trip_date']);
-        $tripPrice = array_key_exists('trip_price', $validated) ? $validated['trip_price'] : null;
-        $driverId = $validated['driver_id'] ?? null;
-        $notes = $validated['notes'] ?? null;
-        $tripStatus = $validated['trip_status'] ?? 'Yapıldı';
+        $tripDate = Carbon::parse($request->input('trip_date'));
+        $tripPrice = $request->input('trip_price');
+        
+        $morningVehicleId = $request->input('morning_vehicle_id');
+        $eveningVehicleId = $request->input('evening_vehicle_id');
+        $driverId = $request->input('driver_id');
+        $morningDriverId = $request->input('morning_driver_id');
+        $eveningDriverId = $request->input('evening_driver_id');
+        $tripStatus = $request->input('trip_status', 'Yapıldı');
+        $notes = $request->input('notes');
 
         // trip_price zorunluluğunu kaldırıyoruz, boş olsa bile kayıt edilebilir.
         if (array_key_exists('trip_price', $validated) && ($validated['trip_price'] === '' || $validated['trip_price'] === null)) {
@@ -315,8 +326,8 @@ class TripController extends Controller
         $defaultMorningVehicleId = $serviceRoute->morning_vehicle_id;
         $defaultEveningVehicleId = $serviceRoute->evening_vehicle_id;
 
-        $morningVehicleId = $validated['morning_vehicle_id'] ?? null;
-        $eveningVehicleId = $validated['evening_vehicle_id'] ?? null;
+        $morningVehicleId = $validated['morning_vehicle_id'] ?? $morningVehicleId;
+        $eveningVehicleId = $validated['evening_vehicle_id'] ?? $eveningVehicleId;
         $singleVehicleId = $validated['vehicle_id'] ?? null;
 
         if (!$morningVehicleId && !$eveningVehicleId) {
@@ -388,6 +399,8 @@ class TripController extends Controller
                 'morning_vehicle_id' => $morningVehicleId,
                 'evening_vehicle_id' => $eveningVehicleId,
                 'driver_id' => $driverId,
+                'morning_driver_id' => $morningDriverId,
+                'evening_driver_id' => $eveningDriverId,
                 'trip_status' => $tripStatus,
                 'trip_price' => $tripPrice,
                 'notes' => $notes,
