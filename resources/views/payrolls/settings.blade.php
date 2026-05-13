@@ -66,7 +66,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 bg-white">
                         @foreach($drivers as $driver)
-                        <tr class="transition-colors hover:bg-slate-50" x-show="matchesSearch('{{ strtolower($driver->full_name) }}')">
+                        <tr class="transition-colors hover:bg-slate-50" x-show="matchesSearch('{{ addslashes($driver->full_name) }}', '{{ addslashes($driver->vehicle?->plate ?? '') }}')">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-4">
                                     <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500 shadow-inner border border-slate-200">
@@ -107,9 +107,12 @@
         Alpine.data('fixedSalaryManager', () => ({
             search: '',
             
-            matchesSearch(name) {
-                if (this.search === '') return true;
-                return name.includes(this.search.toLowerCase());
+            matchesSearch(name, plate) {
+                if (this.search.trim() === '') return true;
+                const s = this.search.toLocaleLowerCase('tr-TR');
+                const n = name.toLocaleLowerCase('tr-TR');
+                const p = plate.toLocaleLowerCase('tr-TR');
+                return n.includes(s) || p.includes(s);
             },
 
             toggleStatus(driverId, isFixed) {
