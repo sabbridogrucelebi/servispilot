@@ -144,41 +144,26 @@ class PayrollService
             $driverDroveMorning = false;
             $driverDroveEvening = false;
 
+            // Trip'te araç ID'si yoksa (eski kayıtlar), güzergahın varsayılan aracını kullan
+            $effectiveMorningVehicleOnTrip = $trip->morning_vehicle_id ?: $route->morning_vehicle_id;
+            $effectiveEveningVehicleOnTrip = $trip->evening_vehicle_id ?: $route->evening_vehicle_id;
+
             // Yeni Yapı: Farklı Şoför (Sabah/Akşam) manuel seçildiyse:
             // Bu en öncelikli kontroldür, araç eşleşmesinin önüne geçer.
             if ($trip->morning_driver_id) {
                 // Manuel sabah şoförü atanmış: sadece O şoför sürmüş sayılır
                 $driverDroveMorning = ((int)$trip->morning_driver_id === (int)$driver->id);
-            } elseif ($effectiveVehicleId) {
+            } elseif ($effectiveVehicleId && $effectiveMorningVehicleOnTrip) {
                 // Manuel atama yoksa, araç eşleşmesine bak
-                $driverDroveMorning = ((int)($trip->morning_vehicle_id ?? 0) === (int)$effectiveVehicleId);
+                $driverDroveMorning = ((int)$effectiveMorningVehicleOnTrip === (int)$effectiveVehicleId);
             }
             
             if ($trip->evening_driver_id) {
                 // Manuel akşam şoförü atanmış: sadece O şoför sürmüş sayılır
                 $driverDroveEvening = ((int)$trip->evening_driver_id === (int)$driver->id);
-            } elseif ($effectiveVehicleId) {
+            } elseif ($effectiveVehicleId && $effectiveEveningVehicleOnTrip) {
                 // Manuel atama yoksa, araç eşleşmesine bak
-                $driverDroveEvening = ((int)($trip->evening_vehicle_id ?? 0) === (int)$effectiveVehicleId);
-            }
-
-            // Eski/Legacy Yapı: Tek bir driver_id varsa (Geriye Dönük Uyumluluk):
-            // ÖNEMLİ: Eğer effectiveVehicleId varsa, yukarıdaki araç eşleşmesi zaten
-            // doğru sonucu vermiştir. Legacy blok sadece araç eşleşmesi yapılamadığında
-            // (effectiveVehicleId null olduğunda) devreye girmelidir.
-            if ($trip->driver_id && !$trip->morning_driver_id && !$trip->evening_driver_id && !$effectiveVehicleId) {
-                if ((int)$trip->driver_id === (int)$driver->id) {
-                    if ($trip->morning_vehicle_id) $driverDroveMorning = true;
-                    if ($trip->evening_vehicle_id) $driverDroveEvening = true;
-                    
-                    if (empty($trip->morning_vehicle_id) && empty($trip->evening_vehicle_id) && $trip->vehicle_id) {
-                         $driverDroveMorning = true;
-                         $driverDroveEvening = true;
-                    }
-                } else {
-                    $driverDroveMorning = false;
-                    $driverDroveEvening = false;
-                }
+                $driverDroveEvening = ((int)$effectiveEveningVehicleOnTrip === (int)$effectiveVehicleId);
             }
 
             if (!$driverDroveMorning) $canDoMorning = false;
@@ -193,9 +178,9 @@ class PayrollService
                 $eveningEarning = $canDoEvening ? ($route->evening_fee ?? 0) : 0;
             } else {
                 // Sabah için ekstra ücret durumu: Farklı bir araç gittiyse VEYA farklı bir şoför manuel seçildiyse
-                $isMorningDiff = ($trip->morning_vehicle_id && (string)$trip->morning_vehicle_id !== (string)$route->morning_vehicle_id) || !empty($trip->morning_driver_id);
+                $isMorningDiff = ($effectiveMorningVehicleOnTrip && (int)$effectiveMorningVehicleOnTrip !== (int)($route->morning_vehicle_id ?? 0)) || !empty($trip->morning_driver_id);
                 // Akşam için ekstra ücret durumu
-                $isEveningDiff = ($trip->evening_vehicle_id && (string)$trip->evening_vehicle_id !== (string)$route->evening_vehicle_id) || !empty($trip->evening_driver_id);
+                $isEveningDiff = ($effectiveEveningVehicleOnTrip && (int)$effectiveEveningVehicleOnTrip !== (int)($route->evening_vehicle_id ?? 0)) || !empty($trip->evening_driver_id);
 
                 if ($canDoMorning && $isMorningDiff) {
                     $morningEarning = $route->fallback_morning_fee ?? 0;
