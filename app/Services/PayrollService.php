@@ -144,17 +144,21 @@ class PayrollService
                 if ((string)$trip->morning_vehicle_id === (string)$effectiveVehicleId) $driverDroveMorning = true;
                 if ((string)$trip->evening_vehicle_id === (string)$effectiveVehicleId) $driverDroveEvening = true;
                 
-                // Geriye dönük uyumluluk: vehicle_id kullanılmışsa
-                if ((string)$trip->vehicle_id === (string)$effectiveVehicleId) {
-                    $driverDroveMorning = true;
-                    $driverDroveEvening = true;
+                // Geriye dönük uyumluluk: vehicle_id kullanılmışsa ve yeni alanlar boşsa
+                if (empty($trip->morning_vehicle_id) && empty($trip->evening_vehicle_id)) {
+                    if ((string)$trip->vehicle_id === (string)$effectiveVehicleId) {
+                        $driverDroveMorning = true;
+                        $driverDroveEvening = true;
+                    }
                 }
             }
             
-            // Araç yoksa ama direkt şoför eşleştiyse
+            // Araç yoksa ama direkt şoför eşleştiyse (eski kayıtlar)
             if ($trip->driver_id === $driver->id && !$driverDroveMorning && !$driverDroveEvening) {
-                $driverDroveMorning = true;
-                $driverDroveEvening = true;
+                if (empty($trip->morning_vehicle_id) && empty($trip->evening_vehicle_id)) {
+                    $driverDroveMorning = true;
+                    $driverDroveEvening = true;
+                }
             }
 
             if (!$driverDroveMorning) $canDoMorning = false;
