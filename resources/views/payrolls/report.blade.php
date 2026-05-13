@@ -41,11 +41,11 @@
             </div>
             <div class="text-right flex flex-col items-end">
                 @if(auth()->user()->company->logo_path)
-                    <img src="{{ asset('storage/' . auth()->user()->company->logo_path) }}" alt="{{ auth()->user()->company->name }}" class="h-10 object-contain mb-1">
+                    <img src="{{ asset('storage/' . auth()->user()->company->logo_path) }}" alt="{{ auth()->user()->company->name }}" class="h-20 object-contain mb-2">
                 @else
                     <div class="text-xl font-black text-slate-900">{{ auth()->user()->company->name ?? 'Firma Adı' }}</div>
                 @endif
-                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">PERSONEL HAKEDİŞ DETAYI</div>
+                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">PERSONEL HAKEDİŞ DETAYI</div>
             </div>
         </div>
 

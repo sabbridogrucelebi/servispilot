@@ -69,7 +69,7 @@
                 <div class="mt-6 pt-6 border-t border-slate-100">
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Mevcut Logo:</p>
                     <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                        <img src="{{ asset('storage/' . auth()->user()->company->logo_path) }}" alt="Logo" class="max-h-10 object-contain">
+                        <img src="{{ asset('storage/' . auth()->user()->company->logo_path) }}" alt="Logo" class="max-h-16 object-contain">
                         <form action="{{ route('payrolls.settings.remove-logo') }}" method="POST">
                             @csrf
                             @method('DELETE')
