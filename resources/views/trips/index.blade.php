@@ -237,33 +237,35 @@
                                             @if($hasRecord)
                                             <div class="flex flex-col gap-0.5 mt-1">
                                                 @if($route->service_type !== 'evening')
-                                                <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isMorningDiff ? 'bg-emerald-200 text-emerald-900 border-2 border-dashed border-emerald-500' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
-                                                    <span>S:</span><span class="truncate ml-1">{{ $mPlate }}</span>
-                                                </div>
                                                 @php
-                                                    $showMDriver = !empty($cell['morning_manual_driver_name']) || 
-                                                                   (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) && empty($cell['evening_manual_driver_name']) && $cell['driver_name'] !== ($cell['default_morning_driver_name'] ?? ''));
+                                                    $mDisplayDriver = $cell['morning_manual_driver_name'] 
+                                                                    ?: (!empty($cell['driver_name']) && empty($cell['evening_manual_driver_name']) ? $cell['driver_name'] : null);
+                                                    $mDisplayDriver = $mDisplayDriver ?: ($cell['morning_driver_name'] ?? $cell['default_morning_driver_name'] ?? 'Tanımsız');
                                                 @endphp
-                                                @if($showMDriver)
-                                                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-emerald-600 text-white shadow-sm mt-0.5" title="Sabah Farklı Şoför Görevlendirildi">
-                                                        <span>S 👤</span><span class="truncate ml-1">{{ mb_strimwidth($cell['morning_manual_driver_name'] ?: $cell['driver_name'], 0, 15, '..') }}</span>
+                                                <div class="text-[9px] font-bold px-1.5 py-1 rounded flex flex-col gap-0.5 {{ $isMorningDiff ? 'bg-emerald-200 text-emerald-900 border-2 border-dashed border-emerald-500' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
+                                                    <div class="flex items-center justify-between">
+                                                        <span>S:</span><span class="truncate ml-1">{{ $mPlate }}</span>
                                                     </div>
-                                                @endif
+                                                    <div class="flex items-center justify-between opacity-80">
+                                                        <span>👤</span><span class="truncate ml-1">{{ mb_strimwidth($mDisplayDriver, 0, 15, '..') }}</span>
+                                                    </div>
+                                                </div>
                                                 @endif
 
                                                 @if($route->service_type !== 'morning')
-                                                <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isEveningDiff ? 'bg-rose-200 text-rose-900 border-2 border-dashed border-rose-500' : 'bg-rose-100 text-rose-800 border border-rose-200' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
-                                                    <span>A:</span><span class="truncate ml-1">{{ $ePlate }}</span>
-                                                </div>
                                                 @php
-                                                    $showEDriver = !empty($cell['evening_manual_driver_name']) || 
-                                                                   (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) && empty($cell['evening_manual_driver_name']) && $cell['driver_name'] !== ($cell['default_evening_driver_name'] ?? ''));
+                                                    $eDisplayDriver = $cell['evening_manual_driver_name'] 
+                                                                    ?: (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) ? $cell['driver_name'] : null);
+                                                    $eDisplayDriver = $eDisplayDriver ?: ($cell['evening_driver_name'] ?? $cell['default_evening_driver_name'] ?? 'Tanımsız');
                                                 @endphp
-                                                @if($showEDriver)
-                                                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-rose-600 text-white shadow-sm mt-0.5" title="Akşam Farklı Şoför Görevlendirildi">
-                                                        <span>A 👤</span><span class="truncate ml-1">{{ mb_strimwidth($cell['evening_manual_driver_name'] ?: $cell['driver_name'], 0, 15, '..') }}</span>
+                                                <div class="text-[9px] font-bold px-1.5 py-1 rounded flex flex-col gap-0.5 {{ $isEveningDiff ? 'bg-rose-200 text-rose-900 border-2 border-dashed border-rose-500' : 'bg-rose-100 text-rose-800 border border-rose-200' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
+                                                    <div class="flex items-center justify-between">
+                                                        <span>A:</span><span class="truncate ml-1">{{ $ePlate }}</span>
                                                     </div>
-                                                @endif
+                                                    <div class="flex items-center justify-between opacity-80">
+                                                        <span>👤</span><span class="truncate ml-1">{{ mb_strimwidth($eDisplayDriver, 0, 15, '..') }}</span>
+                                                    </div>
+                                                </div>
                                                 @endif
                                             </div>
                                             @endif
