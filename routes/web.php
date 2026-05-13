@@ -562,6 +562,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/payrolls/report/{driver}/{period}', [PayrollController::class, 'showReport'])->name('payrolls.report');
     Route::post('/payrolls/bulk-store', [PayrollController::class, 'bulkStore'])->name('payrolls.bulk-store');
     Route::post('/payrolls/update-single', [PayrollController::class, 'updateSingle'])->name('payrolls.update-single');
+    Route::get('/payrolls/settings', [PayrollController::class, 'settings'])->name('payrolls.settings');
+    Route::post('/payrolls/settings/toggle-fixed-salary', [PayrollController::class, 'toggleFixedSalary'])->name('payrolls.settings.toggle-fixed-salary');
 
     Route::get('/vehicles/admin/fast-photo-upload', [VehicleController::class, 'adminFastPhotoUpload'])->name('vehicles.admin.fast-photo-upload');
     Route::get('/vehicles/export/excel', [VehicleController::class, 'exportExcel'])->name('vehicles.export.excel');

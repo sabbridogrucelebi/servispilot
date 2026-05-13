@@ -32,6 +32,7 @@ class Driver extends Model
         'leave_shift',
         'start_shift',
         'base_salary',
+        'is_fixed_salary',
         'is_active',
         'approval_status',
         'address',
@@ -43,6 +44,7 @@ class Driver extends Model
         'start_date' => 'date',
         'leave_date' => 'date',
         'base_salary' => 'decimal:2',
+        'is_fixed_salary' => 'boolean',
         'is_active' => 'boolean',
     ];
 

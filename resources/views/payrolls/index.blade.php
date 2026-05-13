@@ -183,6 +183,11 @@
                     TOPLU DETAY YAZDIR
                 </button>
 
+                <!-- Ayarlar Butonu (Kabala vb) -->
+                <a href="{{ route('payrolls.settings') }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-100 p-4 text-slate-500 shadow-sm transition-all hover:bg-slate-200 hover:scale-[1.05] hover:text-slate-900" title="Maaş Ayarları">
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gear.png" alt="Ayarlar" class="w-5 h-5 drop-shadow-sm" />
+                </a>
+
                 <div class="h-10 w-px bg-slate-200"></div>
 
                 <div class="flex items-center gap-2">

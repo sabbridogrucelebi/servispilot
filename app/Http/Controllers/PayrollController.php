@@ -191,6 +191,31 @@ class PayrollController extends Controller
         }
     }
 
+    public function settings()
+    {
+        abort_unless(auth()->user()->hasPermission('payrolls.view'), 403);
+        $drivers = Driver::where('is_active', true)->orderBy('full_name')->get();
+        return view('payrolls.settings', compact('drivers'));
+    }
+
+    public function toggleFixedSalary(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('payrolls.edit'), 403);
+
+        $request->validate([
+            'driver_id' => 'required|exists:drivers,id',
+            'is_fixed_salary' => 'required|boolean'
+        ]);
+
+        $driver = Driver::findOrFail($request->driver_id);
+        $driver->update(['is_fixed_salary' => $request->is_fixed_salary]);
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Personel maaş anlaşması güncellendi.'
+        ]);
+    }
+
     public function bulkReport(Request $request)
     {
         abort_unless(auth()->user()->hasPermission('payrolls.view'), 403);

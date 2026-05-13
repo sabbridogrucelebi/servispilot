@@ -190,9 +190,16 @@ class PayrollService
                 if ($canDoEvening && $eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
             }
 
+            // KABALA (Sabit Maaş) Kontrolü: Şoför sabit maaşlıysa ek hakedişleri sıfırla
+            if ($driver->is_fixed_salary) {
+                $morningEarning = 0;
+                $eveningEarning = 0;
+            }
+
             $tripTotal = round($morningEarning + $eveningEarning, 2);
             
-            if ($tripTotal > 0) {
+            // Eğer hakediş varsa VEYA şoför sabit maaşlı olup sefere gerçekten çıktıysa (canDoMorning/Evening true ise) rapora ekle
+            if ($tripTotal > 0 || ($driver->is_fixed_salary && ($canDoMorning || $canDoEvening))) {
                 $routeKey = $route->id;
                 if (!isset($groupedDetails[$routeKey])) {
                     $groupedDetails[$routeKey] = [
