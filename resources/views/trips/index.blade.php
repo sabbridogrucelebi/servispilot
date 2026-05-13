@@ -116,9 +116,9 @@
                     </div>
                 </div>
 
-                <div class="overflow-auto max-h-[calc(100vh-250px)] matrix-container relative shadow-inner rounded-xl border border-slate-200">
-                    <table id="puantaj-table" class="w-full text-left text-sm border-collapse">
-                    <thead class="sticky top-0 z-40 shadow-sm">
+                <div class="overflow-auto max-h-[65vh] matrix-container relative shadow-inner rounded-xl border border-slate-200">
+                    <table id="puantaj-table" class="w-full text-left text-sm border-separate border-spacing-0">
+                    <thead class="shadow-sm relative z-40">
                         <tr>
                             <th class="sticky left-0 top-0 z-50 w-64 min-w-[250px] bg-slate-100 px-4 py-4 font-bold uppercase tracking-[0.1em] text-slate-600 border-r border-b border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                                 Güzergah
@@ -132,7 +132,7 @@
                                         $thClasses = 'bg-rose-50/50 text-rose-700';
                                     }
                                 @endphp
-                                <th id="day-header-{{ $day['date']->format('d') }}" class="min-w-[120px] border-b border-r border-slate-100 px-2 py-3 text-center transition-colors {{ $thClasses }}" title="{{ $day['holiday_name'] ?? '' }}">
+                                <th id="day-header-{{ $day['date']->format('d') }}" class="sticky top-0 z-30 min-w-[120px] border-b border-r border-slate-100 px-2 py-3 text-center transition-colors {{ $thClasses }}" title="{{ $day['holiday_name'] ?? '' }}">
                                     <div class="font-black text-lg">{{ $day['date']->format('d') }}</div>
                                     <div class="text-[10px] font-bold uppercase tracking-wider opacity-70">{{ $day['day_name'] }}</div>
                                     @if($day['is_holiday'])
