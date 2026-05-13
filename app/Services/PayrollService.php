@@ -181,13 +181,23 @@ class PayrollService
             }
 
             // Hafta sonu kontrolleri...
-            if ($trip->trip_date->isSaturday() && $route->saturday_pricing) {
-                if ($canDoMorning && $morningEarning == 0) $morningEarning = $route->fallback_morning_fee ?? 0;
-                if ($canDoEvening && $eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
+            if ($trip->trip_date->isSaturday()) {
+                if ($route->saturday_pricing) {
+                    if ($canDoMorning && $morningEarning == 0) $morningEarning = $route->fallback_morning_fee ?? 0;
+                    if ($canDoEvening && $eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
+                } else {
+                    $morningEarning = 0;
+                    $eveningEarning = 0;
+                }
             }
-            if ($trip->trip_date->isSunday() && $route->sunday_pricing) {
-                if ($canDoMorning && $morningEarning == 0) $morningEarning = $route->fallback_morning_fee ?? 0;
-                if ($canDoEvening && $eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
+            if ($trip->trip_date->isSunday()) {
+                if ($route->sunday_pricing) {
+                    if ($canDoMorning && $morningEarning == 0) $morningEarning = $route->fallback_morning_fee ?? 0;
+                    if ($canDoEvening && $eveningEarning == 0) $eveningEarning = $route->fallback_evening_fee ?? 0;
+                } else {
+                    $morningEarning = 0;
+                    $eveningEarning = 0;
+                }
             }
 
             // KABALA (Sabit Maaş) Kontrolü: Şoför sabit maaşlıysa ek hakedişleri sıfırla
