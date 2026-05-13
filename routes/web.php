@@ -47,6 +47,15 @@ use App\Http\Controllers\VehicleTrackingController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\CompanyController as SuperAdminCompanyController;
 
+Route::get('/run-migrations-secret', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return "Veritabanı başarıyla güncellendi! Çıktı:<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+    } catch (\Exception $e) {
+        return "Hata oluştu: " . $e->getMessage();
+    }
+});
+
 Route::get('/', function () {
     return view('welcome');
 });
