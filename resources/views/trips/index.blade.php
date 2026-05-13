@@ -161,8 +161,12 @@
                                 <td class="sticky left-0 z-10 bg-white px-4 py-3 border-r border-b border-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-slate-50 transition-colors">
                                     <div class="font-bold text-slate-900 truncate">{{ $route->route_name }}</div>
                                     <div class="mt-1 text-xs text-slate-500 flex flex-col gap-1">
+                                        @if($route->service_type !== 'evening')
                                         <div class="flex items-center gap-1" title="{{ $dMName }}"><span class="w-2 h-2 rounded-full bg-sky-400"></span> Sabah: {{ $route->morningVehicle->plate ?? 'Tanımsız' }} <span class="text-[9px] text-slate-400">({{ $dMName }})</span></div>
+                                        @endif
+                                        @if($route->service_type !== 'morning')
                                         <div class="flex items-center gap-1" title="{{ $dEName }}"><span class="w-2 h-2 rounded-full bg-indigo-400"></span> Akşam: {{ $route->eveningVehicle->plate ?? 'Tanımsız' }} <span class="text-[9px] text-slate-400">({{ $dEName }})</span></div>
+                                        @endif
                                     </div>
                                 </td>
                                 @foreach($monthDays as $day)
@@ -182,6 +186,7 @@
                                         $cellData = json_encode([
                                             'route_id' => $route->id,
                                             'route_name' => $route->route_name,
+                                            'service_type' => $route->service_type,
                                             'date' => $day['date_key'],
                                             'display_date' => $day['display_date'],
                                             'has_record' => $hasRecord,
@@ -223,12 +228,16 @@
                                             <!-- Araç Gösterimi (Sadece kayıt varsa göster) -->
                                             @if($hasRecord)
                                             <div class="flex flex-col gap-0.5">
+                                                @if($route->service_type !== 'evening')
                                                 <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isMorningDiff ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-sky-100 text-sky-800' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
                                                     <span>S:</span><span class="truncate ml-1">{{ $mPlate }}</span>
                                                 </div>
+                                                @endif
+                                                @if($route->service_type !== 'morning')
                                                 <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isEveningDiff ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-indigo-100 text-indigo-800' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
                                                     <span>A:</span><span class="truncate ml-1">{{ $ePlate }}</span>
                                                 </div>
+                                                @endif
                                             </div>
                                             @endif
 
@@ -287,11 +296,11 @@
                 <p class="mt-2 text-sm text-slate-500 font-medium">Bu seferi <b>varsayılan/tanımlı araçlar</b> mı yaptı?</p>
                 
                 <div class="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col gap-2 text-sm text-left">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between" x-show="activeCell.service_type !== 'evening'">
                         <span class="text-slate-500">Sabah Aracı:</span>
                         <span class="font-bold text-slate-800" x-text="activeCell.default_morning_plate"></span>
                     </div>
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between" x-show="activeCell.service_type !== 'morning'">
                         <span class="text-slate-500">Akşam Aracı:</span>
                         <span class="font-bold text-slate-800" x-text="activeCell.default_evening_plate"></span>
                     </div>
@@ -320,7 +329,7 @@
             </div>
             
             <form @submit.prevent="saveWithVehicles" class="p-6 space-y-5">
-                <div class="p-4 bg-sky-50 rounded-2xl border border-sky-100">
+                <div class="p-4 bg-sky-50 rounded-2xl border border-sky-100" x-show="activeCell.service_type !== 'evening'">
                     <label class="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-sky-800">☀️ Sabah Aracı (Gidiş)</label>
                     <select x-model="formData.morning_id" class="w-full rounded-xl border border-sky-200 px-4 py-3 text-sm font-bold text-slate-800 shadow-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-500">
                         <option value="">-- Araç Seçilmedi --</option>
@@ -338,7 +347,7 @@
                     </select>
                 </div>
 
-                <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100" x-show="activeCell.service_type !== 'morning'">
                     <label class="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-indigo-800">🌙 Akşam Aracı (Dönüş)</label>
                     <select x-model="formData.evening_id" class="w-full rounded-xl border border-indigo-200 px-4 py-3 text-sm font-bold text-slate-800 shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500">
                         <option value="">-- Araç Seçilmedi --</option>
@@ -390,7 +399,15 @@
                 <tr x-show="!hiddenRoutes.includes('{{ $route->id }}')">
                     <td class="route-col">
                         <b>{{ $route->route_name }}</b><br>
-                        <span style="font-size:5.5pt;color:#666;">S: {{ $route->morningVehicle->plate ?? '-' }} / A: {{ $route->eveningVehicle->plate ?? '-' }}</span>
+                        <span style="font-size:5.5pt;color:#666;">
+                            @if($route->service_type !== 'evening')
+                            S: {{ $route->morningVehicle->plate ?? '-' }} 
+                            @endif
+                            @if($route->service_type === 'both' || $route->service_type === 'shift') / @endif
+                            @if($route->service_type !== 'morning')
+                            A: {{ $route->eveningVehicle->plate ?? '-' }}
+                            @endif
+                        </span>
                     </td>
                     @foreach($monthDays as $day)
                         @php
