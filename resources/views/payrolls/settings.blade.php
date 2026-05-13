@@ -82,13 +82,13 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <label class="relative inline-flex items-center cursor-pointer group">
+                                <label class="relative inline-flex items-center cursor-pointer group" x-data="{ isChecked: {{ $driver->is_fixed_salary ? 'true' : 'false' }} }">
                                     <input type="checkbox" 
                                            class="sr-only peer" 
-                                           @change="toggleStatus({{ $driver->id }}, $event.target.checked)"
-                                           {{ $driver->is_fixed_salary ? 'checked' : '' }}>
-                                    <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600 shadow-inner group-hover:scale-105 transition-transform"></div>
-                                    <span class="ml-3 text-xs font-black" :class="$el.previousElementSibling.previousElementSibling.checked ? 'text-blue-600' : 'text-slate-400'">
+                                           x-model="isChecked"
+                                           @change="toggleStatus({{ $driver->id }}, isChecked)">
+                                    <div :class="isChecked ? 'bg-blue-600' : 'bg-slate-200'" class="w-14 h-7 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all shadow-inner group-hover:scale-105 transition-colors duration-300"></div>
+                                    <span class="ml-3 text-xs font-black transition-colors duration-300" :class="isChecked ? 'text-blue-600' : 'text-slate-400'">
                                         SADECE ANA MAAŞ
                                     </span>
                                 </label>
