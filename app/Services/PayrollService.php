@@ -30,12 +30,16 @@ class PayrollService
             }
         }
 
-        $trips = Trip::with(['serviceRoute'])
+        $trips = Trip::with(['serviceRoute', 'morningDriver', 'eveningDriver'])
             ->where(function ($q) use ($driver, $effectiveVehicleId) {
                 // 1. Şoför ID'si doğrudan eşleşenler
                 $q->where('driver_id', $driver->id);
                 
-                // 2. Şoför ID'si eşleşmese bile araç şoförün aracıysa (Tenure filtresi aşağıda hakedişi netleştirecek)
+                // 2. Yeni yapıdaki manuel şoför atamaları
+                $q->orWhere('morning_driver_id', $driver->id)
+                  ->orWhere('evening_driver_id', $driver->id);
+
+                // 3. Şoför ID'si eşleşmese bile araç şoförün aracıysa
                 if ($effectiveVehicleId) {
                     $q->orWhere(function ($sq) use ($effectiveVehicleId) {
                         $sq->where('vehicle_id', $effectiveVehicleId)
@@ -140,34 +144,27 @@ class PayrollService
             $driverDroveMorning = false;
             $driverDroveEvening = false;
 
-            if ($effectiveVehicleId) {
-                if ((string)$trip->morning_vehicle_id === (string)$effectiveVehicleId) $driverDroveMorning = true;
-                if ((string)$trip->evening_vehicle_id === (string)$effectiveVehicleId) $driverDroveEvening = true;
-            }
-
             // Yeni Yapı: Farklı Şoför (Sabah/Akşam) manuel seçildiyse:
+            // Bu en öncelikli kontroldür, araç eşleşmesinin önüne geçer.
             if ($trip->morning_driver_id) {
-                // Eğer manuel olarak bu bacak için şoför atanmışsa, 
-                // bu değerlendirilen şoför O DEĞİLSE, aracın sahibi bile olsa gidememiştir.
-                if ($trip->morning_driver_id === $driver->id) {
-                    $driverDroveMorning = true;
-                } else {
-                    $driverDroveMorning = false;
-                }
+                // Manuel sabah şoförü atanmış: sadece O şoför sürmüş sayılır
+                $driverDroveMorning = ((int)$trip->morning_driver_id === (int)$driver->id);
+            } elseif ($effectiveVehicleId) {
+                // Manuel atama yoksa, araç eşleşmesine bak
+                $driverDroveMorning = ((int)($trip->morning_vehicle_id ?? 0) === (int)$effectiveVehicleId);
             }
             
             if ($trip->evening_driver_id) {
-                // Aynı mantık akşam için:
-                if ($trip->evening_driver_id === $driver->id) {
-                    $driverDroveEvening = true;
-                } else {
-                    $driverDroveEvening = false;
-                }
+                // Manuel akşam şoförü atanmış: sadece O şoför sürmüş sayılır
+                $driverDroveEvening = ((int)$trip->evening_driver_id === (int)$driver->id);
+            } elseif ($effectiveVehicleId) {
+                // Manuel atama yoksa, araç eşleşmesine bak
+                $driverDroveEvening = ((int)($trip->evening_vehicle_id ?? 0) === (int)$effectiveVehicleId);
             }
 
             // Eski/Legacy Yapı: Tek bir driver_id manuel seçildiyse (Geriye Dönük Uyumluluk):
             if ($trip->driver_id && !$trip->morning_driver_id && !$trip->evening_driver_id) {
-                if ($trip->driver_id === $driver->id) {
+                if ((int)$trip->driver_id === (int)$driver->id) {
                     if ($trip->morning_vehicle_id) $driverDroveMorning = true;
                     if ($trip->evening_vehicle_id) $driverDroveEvening = true;
                     
@@ -175,7 +172,8 @@ class PayrollService
                          $driverDroveMorning = true;
                          $driverDroveEvening = true;
                     }
-                } else {
+                } else if (!$effectiveVehicleId) {
+                    // driver_id farklı ve bu şoförün aracı da yoksa, bu seferde payı yok
                     $driverDroveMorning = false;
                     $driverDroveEvening = false;
                 }
