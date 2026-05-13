@@ -148,13 +148,11 @@
                                 $dMName = ''; $dEName = '';
                                 if ($route->morningVehicle && $route->morningVehicle->drivers->isNotEmpty()) {
                                     $dM = $route->morningVehicle->drivers->where('is_active', true)->first() ?? $route->morningVehicle->drivers->first();
-                                    $parts = explode(' ', trim($dM->full_name));
-                                    $dMName = count($parts) > 1 ? implode(' ', array_slice($parts, 0, -1)) . ' ' . mb_substr(end($parts), 0, 1) . '.' : $parts[0];
+                                    $dMName = trim($dM->full_name);
                                 }
                                 if ($route->eveningVehicle && $route->eveningVehicle->drivers->isNotEmpty()) {
                                     $dE = $route->eveningVehicle->drivers->where('is_active', true)->first() ?? $route->eveningVehicle->drivers->first();
-                                    $parts = explode(' ', trim($dE->full_name));
-                                    $dEName = count($parts) > 1 ? implode(' ', array_slice($parts, 0, -1)) . ' ' . mb_substr(end($parts), 0, 1) . '.' : $parts[0];
+                                    $dEName = trim($dE->full_name);
                                 }
                             @endphp
                             @php
@@ -244,12 +242,6 @@
                                                         $isMCustom = true;
                                                     } else {
                                                         $mDisplayDriver = $cell['morning_driver_name'] ?? $cell['default_morning_driver_name'] ?? 'Tanımsız';
-                                                        if (!empty($cell['driver_id']) && $cell['driver_id'] !== ($cell['default_morning_driver_id'] ?? null)) {
-                                                            if ($cell['driver_id'] !== ($cell['default_evening_driver_id'] ?? null)) {
-                                                                $mDisplayDriver = $cell['driver_name'];
-                                                                $isMCustom = true;
-                                                            }
-                                                        }
                                                     }
                                                 @endphp
                                                 <div class="text-[9px] font-bold px-1.5 py-1 rounded flex flex-col gap-0.5 {{ $isMorningDiff ? 'bg-emerald-200 text-emerald-900 border-2 border-dashed border-emerald-500' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
@@ -270,12 +262,6 @@
                                                         $isECustom = true;
                                                     } else {
                                                         $eDisplayDriver = $cell['evening_driver_name'] ?? $cell['default_evening_driver_name'] ?? 'Tanımsız';
-                                                        if (!empty($cell['driver_id']) && $cell['driver_id'] !== ($cell['default_evening_driver_id'] ?? null)) {
-                                                            if ($cell['driver_id'] !== ($cell['default_morning_driver_id'] ?? null)) {
-                                                                $eDisplayDriver = $cell['driver_name'];
-                                                                $isECustom = true;
-                                                            }
-                                                        }
                                                     }
                                                 @endphp
                                                 <div class="text-[9px] font-bold px-1.5 py-1 rounded flex flex-col gap-0.5 {{ $isEveningDiff ? 'bg-rose-200 text-rose-900 border-2 border-dashed border-rose-500' : 'bg-rose-100 text-rose-800 border border-rose-200' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
