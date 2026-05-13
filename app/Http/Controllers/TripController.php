@@ -55,6 +55,11 @@ class TripController extends Controller
             'grand_total' => 0,
             'net_total' => 0,
         ];
+        
+        $drivers = Driver::query()
+            ->where('is_active', true)
+            ->orderBy('full_name')
+            ->get(['id', 'full_name']);
 
         if ($selectedCustomerId) {
             $selectedCustomer = Customer::query()
@@ -247,6 +252,7 @@ class TripController extends Controller
         $viewData = [
             'customers' => $customers,
             'vehicles' => $vehicles,
+            'drivers' => $drivers,
             'selectedCustomerId' => $selectedCustomerId,
             'selectedCustomer' => $selectedCustomer,
             'serviceRoutes' => $serviceRoutes,

@@ -143,22 +143,24 @@ class PayrollService
             if ($effectiveVehicleId) {
                 if ((string)$trip->morning_vehicle_id === (string)$effectiveVehicleId) $driverDroveMorning = true;
                 if ((string)$trip->evening_vehicle_id === (string)$effectiveVehicleId) $driverDroveEvening = true;
-                
-                // Geriye dönük uyumluluk: vehicle_id kullanılmışsa ve yeni alanlar boşsa
-                if (empty($trip->morning_vehicle_id) && empty($trip->evening_vehicle_id)) {
-                    if ((string)$trip->vehicle_id === (string)$effectiveVehicleId) {
-                        $driverDroveMorning = true;
-                        $driverDroveEvening = true;
-                    }
-                }
             }
-            
-            // Araç yoksa ama direkt şoför eşleştiyse (eski kayıtlar)
-            if ($trip->driver_id === $driver->id && !$driverDroveMorning && !$driverDroveEvening) {
-                if (empty($trip->morning_vehicle_id) && empty($trip->evening_vehicle_id)) {
-                    $driverDroveMorning = true;
-                    $driverDroveEvening = true;
+
+            // Araç yoksa veya FARKLI ŞOFÖR seçildiyse:
+            if ($trip->driver_id === $driver->id) {
+                // Eğer manuel olarak driver_id atanmışsa, bu şoförün bu seferleri yaptığı kabul edilir.
+                if ($trip->morning_vehicle_id) $driverDroveMorning = true;
+                if ($trip->evening_vehicle_id) $driverDroveEvening = true;
+                
+                // Geriye dönük vehicle_id kullanımı varsa
+                if (empty($trip->morning_vehicle_id) && empty($trip->evening_vehicle_id) && $trip->vehicle_id) {
+                     $driverDroveMorning = true;
+                     $driverDroveEvening = true;
                 }
+            } else if ($trip->driver_id !== null && $trip->driver_id !== $driver->id) {
+                // Eğer bu trip'te manuel bir şoför seçildiyse ve değerlendirilen şoför O DEĞİLSE,
+                // aracın asıl sahibi olsa bile parayı alamaz.
+                $driverDroveMorning = false;
+                $driverDroveEvening = false;
             }
 
             if (!$driverDroveMorning) $canDoMorning = false;

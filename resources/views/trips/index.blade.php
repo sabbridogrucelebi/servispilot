@@ -201,6 +201,7 @@
                                             'evening_id' => $cell['evening_vehicle_id'] ?? $cell['default_evening_vehicle_id'] ?? '',
                                             'default_morning_id' => $cell['default_morning_vehicle_id'] ?? '',
                                             'default_evening_id' => $cell['default_evening_vehicle_id'] ?? '',
+                                            'driver_id' => $cell['driver_id'] ?? '',
                                             'default_morning_plate' => ($cell['default_morning_vehicle_plate'] ?? 'Tanımsız') . ($mDriver ? ' ('.$mDriver.')' : ''),
                                             'default_evening_plate' => ($cell['default_evening_vehicle_plate'] ?? 'Tanımsız') . ($eDriver ? ' ('.$eDriver.')' : ''),
                                             'status' => $cell['trip_status'] ?? 'Yapıldı',
@@ -231,9 +232,9 @@
                                                 <span class="print-value hidden">{{ $price ? '₺'.$price : '' }}</span>
                                             </div>
                                             
-                                            <!-- Araç Gösterimi (Sadece kayıt varsa göster) -->
+                                            <!-- Araç ve Şoför Gösterimi (Sadece kayıt varsa göster) -->
                                             @if($hasRecord)
-                                            <div class="flex flex-col gap-0.5">
+                                            <div class="flex flex-col gap-0.5 mt-1">
                                                 @if($route->service_type !== 'evening')
                                                 <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isMorningDiff ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-sky-100 text-sky-800' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
                                                     <span>S:</span><span class="truncate ml-1">{{ $mPlate }}</span>
@@ -242,6 +243,11 @@
                                                 @if($route->service_type !== 'morning')
                                                 <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between {{ $isEveningDiff ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-indigo-100 text-indigo-800' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
                                                     <span>A:</span><span class="truncate ml-1">{{ $ePlate }}</span>
+                                                </div>
+                                                @endif
+                                                @if(!empty($cell['driver_name']))
+                                                <div class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center justify-between bg-slate-900 text-white shadow-sm mt-0.5" title="Farklı Şoför Görevlendirildi">
+                                                    <span>👤</span><span class="truncate ml-1">{{ mb_strimwidth($cell['driver_name'], 0, 15, '..') }}</span>
                                                 </div>
                                                 @endif
                                             </div>
@@ -371,6 +377,25 @@
                     </select>
                 </div>
 
+                <div class="mt-2 text-center pt-2">
+                    <button type="button" @click="showDriverSelect = !showDriverSelect" class="inline-flex items-center gap-2 rounded-xl border-b-4 border-slate-300 bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition-all hover:translate-y-[2px] hover:border-b-2 hover:bg-slate-300 active:translate-y-[4px] active:border-b-0">
+                        <span x-text="showDriverSelect ? '👤 Şoför Seçimini İptal Et' : '👤 Farklı Şoför Gitti'"></span>
+                    </button>
+                </div>
+
+                <div x-show="showDriverSelect" x-collapse>
+                    <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700 shadow-inner">
+                        <label class="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-slate-300">👤 Görevli Şoförü Seçin</label>
+                        <select x-model="formData.driver_id" class="w-full rounded-xl border border-slate-600 bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500">
+                            <option value="">-- Araça Kayıtlı Asıl Şoför Gitti --</option>
+                            @foreach($drivers as $driver)
+                                <option value="{{ $driver->id }}">{{ $driver->full_name }}</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-2 text-[10px] text-slate-400">Not: Eğer aracın asıl şoförü rahatsızlanıp yerine başka biri gittiyse buradan seçin. Bu sayede hakediş maaşa doğru yansır.</p>
+                    </div>
+                </div>
+
                 <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
                     <button type="button" @click="closeModals()" class="flex-1 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">İptal</button>
                     <button type="submit" class="flex-[2] rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition hover:scale-[1.02]" :class="{'opacity-50 pointer-events-none': isSaving}">
@@ -460,16 +485,18 @@
             openHizliMod: false,
             isConfirmModalOpen: false,
             isVehicleModalOpen: false,
+            showDriverSelect: false,
             isSaving: false,
             hiddenRoutes: [],
             totalRoutes: {{ $serviceRoutes->count() ?? 0 }},
             activeCell: {},
             enteredPrice: '',
             formData: {
-                route_id: '',
-                date: '',
-                morning_id: '',
-                evening_id: '',
+                route_id: null,
+                date: null,
+                morning_id: null,
+                evening_id: null,
+                driver_id: null,
                 status: 'Yapıldı'
             },
             
@@ -483,6 +510,7 @@
                         date: cellData.date,
                         morning_id: '',
                         evening_id: '',
+                        driver_id: '',
                         status: 'İptal'
                     };
                     this.executeSave();
@@ -496,8 +524,10 @@
                     date: cellData.date,
                     morning_id: cellData.morning_id || cellData.default_morning_id,
                     evening_id: cellData.evening_id || cellData.default_evening_id,
-                    status: 'Yapıldı'
+                    driver_id: cellData.driver_id || '',
+                    status: cellData.status || 'Yapıldı'
                 };
+                this.showDriverSelect = !!cellData.driver_id;
                 
                 if (this.openHizliMod) {
                     this.saveQuick();
@@ -522,6 +552,7 @@
                 // Keep default IDs
                 this.formData.morning_id = this.activeCell.default_morning_id;
                 this.formData.evening_id = this.activeCell.default_evening_id;
+                this.formData.driver_id = ''; // reset driver
                 this.executeSave();
             },
             
@@ -544,6 +575,7 @@
                             trip_price: this.enteredPrice,
                             morning_vehicle_id: this.formData.morning_id,
                             evening_vehicle_id: this.formData.evening_id,
+                            driver_id: this.formData.driver_id,
                             trip_status: this.formData.status
                         })
                     });
