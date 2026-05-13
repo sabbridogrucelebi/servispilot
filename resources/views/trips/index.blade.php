@@ -238,15 +238,25 @@
                                             <div class="flex flex-col gap-0.5 mt-1">
                                                 @if($route->service_type !== 'evening')
                                                 @php
-                                                    $mDisplayDriver = $cell['morning_manual_driver_name'] 
-                                                                    ?: (!empty($cell['driver_name']) && empty($cell['evening_manual_driver_name']) ? $cell['driver_name'] : null);
-                                                    $mDisplayDriver = $mDisplayDriver ?: ($cell['morning_driver_name'] ?? $cell['default_morning_driver_name'] ?? 'Tanımsız');
+                                                    $isMCustom = false;
+                                                    if (!empty($cell['morning_manual_driver_name'])) {
+                                                        $mDisplayDriver = $cell['morning_manual_driver_name'];
+                                                        $isMCustom = true;
+                                                    } else {
+                                                        $mDisplayDriver = $cell['morning_driver_name'] ?? $cell['default_morning_driver_name'] ?? 'Tanımsız';
+                                                        if (!empty($cell['driver_name']) && $cell['driver_name'] !== $mDisplayDriver) {
+                                                            if ($cell['driver_name'] !== ($cell['default_evening_driver_name'] ?? '')) {
+                                                                $mDisplayDriver = $cell['driver_name'];
+                                                                $isMCustom = true;
+                                                            }
+                                                        }
+                                                    }
                                                 @endphp
                                                 <div class="text-[9px] font-bold px-1.5 py-1 rounded flex flex-col gap-0.5 {{ $isMorningDiff ? 'bg-emerald-200 text-emerald-900 border-2 border-dashed border-emerald-500' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
                                                     <div class="flex items-center justify-between">
                                                         <span>S:</span><span class="truncate ml-1">{{ $mPlate }}</span>
                                                     </div>
-                                                    <div class="flex items-center justify-between opacity-80">
+                                                    <div class="flex items-center justify-between {{ $isMCustom ? 'bg-slate-900 text-white rounded px-1 mt-0.5 py-0.5' : 'opacity-80' }}">
                                                         <span>👤</span><span class="truncate ml-1">{{ mb_strimwidth($mDisplayDriver, 0, 15, '..') }}</span>
                                                     </div>
                                                 </div>
@@ -254,15 +264,25 @@
 
                                                 @if($route->service_type !== 'morning')
                                                 @php
-                                                    $eDisplayDriver = $cell['evening_manual_driver_name'] 
-                                                                    ?: (!empty($cell['driver_name']) && empty($cell['morning_manual_driver_name']) ? $cell['driver_name'] : null);
-                                                    $eDisplayDriver = $eDisplayDriver ?: ($cell['evening_driver_name'] ?? $cell['default_evening_driver_name'] ?? 'Tanımsız');
+                                                    $isECustom = false;
+                                                    if (!empty($cell['evening_manual_driver_name'])) {
+                                                        $eDisplayDriver = $cell['evening_manual_driver_name'];
+                                                        $isECustom = true;
+                                                    } else {
+                                                        $eDisplayDriver = $cell['evening_driver_name'] ?? $cell['default_evening_driver_name'] ?? 'Tanımsız';
+                                                        if (!empty($cell['driver_name']) && $cell['driver_name'] !== $eDisplayDriver) {
+                                                            if ($cell['driver_name'] !== ($cell['default_morning_driver_name'] ?? '')) {
+                                                                $eDisplayDriver = $cell['driver_name'];
+                                                                $isECustom = true;
+                                                            }
+                                                        }
+                                                    }
                                                 @endphp
                                                 <div class="text-[9px] font-bold px-1.5 py-1 rounded flex flex-col gap-0.5 {{ $isEveningDiff ? 'bg-rose-200 text-rose-900 border-2 border-dashed border-rose-500' : 'bg-rose-100 text-rose-800 border border-rose-200' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">
                                                     <div class="flex items-center justify-between">
                                                         <span>A:</span><span class="truncate ml-1">{{ $ePlate }}</span>
                                                     </div>
-                                                    <div class="flex items-center justify-between opacity-80">
+                                                    <div class="flex items-center justify-between {{ $isECustom ? 'bg-slate-900 text-white rounded px-1 mt-0.5 py-0.5' : 'opacity-80' }}">
                                                         <span>👤</span><span class="truncate ml-1">{{ mb_strimwidth($eDisplayDriver, 0, 15, '..') }}</span>
                                                     </div>
                                                 </div>
