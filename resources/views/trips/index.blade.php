@@ -116,11 +116,11 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto matrix-container">
+                <div class="overflow-auto max-h-[calc(100vh-250px)] matrix-container relative shadow-inner rounded-xl border border-slate-200">
                     <table id="puantaj-table" class="w-full text-left text-sm border-collapse">
-                    <thead>
+                    <thead class="sticky top-0 z-40 shadow-sm">
                         <tr>
-                            <th class="sticky left-0 z-20 w-64 min-w-[250px] bg-slate-100 px-4 py-4 font-bold uppercase tracking-[0.1em] text-slate-600 border-r border-b border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                            <th class="sticky left-0 top-0 z-50 w-64 min-w-[250px] bg-slate-100 px-4 py-4 font-bold uppercase tracking-[0.1em] text-slate-600 border-r border-b border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                                 Güzergah
                             </th>
                             @foreach($monthDays as $day)
@@ -157,8 +157,14 @@
                                     $dEName = count($parts) > 1 ? implode(' ', array_slice($parts, 0, -1)) . ' ' . mb_substr(end($parts), 0, 1) . '.' : $parts[0];
                                 }
                             @endphp
-                            <tr class="group hover:bg-slate-50/50 transition-colors" x-show="!hiddenRoutes.includes('{{ $route->id }}')">
-                                <td class="sticky left-0 z-10 bg-white px-4 py-3 border-r border-b border-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-slate-50 transition-colors">
+                            @php
+                                $routeBgClass = 'bg-white';
+                                if ($route->service_type === 'morning') $routeBgClass = 'bg-amber-50';
+                                elseif ($route->service_type === 'evening') $routeBgClass = 'bg-emerald-50';
+                                elseif ($route->service_type === 'shift') $routeBgClass = 'bg-orange-100';
+                            @endphp
+                            <tr class="group transition-colors" x-show="!hiddenRoutes.includes('{{ $route->id }}')">
+                                <td class="sticky left-0 z-20 {{ $routeBgClass }} px-4 py-3 border-r border-b border-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:brightness-[0.97] transition-all">
                                     <div class="font-bold text-slate-900 truncate">{{ $route->route_name }}</div>
                                     <div class="mt-1 text-xs text-slate-500 flex flex-col gap-1">
                                         @if($route->service_type !== 'evening')

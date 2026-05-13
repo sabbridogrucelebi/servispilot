@@ -67,7 +67,7 @@ class TripController extends Controller
                     ->with(['morningVehicle.drivers', 'eveningVehicle.drivers'])
                     ->where('customer_id', $selectedCustomer->id)
                     ->where('is_active', true)
-                    ->orderBy('route_name')
+                    ->orderBy('id', 'asc')
                     ->get();
 
                 $startOfMonth = Carbon::create($selectedYear, $selectedMonth, 1)->startOfDay();
