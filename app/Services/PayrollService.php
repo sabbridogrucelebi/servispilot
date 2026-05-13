@@ -156,15 +156,46 @@ class PayrollService
             $eveningEarning = 0;
 
             // Ücret Hesaplama Mantığı (Ek Hakedişler)
-            if ($route->fee_type === 'paid') {
-                $morningEarning = $canDoMorning ? ($route->morning_fee ?? 0) : 0;
-                $eveningEarning = $canDoEvening ? ($route->evening_fee ?? 0) : 0;
-            } else {
-                if ($canDoMorning && $trip->morning_vehicle_id && (string)$trip->morning_vehicle_id !== (string)$route->morning_vehicle_id) {
-                    $morningEarning = $route->fallback_morning_fee ?? 0;
+            if ($trip->trip_price !== null) {
+                // 1. Manuel girilmiş override fiyatı var
+                $totalOverride = (float) $trip->trip_price;
+                
+                $mFee = (float)($route->morning_fee ?? 0);
+                $eFee = (float)($route->evening_fee ?? 0);
+                if ($route->fee_type !== 'paid') {
+                    $mFee = (float)($route->fallback_morning_fee ?? 0);
+                    $eFee = (float)($route->fallback_evening_fee ?? 0);
                 }
-                if ($canDoEvening && $trip->evening_vehicle_id && (string)$trip->evening_vehicle_id !== (string)$route->evening_vehicle_id) {
-                    $eveningEarning = $route->fallback_evening_fee ?? 0;
+                
+                $totalFeeForRatio = $mFee + $eFee;
+                $hasMorning = !empty($trip->morning_vehicle_id);
+                $hasEvening = !empty($trip->evening_vehicle_id);
+                
+                if ($hasMorning && !$hasEvening) {
+                    $morningEarning = $canDoMorning ? $totalOverride : 0;
+                } elseif (!$hasMorning && $hasEvening) {
+                    $eveningEarning = $canDoEvening ? $totalOverride : 0;
+                } else {
+                    if ($totalFeeForRatio > 0) {
+                        $morningEarning = $canDoMorning ? ($totalOverride * ($mFee / $totalFeeForRatio)) : 0;
+                        $eveningEarning = $canDoEvening ? ($totalOverride * ($eFee / $totalFeeForRatio)) : 0;
+                    } else {
+                        $morningEarning = $canDoMorning ? ($totalOverride / 2) : 0;
+                        $eveningEarning = $canDoEvening ? ($totalOverride / 2) : 0;
+                    }
+                }
+            } else {
+                // 2. Normal Rota Ücretleri
+                if ($route->fee_type === 'paid') {
+                    $morningEarning = $canDoMorning ? ($route->morning_fee ?? 0) : 0;
+                    $eveningEarning = $canDoEvening ? ($route->evening_fee ?? 0) : 0;
+                } else {
+                    if ($canDoMorning && $trip->morning_vehicle_id && (string)$trip->morning_vehicle_id !== (string)$route->morning_vehicle_id) {
+                        $morningEarning = $route->fallback_morning_fee ?? 0;
+                    }
+                    if ($canDoEvening && $trip->evening_vehicle_id && (string)$trip->evening_vehicle_id !== (string)$route->evening_vehicle_id) {
+                        $eveningEarning = $route->fallback_evening_fee ?? 0;
+                    }
                 }
             }
 
