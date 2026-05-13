@@ -44,7 +44,7 @@
                 </div>
                 <div class="text-right flex flex-col items-end">
                     @if(auth()->user()->company->logo_path)
-                        <img src="{{ Storage::url(auth()->user()->company->logo_path) }}" alt="{{ auth()->user()->company->name }}" class="h-10 object-contain mb-1">
+                        <img src="{{ asset('storage/' . auth()->user()->company->logo_path) }}" alt="{{ auth()->user()->company->name }}" class="h-10 object-contain mb-1">
                     @else
                         <div class="text-xl font-black text-slate-900">{{ auth()->user()->company->name ?? 'Firma Adı' }}</div>
                     @endif

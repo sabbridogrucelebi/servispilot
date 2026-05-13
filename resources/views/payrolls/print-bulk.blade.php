@@ -130,7 +130,7 @@
                 </div>
                 <div class="brand-group" style="display: flex; flex-direction: column; align-items: flex-end;">
                     @if(auth()->user()->company->logo_path)
-                        <img src="{{ Storage::url(auth()->user()->company->logo_path) }}" alt="{{ auth()->user()->company->name }}" style="max-height: 40px; margin-bottom: 4px; object-fit: contain;">
+                        <img src="{{ asset('storage/' . auth()->user()->company->logo_path) }}" alt="{{ auth()->user()->company->name }}" style="max-height: 40px; margin-bottom: 4px; object-fit: contain;">
                     @else
                         <div class="brand-name">{{ auth()->user()->company->name ?? 'Firma Adı' }}</div>
                     @endif
