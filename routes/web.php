@@ -874,4 +874,13 @@ Route::prefix('super-admin')
             ->name('finance.reject');
     });
 
+Route::get('/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return "Veritabanı güncellemeleri başarıyla tamamlandı!<br><br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre><br><a href='/'>Ana Sayfaya Dön</a>";
+    } catch (\Exception $e) {
+        return "Hata oluştu: " . $e->getMessage();
+    }
+});
+
 // force update routes
