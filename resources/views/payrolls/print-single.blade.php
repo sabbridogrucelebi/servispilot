@@ -188,11 +188,15 @@
 
             <div class="total-card-eco">
                 <div class="summary-row-eco">
-                    <span>Maaş + Seferler:</span>
-                    <span>+{{ number_format($report['base_salary'] + $report['extra_earnings'], 2, ',', '.') }} ₺</span>
+                    <span>Ana Maaş:</span>
+                    <span>+{{ number_format($report['base_salary'], 2, ',', '.') }} ₺</span>
+                </div>
+                <div class="summary-row-eco">
+                    <span>Ek Hakedişler:</span>
+                    <span>+{{ number_format($report['extra_earnings'], 2, ',', '.') }} ₺</span>
                 </div>
                 <div class="summary-row-eco" style="color: #059669;">
-                    <span>Ekstra (+):</span>
+                    <span>Ek Ödemeler:</span>
                     <span>+{{ number_format($extraBonus, 2, ',', '.') }} ₺</span>
                 </div>
                 <div class="total-brut-eco">
