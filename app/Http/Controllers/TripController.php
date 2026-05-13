@@ -145,22 +145,20 @@ class TripController extends Controller
                         $defaultMorningVehiclePlate = $route->morningVehicle?->plate;
                         $defaultEveningVehiclePlate = $route->eveningVehicle?->plate;
 
-                        $formatDriver = function ($vehicle, $date) {
-                            if (!$vehicle) return '';
-                            // Bu tarihte bu araçta çalışan şoförü bul (Giriş/Çıkış tarihlerine göre)
+                        $getDriver = function ($vehicle, $date) {
+                            if (!$vehicle) return null;
                             $targetDate = $date->startOfDay();
-                            $driver = $vehicle->drivers->filter(function($d) use ($targetDate) {
+                            return $vehicle->drivers->filter(function($d) use ($targetDate) {
                                 $start = $d->start_date ? Carbon::parse($d->start_date)->startOfDay() : null;
                                 $leave = $d->leave_date ? Carbon::parse($d->leave_date)->startOfDay() : null;
-                                
-                                // İşe başlamış mı?
                                 if ($start && $targetDate->lt($start)) return false;
-                                // İşten ayrılmış mı?
                                 if ($leave && $targetDate->gt($leave)) return false;
-                                
                                 return true;
                             })->first();
+                        };
 
+                        $formatDriver = function ($vehicle, $date) use ($getDriver) {
+                            $driver = $getDriver($vehicle, $date);
                             if (!$driver) return '';
 
                             $parts = explode(' ', trim($driver->full_name));
@@ -170,6 +168,11 @@ class TripController extends Controller
                                 return $firstName . ' ' . mb_substr($lastName, 0, 1) . '.';
                             }
                             return $parts[0];
+                        };
+
+                        $getDriverId = function ($vehicle, $date) use ($getDriver) {
+                            $driver = $getDriver($vehicle, $date);
+                            return $driver ? $driver->id : null;
                         };
 
                         $matrix[$dateKey][$route->id] = [
@@ -200,9 +203,11 @@ class TripController extends Controller
                             'default_morning_vehicle_id' => $defaultMorningVehicleId,
                             'default_morning_vehicle_plate' => $defaultMorningVehiclePlate,
                             'default_morning_driver_name' => $formatDriver($route->morningVehicle, $cursor),
+                            'default_morning_driver_id' => $getDriverId($route->morningVehicle, $cursor),
                             'default_evening_vehicle_id' => $defaultEveningVehicleId,
                             'default_evening_vehicle_plate' => $defaultEveningVehiclePlate,
                             'default_evening_driver_name' => $formatDriver($route->eveningVehicle, $cursor),
+                            'default_evening_driver_id' => $getDriverId($route->eveningVehicle, $cursor),
                         ];
 
                         if (!is_null($enteredPrice)) {

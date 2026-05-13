@@ -244,8 +244,8 @@
                                                         $isMCustom = true;
                                                     } else {
                                                         $mDisplayDriver = $cell['morning_driver_name'] ?? $cell['default_morning_driver_name'] ?? 'Tanımsız';
-                                                        if (!empty($cell['driver_name']) && $cell['driver_name'] !== $mDisplayDriver) {
-                                                            if ($cell['driver_name'] !== ($cell['default_evening_driver_name'] ?? '')) {
+                                                        if (!empty($cell['driver_id']) && $cell['driver_id'] !== ($cell['default_morning_driver_id'] ?? null)) {
+                                                            if ($cell['driver_id'] !== ($cell['default_evening_driver_id'] ?? null)) {
                                                                 $mDisplayDriver = $cell['driver_name'];
                                                                 $isMCustom = true;
                                                             }
@@ -270,8 +270,8 @@
                                                         $isECustom = true;
                                                     } else {
                                                         $eDisplayDriver = $cell['evening_driver_name'] ?? $cell['default_evening_driver_name'] ?? 'Tanımsız';
-                                                        if (!empty($cell['driver_name']) && $cell['driver_name'] !== $eDisplayDriver) {
-                                                            if ($cell['driver_name'] !== ($cell['default_morning_driver_name'] ?? '')) {
+                                                        if (!empty($cell['driver_id']) && $cell['driver_id'] !== ($cell['default_evening_driver_id'] ?? null)) {
+                                                            if ($cell['driver_id'] !== ($cell['default_morning_driver_id'] ?? null)) {
                                                                 $eDisplayDriver = $cell['driver_name'];
                                                                 $isECustom = true;
                                                             }
