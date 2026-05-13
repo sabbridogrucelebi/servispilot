@@ -216,6 +216,40 @@ class PayrollController extends Controller
         ]);
     }
 
+    public function uploadLogo(Request $request)
+    {
+        abort_unless(auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin(), 403);
+
+        $request->validate([
+            'logo' => 'required|image|mimes:jpeg,png,jpg,svg|max:2048',
+        ]);
+
+        $company = auth()->user()->company;
+
+        if ($company->logo_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($company->logo_path);
+        }
+
+        $path = $request->file('logo')->store('company-logos', 'public');
+        $company->update(['logo_path' => $path]);
+
+        return redirect()->back()->with('success', 'Firma logosu başarıyla yüklendi.');
+    }
+
+    public function removeLogo()
+    {
+        abort_unless(auth()->user()->isCompanyAdmin() || auth()->user()->isSuperAdmin(), 403);
+
+        $company = auth()->user()->company;
+
+        if ($company->logo_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($company->logo_path);
+            $company->update(['logo_path' => null]);
+        }
+
+        return redirect()->back()->with('success', 'Firma logosu kaldırıldı.');
+    }
+
     public function bulkReport(Request $request)
     {
         abort_unless(auth()->user()->hasPermission('payrolls.view'), 403);

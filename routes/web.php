@@ -564,6 +564,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/payrolls/update-single', [PayrollController::class, 'updateSingle'])->name('payrolls.update-single');
     Route::get('/payrolls/settings', [PayrollController::class, 'settings'])->name('payrolls.settings');
     Route::post('/payrolls/settings/toggle-fixed-salary', [PayrollController::class, 'toggleFixedSalary'])->name('payrolls.settings.toggle-fixed-salary');
+    Route::post('/payrolls/settings/upload-logo', [PayrollController::class, 'uploadLogo'])->name('payrolls.settings.upload-logo');
+    Route::delete('/payrolls/settings/remove-logo', [PayrollController::class, 'removeLogo'])->name('payrolls.settings.remove-logo');
 
     Route::get('/vehicles/admin/fast-photo-upload', [VehicleController::class, 'adminFastPhotoUpload'])->name('vehicles.admin.fast-photo-upload');
     Route::get('/vehicles/export/excel', [VehicleController::class, 'exportExcel'])->name('vehicles.export.excel');

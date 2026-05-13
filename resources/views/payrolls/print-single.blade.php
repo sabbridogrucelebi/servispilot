@@ -116,8 +116,12 @@
                 <h1>HAKEDİŞ DETAYI</h1>
                 <p>{{ \Carbon\Carbon::parse($period)->translatedFormat('F Y') }} DÖNEMİ</p>
             </div>
-            <div class="brand-group">
-                <div class="brand-name">{{ auth()->user()->company->name ?? 'Firma Adı' }}</div>
+            <div class="brand-group" style="display: flex; flex-direction: column; align-items: flex-end;">
+                @if(auth()->user()->company->logo_path)
+                    <img src="{{ Storage::url(auth()->user()->company->logo_path) }}" alt="{{ auth()->user()->company->name }}" style="max-height: 40px; margin-bottom: 4px; object-fit: contain;">
+                @else
+                    <div class="brand-name">{{ auth()->user()->company->name ?? 'Firma Adı' }}</div>
+                @endif
                 <div class="brand-sub">PERSONEL HAKEDİŞ DETAYI</div>
             </div>
         </div>

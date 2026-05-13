@@ -39,6 +39,48 @@
                 </div>
             </div>
         </div>
+
+        <!-- Logo Yükleme Alanı -->
+        <div class="bg-white rounded-[32px] p-8 border border-slate-200 shadow-sm relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110"></div>
+            
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-3xl flex items-center justify-center mb-6 shadow-sm border border-indigo-200/50">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            
+            <h3 class="text-2xl font-black text-slate-900 mb-3 tracking-tight">Firma Logosu</h3>
+            <p class="text-slate-500 font-medium leading-relaxed text-sm mb-6">
+                Yüklediğiniz logo, personellerin yazdırılan maaş hakediş dökümlerinde ve pdf çıktılarında firma adınızın yerine şık bir şekilde gösterilecektir.
+            </p>
+
+            <form action="{{ route('payrolls.settings.upload-logo') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                @csrf
+                <div class="relative group/upload cursor-pointer">
+                    <input type="file" name="logo" id="logo" accept="image/png, image/jpeg, image/jpg, image/svg+xml" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" required onchange="this.form.submit()">
+                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center transition-all group-hover/upload:border-indigo-500 group-hover/upload:bg-indigo-50/50">
+                        <svg class="w-8 h-8 text-slate-400 mx-auto mb-3 group-hover/upload:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                        <p class="text-sm font-bold text-slate-700">Logo Seçmek İçin Tıklayın</p>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Önerilen: 600x200 px (PNG, JPG, SVG)</p>
+                    </div>
+                </div>
+            </form>
+
+            @if(auth()->user()->company->logo_path)
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Mevcut Logo:</p>
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                        <img src="{{ Storage::url(auth()->user()->company->logo_path) }}" alt="Logo" class="max-h-10 object-contain">
+                        <form action="{{ route('payrolls.settings.remove-logo') }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-colors" title="Logoyu Kaldır">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+        </div>
     </div>
 
     <!-- Sağ Panel: Liste -->
