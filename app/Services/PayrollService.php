@@ -162,8 +162,11 @@ class PayrollService
                 $driverDroveEvening = ((int)($trip->evening_vehicle_id ?? 0) === (int)$effectiveVehicleId);
             }
 
-            // Eski/Legacy Yapı: Tek bir driver_id manuel seçildiyse (Geriye Dönük Uyumluluk):
-            if ($trip->driver_id && !$trip->morning_driver_id && !$trip->evening_driver_id) {
+            // Eski/Legacy Yapı: Tek bir driver_id varsa (Geriye Dönük Uyumluluk):
+            // ÖNEMLİ: Eğer effectiveVehicleId varsa, yukarıdaki araç eşleşmesi zaten
+            // doğru sonucu vermiştir. Legacy blok sadece araç eşleşmesi yapılamadığında
+            // (effectiveVehicleId null olduğunda) devreye girmelidir.
+            if ($trip->driver_id && !$trip->morning_driver_id && !$trip->evening_driver_id && !$effectiveVehicleId) {
                 if ((int)$trip->driver_id === (int)$driver->id) {
                     if ($trip->morning_vehicle_id) $driverDroveMorning = true;
                     if ($trip->evening_vehicle_id) $driverDroveEvening = true;
@@ -172,8 +175,7 @@ class PayrollService
                          $driverDroveMorning = true;
                          $driverDroveEvening = true;
                     }
-                } else if (!$effectiveVehicleId) {
-                    // driver_id farklı ve bu şoförün aracı da yoksa, bu seferde payı yok
+                } else {
                     $driverDroveMorning = false;
                     $driverDroveEvening = false;
                 }
