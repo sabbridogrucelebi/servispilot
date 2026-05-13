@@ -15,6 +15,17 @@ class TripController extends Controller
 {
     public function index(Request $request)
     {
+        if ($request->has('run_migrate')) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+                echo "Veritabanı başarıyla güncellendi! Çıktı:<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+                exit;
+            } catch (\Exception $e) {
+                echo "Hata oluştu: " . $e->getMessage();
+                exit;
+            }
+        }
+
         abort_unless(auth()->user()->hasPermission('trips.view'), 403);
 
         $now = now();
