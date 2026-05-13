@@ -257,7 +257,7 @@
                                                         <span>S:</span><span class="truncate ml-1">{{ $mPlate }}</span>
                                                     </div>
                                                     <div class="flex items-center justify-between {{ $isMCustom ? 'bg-slate-900 text-white rounded px-1 mt-0.5 py-0.5' : 'opacity-80' }}">
-                                                        <span>👤</span><span class="truncate ml-1">{{ mb_strimwidth($mDisplayDriver, 0, 15, '..') }}</span>
+                                                        <span>👤</span><span class="truncate ml-1">{{ $mDisplayDriver }}</span>
                                                     </div>
                                                 </div>
                                                 @endif
@@ -283,7 +283,7 @@
                                                         <span>A:</span><span class="truncate ml-1">{{ $ePlate }}</span>
                                                     </div>
                                                     <div class="flex items-center justify-between {{ $isECustom ? 'bg-slate-900 text-white rounded px-1 mt-0.5 py-0.5' : 'opacity-80' }}">
-                                                        <span>👤</span><span class="truncate ml-1">{{ mb_strimwidth($eDisplayDriver, 0, 15, '..') }}</span>
+                                                        <span>👤</span><span class="truncate ml-1">{{ $eDisplayDriver }}</span>
                                                     </div>
                                                 </div>
                                                 @endif

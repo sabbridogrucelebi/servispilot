@@ -192,10 +192,15 @@ class PayrollService
                 $morningEarning = $canDoMorning ? ($route->morning_fee ?? 0) : 0;
                 $eveningEarning = $canDoEvening ? ($route->evening_fee ?? 0) : 0;
             } else {
-                if ($canDoMorning && $trip->morning_vehicle_id && (string)$trip->morning_vehicle_id !== (string)$route->morning_vehicle_id) {
+                // Sabah için ekstra ücret durumu: Farklı bir araç gittiyse VEYA farklı bir şoför manuel seçildiyse
+                $isMorningDiff = ($trip->morning_vehicle_id && (string)$trip->morning_vehicle_id !== (string)$route->morning_vehicle_id) || !empty($trip->morning_driver_id);
+                // Akşam için ekstra ücret durumu
+                $isEveningDiff = ($trip->evening_vehicle_id && (string)$trip->evening_vehicle_id !== (string)$route->evening_vehicle_id) || !empty($trip->evening_driver_id);
+
+                if ($canDoMorning && $isMorningDiff) {
                     $morningEarning = $route->fallback_morning_fee ?? 0;
                 }
-                if ($canDoEvening && $trip->evening_vehicle_id && (string)$trip->evening_vehicle_id !== (string)$route->evening_vehicle_id) {
+                if ($canDoEvening && $isEveningDiff) {
                     $eveningEarning = $route->fallback_evening_fee ?? 0;
                 }
             }

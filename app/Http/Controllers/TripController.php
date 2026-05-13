@@ -160,14 +160,7 @@ class TripController extends Controller
                         $formatDriver = function ($vehicle, $date) use ($getDriver) {
                             $driver = $getDriver($vehicle, $date);
                             if (!$driver) return '';
-
-                            $parts = explode(' ', trim($driver->full_name));
-                            if (count($parts) > 1) {
-                                $lastName = array_pop($parts);
-                                $firstName = implode(' ', $parts);
-                                return $firstName . ' ' . mb_substr($lastName, 0, 1) . '.';
-                            }
-                            return $parts[0];
+                            return trim($driver->full_name);
                         };
 
                         $getDriverId = function ($vehicle, $date) use ($getDriver) {
