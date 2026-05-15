@@ -50,6 +50,8 @@ class Vehicle extends Model
         'status',
         'notes',
         'public_image_upload_token',
+        'min_km_per_liter',
+        'max_km_per_liter',
     ];
 
     protected $casts = [
@@ -60,6 +62,8 @@ class Vehicle extends Model
         'kasko_end_date' => 'date',
         'is_active' => 'boolean',
         'current_km' => 'integer',
+        'min_km_per_liter' => 'float',
+        'max_km_per_liter' => 'float',
     ];
 
     protected static function booted(): void

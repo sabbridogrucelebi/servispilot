@@ -185,6 +185,38 @@ Route::get('/dashboard', function () {
         }
     }
 
+    $fuelAnomalies = collect();
+    $vehiclesWithBounds = Vehicle::whereNotNull('min_km_per_liter')->orWhereNotNull('max_km_per_liter')->get();
+    foreach ($vehiclesWithBounds as $v) {
+        $recentFuels = Fuel::where('vehicle_id', $v->id)->orderByDesc('date')->orderByDesc('id')->take(6)->get()->reverse()->values();
+        $prevFuel = null;
+        foreach ($recentFuels as $f) {
+            if ($prevFuel && !is_null($f->km) && !is_null($prevFuel->km) && $f->km > $prevFuel->km && $f->liters > 0) {
+                $kmDiff = $f->km - $prevFuel->km;
+                $kpl = round($kmDiff / $f->liters, 2);
+                
+                $isAnomaly = false;
+                $type = '';
+                if ($v->min_km_per_liter && $kpl < $v->min_km_per_liter) {
+                    $isAnomaly = true;
+                    $type = 'low';
+                } elseif ($v->max_km_per_liter && $kpl > $v->max_km_per_liter) {
+                    $isAnomaly = true;
+                    $type = 'high';
+                }
+                
+                if ($isAnomaly) {
+                    $f->kpl = $kpl;
+                    $f->anomaly_type = $type;
+                    $f->vehicle = $v;
+                    $fuelAnomalies->push($f);
+                }
+            }
+            $prevFuel = $f;
+        }
+    }
+    $fuelAnomalies = $fuelAnomalies->unique('id')->sortByDesc('date')->take(5)->values();
+
     return view('dashboard', compact(
         'vehicleCount',
         'driverCount',
@@ -205,7 +237,8 @@ Route::get('/dashboard', function () {
         'recentTrips',
         'recentActivity',
         'lastBackupDate',
-        'lastBackupSize'
+        'lastBackupSize',
+        'fuelAnomalies'
     ));
 
 })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
@@ -660,6 +693,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/fuels/import', [FuelController::class, 'import'])
         ->middleware('permission:fuels.create')
         ->name('fuels.import');
+
+    Route::get('/fuels-settings/consumption', [FuelController::class, 'consumptionSettings'])
+        ->middleware('permission:fuels.edit')
+        ->name('fuels.consumption-settings');
+        
+    Route::post('/fuels-settings/consumption', [FuelController::class, 'saveConsumptionSettings'])
+        ->middleware('permission:fuels.edit')
+        ->name('fuels.consumption-settings.save');
 
     Route::resource('company-users', CompanyUserController::class)
         ->parameters(['company-users' => 'companyUser'])

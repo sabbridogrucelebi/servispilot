@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --color-bg-primary: #FFFFFF;
@@ -11,7 +11,7 @@
   --color-border: rgba(0, 0, 0, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(0, 0, 0, 0.05);
-  --font-heading: 'Outfit', sans-serif;
+  --font-heading: 'Montserrat', sans-serif;
   --font-body: 'Inter', sans-serif;
 }
 
@@ -89,6 +89,131 @@ a {
 .btn-outline:hover {
   background: rgba(0, 0, 0, 0.03);
   border-color: var(--color-text-secondary);
+}
+
+/* 3D Premium Button */
+.btn-3d {
+  background: linear-gradient(to bottom, #1565C0, var(--color-accent));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 0 #0D47A1, 0 8px 15px rgba(16, 84, 156, 0.4);
+  transition: all 0.1s ease;
+}
+
+.btn-3d:active, .btn-3d:hover {
+  transform: translateY(4px);
+  box-shadow: 0 0px 0 #0D47A1, 0 4px 5px rgba(16, 84, 156, 0.4);
+}
+
+/* Premium Nav Link */
+.nav-link {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 3px;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-secondary));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+}
+
+.nav-link:hover {
+  color: var(--color-accent);
+  transform: translateY(-3px);
+  text-shadow: 0 4px 12px rgba(16, 84, 156, 0.3);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Premium 3D Animated Button */
+.btn-3d-premium {
+  position: relative;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-secondary) 100%);
+  color: white;
+  padding: 12px 32px;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 
+    0 6px 0 #8b1111,
+    0 15px 20px rgba(226, 27, 27, 0.4),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+  transition: all 0.15s ease;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-3d-premium span {
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.btn-3d-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  animation: shine 4s infinite;
+  z-index: 1;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+.btn-3d-premium:hover {
+  transform: translateY(2px);
+  box-shadow: 
+    0 4px 0 #8b1111,
+    0 10px 15px rgba(226, 27, 27, 0.4),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.btn-3d-premium:active {
+  transform: translateY(6px);
+  box-shadow: 
+    0 0px 0 #8b1111,
+    0 4px 5px rgba(226, 27, 27, 0.4),
+    inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .section {

@@ -248,6 +248,59 @@
                 @endif
             </div>
 
+            <!-- Yakıt Tüketim Anormallikleri KPI -->
+            @if(isset($fuelAnomalies) && $fuelAnomalies->count() > 0)
+            <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800">Yakıt Tüketim Uyarıları</h3>
+                        <p class="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Belirlenen Limitleri Aşan Kayıtlar</p>
+                    </div>
+                    <div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-rose-50 text-rose-600 border-rose-100 border">
+                        <svg class="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <div>
+                            <div class="text-[10px] font-black uppercase tracking-widest">Riskli Kayıt</div>
+                            <div class="text-lg font-black leading-none">{{ $fuelAnomalies->count() }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @foreach($fuelAnomalies as $anomaly)
+                        <div class="group relative overflow-hidden rounded-[24px] border {{ $anomaly->anomaly_type == 'high' ? 'border-amber-200 bg-amber-50/50' : 'border-rose-200 bg-rose-50/50' }} p-5 transition-all hover:shadow-lg">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $anomaly->anomaly_type == 'high' ? 'bg-amber-200 text-amber-700' : 'bg-rose-200 text-rose-700' }} font-black shadow-sm">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-black text-slate-800">{{ $anomaly->vehicle?->plate }}</div>
+                                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ \Carbon\Carbon::parse($anomaly->date)->format('d.m.Y') }}</div>
+                                    </div>
+                                </div>
+                                <a href="{{ route('fuels.edit', $anomaly->id) }}" class="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm hover:scale-110 transition-transform text-slate-400 hover:text-indigo-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </a>
+                            </div>
+                            
+                            <div>
+                                @if($anomaly->anomaly_type == 'low')
+                                    <div class="text-rose-600 text-[10px] font-bold uppercase tracking-widest">Limit Altı Tüketim (Min: {{ $anomaly->vehicle->min_km_per_liter }})</div>
+                                    <div class="text-2xl font-black text-rose-700 mt-1">{{ $anomaly->kpl }} KM / L</div>
+                                @else
+                                    <div class="text-amber-600 text-[10px] font-bold uppercase tracking-widest">Aşırı Tüketim / Hatalı Kayıt (Maks: {{ $anomaly->vehicle->max_km_per_liter }})</div>
+                                    <div class="text-2xl font-black text-amber-700 mt-1">{{ $anomaly->kpl }} KM / L</div>
+                                @endif
+                            </div>
+                            
+                            <div class="absolute bottom-0 left-0 h-1 w-full {{ $anomaly->anomaly_type == 'high' ? 'bg-amber-500' : 'bg-rose-500' }}">
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Son Seferler -->
                 <div class="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 flex flex-col">

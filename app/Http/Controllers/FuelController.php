@@ -180,6 +180,39 @@ class FuelController extends Controller
         }
     }
 
+    public function consumptionSettings()
+    {
+        abort_unless(auth()->user()->hasPermission('fuels.edit'), 403);
+
+        $vehicles = Vehicle::orderBy('plate')->get();
+
+        return view('fuels.consumption_settings', compact('vehicles'));
+    }
+
+    public function saveConsumptionSettings(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('fuels.edit'), 403);
+
+        $data = $request->validate([
+            'vehicles' => 'array',
+            'vehicles.*.min_km_per_liter' => 'nullable|numeric|min:0',
+            'vehicles.*.max_km_per_liter' => 'nullable|numeric|min:0|gte:vehicles.*.min_km_per_liter',
+        ]);
+
+        if (isset($data['vehicles'])) {
+            foreach ($data['vehicles'] as $vehicleId => $bounds) {
+                $vehicle = Vehicle::find($vehicleId);
+                if ($vehicle) {
+                    $vehicle->min_km_per_liter = $bounds['min_km_per_liter'];
+                    $vehicle->max_km_per_liter = $bounds['max_km_per_liter'];
+                    $vehicle->save();
+                }
+            }
+        }
+
+        return redirect()->route('fuels.index')->with('success', 'Yakıt tüketim limitleri başarıyla kaydedildi.');
+    }
+
     protected function calculatePricing(float $liters, float $pricePerLiter, ?int $stationId = null): array
     {
         $grossTotal = round($liters * $pricePerLiter, 2);

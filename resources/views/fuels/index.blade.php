@@ -280,10 +280,13 @@
                         Petrol İstasyonları
                     </a>
 
-                    <a href="{{ route('activity-logs.index', ['module' => 'fuel']) }}"
-                       class="inline-flex items-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                        İşlem Kayıtları
+                    @if(auth()->user()->hasPermission('fuels.edit'))
+                    <a href="{{ route('fuels.consumption-settings') }}"
+                       class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition-all hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5 group">
+                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gear.png" alt="Ayarlar" class="w-5 h-5 drop-shadow-md transition-transform duration-700 group-hover:rotate-180" />
+                        Yakıt Oran Belirleme
                     </a>
+                    @endif
 
                     @if(auth()->user()->hasPermission('fuels.create'))
                     <button type="button"
