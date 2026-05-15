@@ -20,14 +20,15 @@
                     </div>
                     <div>
                         <h1 class="text-4xl lg:text-5xl font-black tracking-tight text-white leading-none">Veri Yedekleme</h1>
-                        <p class="mt-2 text-slate-300 font-medium">Sistem her gece otomatik yedek alır. Maksimum 7 günlük geçmiş kayıtlar tutulur.</p>
+                        <p class="mt-2 text-slate-300 font-medium">Sistem her gece otomatik yedek alır. Maksimum 10 günlük geçmiş kayıtlar tutulur.</p>
                     </div>
                 </div>
 
                 {{-- Şimdi Yedekle Butonu --}}
                 <div class="flex items-center gap-4">
                     @php
-                        $lastBackupFile = storage_path('app/YEDEKLEMELER/.last_backup');
+                        $user = auth()->user();
+                        $lastBackupFile = storage_path("app/YEDEKLEMELER/.last_backup_" . ($user->is_super_admin ? "superadmin" : $user->company_id));
                         $lastBackup = file_exists($lastBackupFile) ? trim(file_get_contents($lastBackupFile)) : null;
                     @endphp
 
@@ -136,27 +137,34 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center gap-2 w-full md:w-auto">
+                        <div class="flex items-center gap-2 w-full md:w-auto backup-action-row">
                             <form action="{{ route('backups.restore') }}" method="POST" class="flex items-center gap-2 w-full md:w-auto" onsubmit="return confirm('Seçili modülün yedeğini geri yüklemek istiyor musunuz? Mevcut verileriniz yedekteki kayıtlarla güncellenecek.');">
                                 @csrf
                                 <input type="hidden" name="file" value="{{ $backup['name'] }}">
-                                <select name="module" required class="flex-1 md:w-48 rounded-xl border-slate-200 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="" disabled selected>Modül Seçin (Geri Yükle)</option>
-                                    <option value="araclar">Araçlar</option>
-                                    <option value="yakitlar">Yakıt Verileri</option>
-                                    <option value="seferler">Puantaj & Seferler</option>
-                                    <option value="personeller">Personeller</option>
-                                    <option value="musteriler">Müşteriler</option>
-                                    <option value="bakimlar">Bakım / Tamir</option>
-                                    <option value="cezalar">Cezalar</option>
-                                    <option value="maaslar">Maaşlar</option>
+                                <select name="module" required class="flex-1 md:w-48 rounded-xl border-slate-200 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 module-selector">
+                                    <option value="" disabled selected>Modül Seçin</option>
+                                    @if(auth()->user()->is_super_admin)
+                                        <option value="firmalar">Firmalar</option>
+                                        <option value="kullanicilar">Kullanıcılar</option>
+                                        <option value="planlar">Planlar</option>
+                                        <option value="abonelikler">Abonelikler</option>
+                                    @else
+                                        <option value="araclar">Araçlar</option>
+                                        <option value="yakitlar">Yakıt Verileri</option>
+                                        <option value="seferler">Puantaj & Seferler</option>
+                                        <option value="personeller">Personeller</option>
+                                        <option value="musteriler">Müşteriler</option>
+                                        <option value="bakimlar">Bakım / Tamir</option>
+                                        <option value="cezalar">Cezalar</option>
+                                        <option value="maaslar">Maaşlar</option>
+                                    @endif
                                 </select>
                                 <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-slate-800 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 transition-all">
                                     Yükle
                                 </button>
                             </form>
                             
-                            <a href="{{ route('backups.download', $backup['name']) }}" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition-all">
+                            <a href="{{ route('backups.download', $backup['name']) }}?module=araclar" data-baseurl="{{ route('backups.download', $backup['name']) }}" class="download-btn inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition-all" title="Seçili Modülü İndir" onclick="if(!this.closest('.backup-action-row').querySelector('.module-selector').value){alert('Lütfen indirmek için önce bir modül seçin.'); return false;}">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                             </a>
                         </div>
@@ -167,4 +175,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.module-selector').forEach(function(select) {
+            select.addEventListener('change', function() {
+                var row = this.closest('.backup-action-row');
+                var downloadBtn = row.querySelector('.download-btn');
+                if (downloadBtn) {
+                    downloadBtn.href = downloadBtn.getAttribute('data-baseurl') + "?module=" + this.value;
+                }
+            });
+        });
+    });
+</script>
 @endsection

@@ -13,24 +13,37 @@ class BackupController extends Controller
 {
     public function index()
     {
-        $companyId = auth()->user()->company_id;
-        $baseDir = storage_path("app/YEDEKLEMELER");
-        $dirs = glob($baseDir . "/firma_{$companyId}_*");
-        $backupDir = !empty($dirs) ? $dirs[0] : null;
+        $user = auth()->user();
+        if ($user->is_super_admin) {
+            $backupDir = storage_path("app/YEDEKLEMELER/superadmin");
+        } else {
+            $companyId = $user->company_id;
+            $baseDir = storage_path("app/YEDEKLEMELER");
+            $dirs = glob($baseDir . "/firma_{$companyId}_*");
+            $backupDir = !empty($dirs) ? $dirs[0] : null;
+        }
         
         $backups = [];
         if ($backupDir && File::exists($backupDir)) {
-            $files = File::files($backupDir);
-            foreach ($files as $file) {
-                if ($file->getExtension() === 'zip') {
-                    $backups[] = [
-                        'name' => $file->getFilename(),
-                        'size' => round($file->getSize() / 1024, 2) . ' KB',
-                        'date' => Carbon::createFromTimestamp($file->getMTime())->format('Y-m-d H:i:s'),
-                        'path' => $file->getFilename()
-                    ];
+            $directories = File::directories($backupDir);
+            $uniqueDates = [];
+            foreach ($directories as $dir) {
+                $files = File::files($dir);
+                foreach ($files as $file) {
+                    if ($file->getExtension() === 'zip') {
+                        $name = $file->getFilename();
+                        if (!isset($uniqueDates[$name])) {
+                            $uniqueDates[$name] = [
+                                'name' => $name,
+                                'size' => 'Modül Bazlı',
+                                'date' => Carbon::createFromTimestamp($file->getMTime())->format('Y-m-d H:i:s'),
+                                'path' => $name
+                            ];
+                        }
+                    }
                 }
             }
+            $backups = array_values($uniqueDates);
         }
         
         // Sort newest first
@@ -39,20 +52,26 @@ class BackupController extends Controller
         return view('backups.index', compact('backups'));
     }
 
-    public function download($file)
+    public function download(Request $request, $file)
     {
-        $companyId = auth()->user()->company_id;
-        $baseDir = storage_path("app/YEDEKLEMELER");
-        $dirs = glob($baseDir . "/firma_{$companyId}_*");
-        $backupDir = !empty($dirs) ? $dirs[0] : null;
-        
-        $path = $backupDir ? $backupDir . '/' . $file : null;
-        
-        if (!$path || !File::exists($path)) {
-            return redirect()->back()->with('error', 'Yedek dosyası bulunamadı.');
+        $user = auth()->user();
+        if ($user->is_super_admin) {
+            $backupDir = storage_path("app/YEDEKLEMELER/superadmin");
+        } else {
+            $companyId = $user->company_id;
+            $baseDir = storage_path("app/YEDEKLEMELER");
+            $dirs = glob($baseDir . "/firma_{$companyId}_*");
+            $backupDir = !empty($dirs) ? $dirs[0] : null;
         }
         
-        return response()->download($path);
+        $module = $request->query('module', 'araclar'); // default module
+        $path = $backupDir ? $backupDir . '/' . $module . '/' . $file : null;
+        
+        if (!$path || !File::exists($path)) {
+            return redirect()->back()->with('error', 'Yedek dosyası bulunamadı. Lütfen önce indirmek istediğiniz modülü seçin.');
+        }
+        
+        return response()->download($path, "{$module}_{$file}");
     }
 
     public function restore(Request $request)
@@ -62,18 +81,23 @@ class BackupController extends Controller
             'module' => 'required|string'
         ]);
 
-        $companyId = auth()->user()->company_id;
+        $user = auth()->user();
         $file = $request->file;
         $module = $request->module; // 'yakitlar', 'araclar', vs.
         
-        $baseDir = storage_path("app/YEDEKLEMELER");
-        $dirs = glob($baseDir . "/firma_{$companyId}_*");
-        $backupDir = !empty($dirs) ? $dirs[0] : null;
+        if ($user->is_super_admin) {
+            $backupDir = storage_path("app/YEDEKLEMELER/superadmin");
+        } else {
+            $companyId = $user->company_id;
+            $baseDir = storage_path("app/YEDEKLEMELER");
+            $dirs = glob($baseDir . "/firma_{$companyId}_*");
+            $backupDir = !empty($dirs) ? $dirs[0] : null;
+        }
         
-        $zipPath = $backupDir ? $backupDir . '/' . $file : null;
+        $zipPath = $backupDir ? $backupDir . '/' . $module . '/' . $file : null;
         
         if (!$zipPath || !File::exists($zipPath)) {
-            return redirect()->back()->with('error', 'Yedek dosyası bulunamadı.');
+            return redirect()->back()->with('error', "{$module} için yedek dosyası bulunamadı.");
         }
 
         $zip = new ZipArchive;
@@ -124,6 +148,10 @@ class BackupController extends Controller
             'bakimlar' => \App\Models\VehicleMaintenance::class,
             'cezalar' => \App\Models\TrafficPenalty::class,
             'maaslar' => \App\Models\Payroll::class,
+            'firmalar' => \App\Models\Company::class,
+            'kullanicilar' => \App\Models\User::class,
+            'planlar' => \App\Models\Plan::class,
+            'abonelikler' => \App\Models\Subscription::class,
         ];
 
         return $models[$module] ?? null;
@@ -135,16 +163,16 @@ class BackupController extends Controller
     public function runNow()
     {
         try {
-            Artisan::call('app:backup-tenant-data');
-
-            // Son yedekleme zamanını kaydet
-            $statusFile = storage_path('app/YEDEKLEMELER/.last_backup');
-            File::ensureDirectoryExists(dirname($statusFile));
-            File::put($statusFile, now()->toIso8601String());
+            $user = auth()->user();
+            if ($user->is_super_admin) {
+                Artisan::call('app:backup-tenant-data', ['--superadmin' => true]);
+            } else {
+                Artisan::call('app:backup-tenant-data', ['--company_id' => $user->company_id]);
+            }
 
             return redirect()
                 ->route('backups.index')
-                ->with('success', 'Yedekleme başarıyla tamamlandı! ✅ Tüm şirket verileri yedeklendi.');
+                ->with('success', 'Yedekleme başarıyla tamamlandı! ✅ Firma verileriniz güvenle yedeklendi.');
         } catch (\Exception $e) {
             return redirect()
                 ->route('backups.index')
@@ -168,11 +196,6 @@ class BackupController extends Controller
 
         try {
             Artisan::call('app:backup-tenant-data');
-
-            // Son yedekleme zamanını kaydet
-            $statusFile = storage_path('app/YEDEKLEMELER/.last_backup');
-            File::ensureDirectoryExists(dirname($statusFile));
-            File::put($statusFile, now()->toIso8601String());
 
             return response('Backup completed: ' . now()->format('Y-m-d H:i:s'), 200);
         } catch (\Exception $e) {
